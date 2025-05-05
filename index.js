@@ -4,36 +4,30 @@ import mongoose, { mongo } from "mongoose";
 import cors from "cors";
 import bodyParser from "body-parser";
 import http from "http";
-import userRoutes from "./routes/userRoutes/userRoutes.js";
-import projectRoutes from "./routes/projectDetRoutes/projectDetRoutes.js";
+import userRoutes from "./routes/userRoutes/userRoutes.js"
+import connectDB from "./config/db.js";
 
 const app = express();
 // dotenv.config();
 app.use(express.json());
+connectDB(); 
 app.use(express.urlencoded({ extended: true }));
 
-const allowedOrigins = ["http://localhost:5175"];
+const allowedOrigins = ["http://localhost:5173"];
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
-      } else {
+      }else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true,
+    credentials: true, 
   })
 );
+app.use("/admin", userRoutes);
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/DHS-Admin";
-mongoose
-  .connect(MONGO_URL)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error", err));
-
-app.use("/", userRoutes);
-app.use("/project", projectRoutes);
 
 const PORT = 3000;
 
