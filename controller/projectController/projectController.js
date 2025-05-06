@@ -1,4 +1,6 @@
 import Project from "../../model/projectModel.js";
+import ProjectStatus from "../../model/projectStatusModel.js";
+import { uploadToCloudinary } from "../../utils/cloudinary.js";
 
 const addProjectDetails = async (req, res) => {
   try {
@@ -81,7 +83,7 @@ const getProjectDetails = async (req, res) => {
   try {
     const projects = await Project.find(
       {},
-      { projectName: 1, dimensions: 1, _id: 0 }
+      { projectName: 1, dimensions: 1, status: 1, shortCode: 1, _id: 0 }
     );
     res.status(200).json({
       success: true,
@@ -124,8 +126,102 @@ const updateLandDetails = async (req, res) => {
   }
 };
 
+const searchProjectName = async (req, res) => {
+  const { searchQuery } = req.query;
+
+  try {
+    const projects = await Project.find({
+      projectName: { $regex: searchQuery, $options: "i" },
+    });
+
+    if (projects.length === 0) {
+      return res
+        .status(404)
+        .json({ message: `Project name '${searchQuery}' not found` });
+    }
+
+    res.status(200).json({ data: projects });
+  } catch (err) {
+    console.error("Error searching for projects:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const postProjectStatus = async (req, res) => {
+  try {
+    const {
+      projectName,
+      statusDate,
+      statusTitle,
+      statusDetails,
+      sendSMS,
+      sendEmail,
+    } = req.body;
+
+    // Backend validation
+    if (!projectName || !statusDate || !statusTitle || !statusDetails) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // File validation
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      const validFileTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+        "application/pdf",
+      ];
+      const maxFileSize = 5 * 1024 * 1024; // 5 MB
+
+      // Validate file types and sizes
+      for (const file of req.files) {
+        if (!validFileTypes.includes(file.mimetype)) {
+          return res.status(400).json({
+            message: "Only JPEG, PNG,webp,jpg and PDF files are allowed.",
+          });
+        }
+        if (file.size > maxFileSize) {
+          return res.status(400).json({
+            message: "File size cannot exceed 5MB.",
+          });
+        }
+      }
+
+      // Proceed with Cloudinary upload
+      const uploadPromises = req.files.map((file) =>
+        uploadToCloudinary(file.buffer)
+      );
+      const results = await Promise.all(uploadPromises);
+      imageUrls = results.map((r) => r.secure_url);
+    }
+
+    const newStatus = new ProjectStatus({
+      projectName,
+      statusDate,
+      statusTitle,
+      statusDetails,
+      image: imageUrls, // store Cloudinary URLs
+      sendSMS,
+      sendEmail,
+    });
+
+    await newStatus.save();
+
+    res
+      .status(201)
+      .json({ message: "Project status added successfully", data: newStatus });
+  } catch (error) {
+    console.error("Error saving project status:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 export default {
   addProjectDetails,
   getProjectDetails,
   updateLandDetails,
+  searchProjectName,
+  postProjectStatus,
 };
