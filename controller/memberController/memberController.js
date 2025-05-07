@@ -46,13 +46,11 @@ import Member from "../../model/memberModel.js"; // adjust path as needed
       DDNumber: "", // if any
       propertyDetails: {
         projectName: data.projectName || "",
-        plotNumber: data.plotNumber || "NA",  // avoid validation error
-        dimension: {
-          length: Number(data.length) || 0,   // fallback to 0 if undefined
-          breadth: Number(data.breadth) || 0
-        },
-        pricePerSqft: Number(data.pricePerSqft) || 0,
-        propertyCost: Number(data.propertyCost?.replace(/,/g, "")) || 0 // remove commas like '20,98,500.00'
+        propertySize: Number(data.PropertySize) || 0,
+        pricePerSqft: Number(data.perSqftPropertyPrice) || 0,
+        propertyCost: Number(data.selectedPropertyCost?.replace(/,/g, "")) || 0,
+        percentage: Number(data.percentage) || 0,
+        percentageCost: Number(data.percentageCost?.replace(/,/g, "")) || 0
       }
       
       // propertyDetails: {

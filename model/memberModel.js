@@ -3,14 +3,13 @@ import mongoose from "mongoose";
 
 const propertyDetailsSchema = new mongoose.Schema({
    projectName: { type: String, required: true },
-   plotNumber: { type: String, required: true },
-   dimension: {
-     length: { type: Number, required: true },
-     breadth: { type: Number, required: true },
-   },
+   propertySize: { type: Number, required: true },
    pricePerSqft: { type: Number, required: true },
-   propertyCost: { type: Number, required: true }
+   propertyCost: { type: Number, required: true },
+   percentage: { type: Number, required: true },
+   percentageCost: { type: Number, required: true }
  });
+ 
 
 const memberSchema =new mongoose.Schema({
      refname:{
