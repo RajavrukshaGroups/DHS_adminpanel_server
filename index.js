@@ -7,6 +7,7 @@ import http from "http";
 import userRoutes from "./routes/userRoutes/userRoutes.js";
 import projectRoutes from "./routes/projectDetRoutes/projectDetRoutes.js";
 import connectDB from "./config/db.js";
+import memberRoutes from "./routes/memberRoutes/memberRoutes.js";
 
 const app = express();
 // dotenv.config();
@@ -14,8 +15,8 @@ app.use(express.json());
 connectDB();
 app.use(express.urlencoded({ extended: true }));
 
-// const allowedOrigins = ["http://localhost:5173"];
-const allowedOrigins = ["http://localhost:5175"];
+const allowedOrigins = ["http://localhost:5173"];
+// const allowedOrigins = ["http://localhost:5175"];
 
 app.use(
   cors({
@@ -30,13 +31,9 @@ app.use(
   })
 );
 
-// const MONGO_URL = "mongodb://127.0.0.1:27017/DHS-Admin";
-// mongoose
-//   .connect(MONGO_URL)
-//   .then(() => console.log("MongoDB connected"))
-//   .catch((err) => console.error("MongoDB connection error", err));
 app.use("/admin", userRoutes);
 app.use("/project", projectRoutes);
+app.use("/member",memberRoutes);
 
 const PORT = 3000;
 
