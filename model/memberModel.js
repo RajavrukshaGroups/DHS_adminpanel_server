@@ -133,6 +133,26 @@ const memberSchema =new mongoose.Schema({
             type:String,
             required:true
            },
+           PaymentMode:{
+            type:String,
+            required:true
+           },
+           BankName:{
+            type:String,
+            required:true
+           },
+           BranchName:{
+            type:String,
+            required:true
+           },
+           Amount:{
+            type:Number,
+            required:true
+           },
+           DDNumber:{
+            type:String,
+            required:true
+           }
 
 })
 
