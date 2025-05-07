@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+
+const propertyDetailsSchema = new mongoose.Schema({
+   projectName: { type: String, required: true },
+   plotNumber: { type: String, required: true },
+   dimension: {
+     length: { type: Number, required: true },
+     breadth: { type: Number, required: true },
+   },
+   pricePerSqft: { type: Number, required: true },
+   propertyCost: { type: Number, required: true }
+ });
+
 const memberSchema =new mongoose.Schema({
      refname:{
         type:String,
@@ -20,6 +32,10 @@ const memberSchema =new mongoose.Schema({
          saluation:{
         type:String,    
         required:true
+       },
+       propertyDetails: {
+         type: propertyDetailsSchema,
+         required: true
        },
          name:{
             type:String,
@@ -59,11 +75,9 @@ const memberSchema =new mongoose.Schema({
            },
            MemberPhoto:{
             type:String,
-            required:true
            },
            MemberSign:{
             type:String,
-            required:true
            },
            nomineeName:{
             type:String,
@@ -149,11 +163,12 @@ const memberSchema =new mongoose.Schema({
             type:Number,
             required:true
            },
-           DDNumber:{
-            type:String,
-            required:true
-           }
+         //   DDNumber:{
+         //    type:String,
+         //    required:true
+         //   }
 
 })
 
 const Member = mongoose.model("Member",memberSchema)
+export default Member;

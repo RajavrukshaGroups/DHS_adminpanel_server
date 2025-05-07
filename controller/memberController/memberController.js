@@ -1,18 +1,10 @@
 
-
-// const addMemberDetails =((req,res)=>{
-//     try {
-//        console.log(req.body,'ssssssssssssss');
-//     } catch (error) {
-//         console.log(error);
-//     }
-// })
 import Member from "../../model/memberModel.js"; // adjust path as needed
 
  const addMemberDetails = async (req, res) => {
   try {
     const data = req.body;
-
+      console.log("Received data:", data);
     const mappedData = {
       refname: data.refencName,
       rankDesignation: data.rankDesignation,
@@ -51,7 +43,28 @@ import Member from "../../model/memberModel.js"; // adjust path as needed
       BankName: data.bankName,
       BranchName: data.brnachName,
       Amount: Number(data.amount),
-      DDNumber: "" // if any
+      DDNumber: "", // if any
+      propertyDetails: {
+        projectName: data.projectName || "",
+        plotNumber: data.plotNumber || "NA",  // avoid validation error
+        dimension: {
+          length: Number(data.length) || 0,   // fallback to 0 if undefined
+          breadth: Number(data.breadth) || 0
+        },
+        pricePerSqft: Number(data.pricePerSqft) || 0,
+        propertyCost: Number(data.propertyCost?.replace(/,/g, "")) || 0 // remove commas like '20,98,500.00'
+      }
+      
+      // propertyDetails: {
+      //   projectName: data.projectName,
+      //   plotNumber: data.plotNumber,
+      //   dimension: {
+      //     length: Number(data.length),
+      //     breadth: Number(data.breadth)
+      //   },
+      //   pricePerSqft: Number(data.pricePerSqft),
+      //   propertyCost: Number(data.propertyCost)
+      // }
     };
 
     const newMember = new Member(mappedData);
