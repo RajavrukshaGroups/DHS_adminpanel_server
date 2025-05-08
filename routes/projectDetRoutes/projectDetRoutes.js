@@ -28,5 +28,9 @@ router.put(
   upload.array("files", 10),
   AddProjectDetController.updateIndProjectStatus
 );
+router.get(
+  "/totalprojectscount",
+  AddProjectDetController.fetchTotalProjectsCount
+);
 
 export default router;

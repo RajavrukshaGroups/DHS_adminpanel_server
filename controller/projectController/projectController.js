@@ -1,3 +1,4 @@
+import { error } from "console";
 import Project from "../../model/projectModel.js";
 import ProjectStatus from "../../model/projectStatusModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
@@ -345,6 +346,16 @@ const updateIndProjectStatus = async (req, res) => {
   }
 };
 
+const fetchTotalProjectsCount = async (req, res) => {
+  try {
+    const totalProjects = await Project.countDocuments();
+    res.status(200).json({ totalProjects });
+  } catch (err) {
+    console.error("error fetching total projects count", err);
+    res.status(500).json({ error: "Failed to fetch the total projects count" });
+  }
+};
+
 export default {
   addProjectDetails,
   getProjectDetails,
@@ -355,4 +366,5 @@ export default {
   deleteProjectStatus,
   getIndProjectStatus,
   updateIndProjectStatus,
+  fetchTotalProjectsCount,
 };
