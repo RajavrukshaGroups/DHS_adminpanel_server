@@ -103,9 +103,93 @@ const getMemberDetails =async(req,res)=>{
   }
 }
 
+// const check_seniority = async (req, res) => { 
+
+//   console.log("Checking seniority ID:", req.params.id);
+//   const seniorityID = req.params.id;
+//   const existing = await Member.findOne({ SeniorityID: seniorityID });
+//   console.log("Existing member with seniority ID:", existing);
+  
+//   if (existing) {
+//     return res.status(200).json({ exists: true });
+//   } else {
+//     return res.status(200).json({ exists: false });
+//   }
+// }
+// Route: /member/check-duplicates
+
+// const check_duplicates = async (req, res) => {
+//   console.log("Checking for duplicates...");
+//   const { seniorityID, membershipNo, cunfirmationLetterNo, shareCertificateNo } = req.body;
+//   const results = {
+//     seniorityID: false,
+//     membershipNo: false,
+//     cunfirmationLetterNo: false,
+//     shareCertificateNo: false,
+//   };
+
+//   if (seniorityID) {
+//     const seniorityExists = await Member.findOne({ SeniorityID: seniorityID });
+//     if (seniorityExists) results.seniorityID = true;
+//   }
+
+//   if (membershipNo) {
+//     const membershipExists = await Member.findOne({ membershipNo: membershipNo });
+//     if (membershipExists) results.membershipNo = true;
+//   }
+
+//   if (cunfirmationLetterNo) {
+//     const confirmationExists = await Member.findOne({ cunfirmationLetterNo: cunfirmationLetterNo });
+//     if (confirmationExists) results.cunfirmationLetterNo = true;
+//   }
+
+//   if (shareCertificateNo) {
+//     const shareExists = await Member.findOne({ shareCertificateNo: shareCertificateNo });
+//     if (shareExists) results.shareCertificateNo = true;
+//   }
+//   return res.status(200).json(results);
+// };
+
+
+const checkDuplicates = async (req, res) => {
+  const { seniorityID, membershipNo, confirmationLetterNo, shareCertificateNo } = req.query;
+
+  let query = {
+    $or: [
+      { SeniorityID: seniorityID },
+      { membershipNo: membershipNo },
+      { cunfirmationLetterNo: confirmationLetterNo },
+      { shareCertificateNo: shareCertificateNo }
+    ]
+  };
+
+  try {
+    const existing = await Member.findOne(query);
+
+    if (existing) {
+      return res.status(200).json({
+        exists: true,
+        fields: {
+          SeniorityID: existing.SeniorityID === seniorityID,
+          membershipNo: existing.membershipNo == membershipNo,
+          cunfirmationLetterNo: existing.cunfirmationLetterNo == confirmationLetterNo,
+          shareCertificateNo: existing.shareCertificateNo == shareCertificateNo
+        }
+      });
+    }
+
+    res.status(200).json({ exists: false, fields: {} });
+  } catch (err) {
+    console.error("Error checking duplicates:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 export default {
   addMemberDetails,
-  getMemberDetails
+  getMemberDetails,
+  checkDuplicates
+  // check_duplicates
 };
 
 //  const addMemberDetails = async (req, res) => {
