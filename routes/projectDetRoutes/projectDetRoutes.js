@@ -13,5 +13,23 @@ router.post(
   upload.array("files", 10),
   AddProjectDetController.postProjectStatus
 );
+router.get("/all-projectstatus", AddProjectDetController.getProjectStatus);
+router.delete(
+  "/delete-projectstatus/:id",
+  AddProjectDetController.deleteProjectStatus
+);
+router.get(
+  "/indprojectstatus/:id",
+  AddProjectDetController.getIndProjectStatus
+);
+router.put(
+  "/update-indprojectstatus/:id",
+  upload.array("files", 10),
+  AddProjectDetController.updateIndProjectStatus
+);
+router.get(
+  "/totalprojectscount",
+  AddProjectDetController.fetchTotalProjectsCount
+);
 
 export default router;
