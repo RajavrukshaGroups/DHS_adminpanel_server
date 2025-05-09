@@ -1,7 +1,6 @@
 import express from "express";
 import AddProjectDetController from "../../controller/projectController/projectController.js";
 import upload from "../../middleware/multer.js";
-import { get } from "http";
 
 const router = express.Router();
 
