@@ -65,7 +65,7 @@ const addMemberDetails = async (req, res) => {
       PaymentType: data.paymentType,
       PaymentMode: data.paymentMode,
       BankName: data.bankName,
-      BranchName: data.brnachName,
+      BranchName: data.branchName,
       Amount: Number(data.amount),
       DDNumber: "", // You can update this if needed
       propertyDetails: {
