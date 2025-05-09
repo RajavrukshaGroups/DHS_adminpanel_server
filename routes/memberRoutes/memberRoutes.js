@@ -13,6 +13,5 @@ router.get('/view-member-details', MemberController.getMemberDetails);
 router.get('/check-duplicates',memberController.checkDuplicates);
 
 
-
 export default router;
 

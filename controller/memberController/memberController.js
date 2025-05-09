@@ -151,39 +151,141 @@ const getMemberDetails =async(req,res)=>{
 // };
 
 
-const checkDuplicates = async (req, res) => {
-  const { seniorityID, membershipNo, confirmationLetterNo, shareCertificateNo } = req.query;
+// const checkDuplicates = async (req, res) => {
+//   console.log("Checking for duplicates...");
+//     console.log("📥 Incoming query:", req.query);
 
-  let query = {
-    $or: [
-      { SeniorityID: seniorityID },
-      { membershipNo: membershipNo },
-      { cunfirmationLetterNo: confirmationLetterNo },
-      { shareCertificateNo: shareCertificateNo }
-    ]
-  };
+  
+//   const { seniorityID, membershipNo, confirmationLetterNo, shareCertificateNo } = req.query;
+
+//   let query = {
+//     $or: [
+//       { SeniorityID: seniorityID },
+//       { membershipNo: membershipNo },
+//       { cunfirmationLetterNo: confirmationLetterNo },
+//       { shareCertificateNo: shareCertificateNo }
+//     ]
+//   };
+
+//   try {
+//     const existing = await Member.findOne(query);
+//     console.log("Existing member with query:", existing);
+    
+
+//     if (existing) {
+//       return res.status(200).json({
+//         exists: true,
+//         fields: {
+//           SeniorityID: existing.SeniorityID === seniorityID,
+//           membershipNo: existing.membershipNo == membershipNo,
+//           cunfirmationLetterNo: existing.cunfirmationLetterNo == confirmationLetterNo,
+//           shareCertificateNo: existing.shareCertificateNo == shareCertificateNo
+//         }
+//       });
+//     }
+
+//     res.status(200).json({ exists: false, fields: {} });
+//   } catch (err) {
+//     console.error("Error checking duplicates:", err);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
+// import Member from "../models/Member.js"; // Adjust path based on your structure
+
+const checkDuplicates = async (req, res) => {
+  console.log("Checking for duplicates...");
+  console.log("📥 Incoming query:", req.query);
+
+  const {
+    SeniorityID,
+    MembershipNo,
+    ConfirmationLetterNo,
+    ShareCertificateNumber
+  } = req.query;
+
+  // Build query based on available fields
+  let orConditions = [];
+  if (SeniorityID) orConditions.push({ SeniorityID });
+  if (MembershipNo) orConditions.push({ MembershipNo });
+  if (ConfirmationLetterNo) orConditions.push({ ConfirmationLetterNo });
+  if (ShareCertificateNumber) orConditions.push({ ShareCertificateNumber });
+
+  if (orConditions.length === 0) {
+    return res.status(400).json({ error: "No valid fields provided" });
+  }
 
   try {
-    const existing = await Member.findOne(query);
+    const existing = await Member.findOne({ $or: orConditions });
+    console.log("Existing member with query:", existing);
 
     if (existing) {
       return res.status(200).json({
         exists: true,
         fields: {
-          SeniorityID: existing.SeniorityID === seniorityID,
-          membershipNo: existing.membershipNo == membershipNo,
-          cunfirmationLetterNo: existing.cunfirmationLetterNo == confirmationLetterNo,
-          shareCertificateNo: existing.shareCertificateNo == shareCertificateNo
+          SeniorityID: existing.SeniorityID === SeniorityID,
+          MembershipNo: existing.MembershipNo === MembershipNo,
+          ConfirmationLetterNo: existing.ConfirmationLetterNo === ConfirmationLetterNo,
+          ShareCertificateNumber: existing.ShareCertificateNumber === ShareCertificateNumber
         }
       });
     }
 
-    res.status(200).json({ exists: false, fields: {} });
+    return res.status(200).json({ exists: false, fields: {} });
   } catch (err) {
-    console.error("Error checking duplicates:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("❌ Error checking duplicates:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+// const checkDuplicates = async (req, res) => {
+//   console.log("Checking for duplicates...");
+//   console.log("📥 Incoming query:", req.query);
+
+//   const {
+//     SeniorityID,
+//     MembershipNo,
+//     ConfirmationLetterNo,
+//     ShareCertificateNumber
+//   } = req.query;
+
+//   // Build query based on available fields
+//   let orConditions = [];
+//   if (SeniorityID) orConditions.push({ SeniorityID });
+//   if (MembershipNo) orConditions.push({ MembershipNo });
+//   if (ConfirmationLetterNo) orConditions.push({ ConfirmationLetterNo });
+//   if (ShareCertificateNumber) orConditions.push({ ShareCertificateNumber });
+
+//   if (orConditions.length === 0) {
+//     return res.status(400).json({ error: "No valid fields provided" });
+//   }
+
+//   try {
+//     const dbdata = await Member.find();
+//     console.log("Fetched members:", dbdata);
+//     const existing = await Member.findOne({ $or: orConditions });
+
+//     if (existing) {
+//       return res.status(200).json({
+//         exists: true,
+//         fields: {
+//           SeniorityID: existing.SeniorityID === SeniorityID,
+//           MembershipNo: existing.MembershipNo === MembershipNo,
+//           ConfirmationLetterNo: existing.ConfirmationLetterNo === ConfirmationLetterNo,
+//           ShareCertificateNumber: existing.ShareCertificateNumber === ShareCertificateNumber
+//         }
+//       });
+//     }
+
+//     res.status(200).json({ exists: false, fields: {} });
+//   } catch (err) {
+//     console.error("❌ Error checking duplicates:", err);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
+// export default checkDuplicates;
+
 
 export default {
   addMemberDetails,
