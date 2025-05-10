@@ -10,6 +10,8 @@ router.post('/add-member', formidable({ multiples: true }), MemberController.add
 router.get('/view-member-details', MemberController.getMemberDetails);
 router.get('/check-duplicates',memberController.checkDuplicates);
   router.put('/update-status/:id',memberController.updateStatus);
+router.get('/inactive-members',memberController.getInactiveMembers);
+
 
 export default router;
 
