@@ -403,7 +403,10 @@ const updateIndProjectStatus = async (req, res) => {
 const fetchTotalProjectsCount = async (req, res) => {
   try {
     const totalProjects = await Project.countDocuments();
-    res.status(200).json({ totalProjects });
+    const totalRegMembers = await Member.countDocuments();
+    res
+      .status(200)
+      .json({ totalProjects: totalProjects, totalRegMembers: totalRegMembers });
   } catch (err) {
     console.error("error fetching total projects count", err);
     res.status(500).json({ error: "Failed to fetch the total projects count" });
