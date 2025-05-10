@@ -2,7 +2,7 @@
 import Member from "../../model/memberModel.js"; // adjust path as needed
 
 import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path as needed
-
+import {generateUniquePassword} from "../../utils/generatePassword.js";
 const addMemberDetails = async (req, res) => {
   try {
     const data = req.fields;
@@ -23,6 +23,7 @@ const addMemberDetails = async (req, res) => {
       const result = await uploadToCloudinary(signFile.buffer || signFile.path);
       memberSignUrl = result.secure_url;
     }
+    const plainPassword =await generateUniquePassword(); 
 
      console.log(memberPhotoUrl,'memberPhotoUrl')
      console.log(memberSignUrl,'memberSignUrl')
@@ -44,6 +45,7 @@ const addMemberDetails = async (req, res) => {
       workingAddress: data.workingAddress,
       MemberPhoto: memberPhotoUrl,
       MemberSign: memberSignUrl,
+      password:plainPassword,
       nomineeName: data.nomineeName,
       nomineeAge: Number(data.nomineeAge),
       nomineeRelation: data.nomineeRelationship,
