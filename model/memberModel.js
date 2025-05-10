@@ -162,6 +162,14 @@ const memberSchema =new mongoose.Schema({
             type:Number,
           
            },
+           isActive:{
+            type:Boolean,
+            default:true
+           },
+           password:{
+            type:String,
+          
+           },
          //   DDNumber:{
          //    type:String,
          //  
