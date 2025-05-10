@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import initData from "./logindata.js";
+import memberDetails from "./memberData.js";
 import AdminLogin from "../model/authModel.js";
+import MemberModel from "../model/memberModel.js";
 
 // const MONGO_URL = "mongodb://127.0.0.1:27017/plumeria";
 const MONGO_URL = "mongodb://127.0.0.1:27017/DHS-Admin";
@@ -12,7 +14,8 @@ const main = async () => {
 
     // await Listing.deleteMany({});
     // await Booking.deleteMany({});
-    await AdminLogin.insertMany(initData);
+    // await AdminLogin.insertMany(initData);
+    await MemberModel.insertMany(memberDetails);
     // await RoomAvailability.deleteMany({});
     // await RoomAvailability.insertMany(roomAvailabilityData);
     // await Admin.insertMany(adminLogs);

@@ -2,6 +2,9 @@ import { error } from "console";
 import Project from "../../model/projectModel.js";
 import ProjectStatus from "../../model/projectStatusModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
+import Member from "../../model/memberModel.js";
+import nodemailer from "nodemailer";
+import { sendProjectStatusEmails } from "../../utils/sendProjectStatusMail.js";
 
 const addProjectDetails = async (req, res) => {
   try {
@@ -210,6 +213,30 @@ export const postProjectStatus = async (req, res) => {
 
     await newStatus.save();
 
+    if (sendEmail) {
+      const members = await Member.find({
+        "propertyDetails.projectName": projectName,
+      });
+
+      if (!members || members.length === 0) {
+        return res
+          .status(404)
+          .json({ message: `No members found for project ${projectName}` });
+      }
+      const emailsToSend = members
+        .map((member) => member.email)
+        .filter(Boolean);
+
+      await sendProjectStatusEmails({
+        projectName,
+        statusTitle,
+        statusDate,
+        statusDetails,
+        imageUrls,
+        memberEmails: emailsToSend,
+      });
+    }
+
     res
       .status(201)
       .json({ message: "Project status added successfully", data: newStatus });
@@ -282,13 +309,14 @@ const updateIndProjectStatus = async (req, res) => {
       statusDetails,
       sendSMS,
       sendEmail,
-      existingImages = [], // from frontend
+      existingImages = [],
     } = req.body;
 
     let imageUrls = Array.isArray(existingImages)
       ? existingImages
       : [existingImages];
 
+    // Validate and upload new files if any
     if (req.files && req.files.length > 0) {
       const validFileTypes = [
         "image/jpeg",
@@ -317,10 +345,36 @@ const updateIndProjectStatus = async (req, res) => {
       );
       const results = await Promise.all(uploadPromises);
       const newUrls = results.map((r) => r.secure_url);
-
       imageUrls.push(...newUrls);
     }
 
+    // If sending email, check and send
+    if (sendEmail) {
+      const members = await Member.find({
+        "propertyDetails.projectName": projectName,
+      });
+
+      if (!members || members.length === 0) {
+        return res.status(404).json({
+          message: `No members found for project ${projectName}.`,
+        });
+      }
+
+      const emailsToSend = members
+        .map((member) => member.email)
+        .filter(Boolean);
+
+      await sendProjectStatusEmails({
+        projectName,
+        statusTitle,
+        statusDate,
+        statusDetails,
+        imageUrls,
+        memberEmails: emailsToSend,
+      });
+    }
+
+    // Update the status in DB
     const updatedStatus = await ProjectStatus.findByIdAndUpdate(
       req.params.id,
       {
