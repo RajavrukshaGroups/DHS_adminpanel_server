@@ -7,7 +7,9 @@ const propertyDetailsSchema = new mongoose.Schema({
    pricePerSqft: { type: Number },
    propertyCost: { type: Number },
    percentage: { type: Number },
-   percentageCost: { type: Number }
+   percentageCost: { type: Number },
+   length: { type: Number },
+   breadth: { type: Number }
  });
  
 

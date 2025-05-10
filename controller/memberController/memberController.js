@@ -8,6 +8,7 @@ const addMemberDetails = async (req, res) => {
     const data = req.fields;
     const files = req.files;
     console.log("Received files:", files);
+    console.log("Received data:", data);
 
     let memberPhotoUrl = "";
     let memberSignUrl = "";
@@ -74,7 +75,9 @@ const addMemberDetails = async (req, res) => {
         pricePerSqft: Number(data.perSqftPropertyPrice) || 0,
         propertyCost: Number(data.selectedPropertyCost?.replace(/,/g, "")) || 0,
         percentage: Number(data.percentage) || 0,
-        percentageCost: Number(data.percentageCost?.replace(/,/g, "")) || 0
+        percentageCost: Number(data.percentageCost?.replace(/,/g, "")) || 0,
+        length: Number(data.plotLength) || 0,
+        breadth: Number(data.plotBreadth) || 0
       }
     };
 
