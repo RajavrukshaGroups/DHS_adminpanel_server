@@ -147,9 +147,22 @@ const checkDuplicates = async (req, res) => {
   }
 };
 
+const updateStatus = async (req, res) => {
+  try {
+    const member = await Member.findByIdAndUpdate(req.params.id, {
+      isActive: req.body.isActive
+    }, { new: true });
+
+    res.status(200).json(member);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update status" });
+  }
+}
+
 
 export default {
   addMemberDetails,
   getMemberDetails,
-  checkDuplicates
+  checkDuplicates,
+  updateStatus
 };
