@@ -1,10 +1,10 @@
-
 import Member from "../../model/memberModel.js"; // adjust path as needed
 import upload from "../../middleware/multer.js";
 import MemberAffidavit from '../../model/memberAffidavit.js'; // adjust path as needed
 
 import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path as needed
-import {generateUniquePassword} from "../../utils/generatePassword.js";
+import { generateUniquePassword } from "../../utils/generatePassword.js";
+import { transporter } from "../../utils/emailTransporter.js";
 const addMemberDetails = async (req, res) => {
   try {
     const data = req.fields;
@@ -17,7 +17,9 @@ const addMemberDetails = async (req, res) => {
 
     if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
-      const result = await uploadToCloudinary(photoFile.buffer || photoFile.path);
+      const result = await uploadToCloudinary(
+        photoFile.buffer || photoFile.path
+      );
       memberPhotoUrl = result.secure_url;
     }
 
@@ -26,10 +28,10 @@ const addMemberDetails = async (req, res) => {
       const result = await uploadToCloudinary(signFile.buffer || signFile.path);
       memberSignUrl = result.secure_url;
     }
-    const plainPassword =await generateUniquePassword(); 
+    const plainPassword = await generateUniquePassword();
 
-     console.log(memberPhotoUrl,'memberPhotoUrl')
-     console.log(memberSignUrl,'memberSignUrl')
+    console.log(memberPhotoUrl, "memberPhotoUrl");
+    console.log(memberSignUrl, "memberSignUrl");
 
     const mappedData = {
       refname: data.refencName,
@@ -48,7 +50,7 @@ const addMemberDetails = async (req, res) => {
       workingAddress: data.workingAddress,
       MemberPhoto: memberPhotoUrl,
       MemberSign: memberSignUrl,
-      password:plainPassword,
+      password: plainPassword,
       nomineeName: data.nomineeName,
       nomineeAge: Number(data.nomineeAge),
       nomineeRelation: data.nomineeRelationship,
@@ -79,34 +81,62 @@ const addMemberDetails = async (req, res) => {
         percentage: Number(data.percentage) || 0,
         percentageCost: Number(data.percentageCost?.replace(/,/g, "")) || 0,
         length: Number(data.plotLength) || 0,
-        breadth: Number(data.plotBreadth) || 0
-      }
+        breadth: Number(data.plotBreadth) || 0,
+      },
     };
 
     const newMember = new Member(mappedData);
     await newMember.save();
 
     res.status(201).json({ message: "Member saved successfully!" });
-
   } catch (error) {
     console.error("Add Member Error:", error);
     res.status(500).json({ error: "Failed to save member." });
   }
 };
 
-const getMemberDetails =async(req,res)=>{
-  try{
-    console.log("Fetching member details...");
-    const members = await Member.find({});
-    console.log("Fetched members:", members);
+const getMemberDetails = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+
+    const query = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { SeniorityID: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const totalMembers = await Member.countDocuments(query);
+    const members = await Member.find(query).skip(skip).limit(limit);
+
+    if (search && members.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No members found matching ${search}`,
+        data: [],
+        currentPage: page,
+        totalPages: 0,
+        totalMembers: 0,
+      });
+    }
     res.status(200).json({
       success: true,
       data: members,
+      currentPage: page,
+      totalPages: Math.ceil(totalMembers / limit),
+      totalMembers,
     });
-  }catch(error){
-    console.log(error.message)
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ success: false, error: "server error" });
   }
-}
+};
 
 const checkDuplicates = async (req, res) => {
   console.log("Checking for duplicates...");
@@ -115,7 +145,7 @@ const checkDuplicates = async (req, res) => {
     SeniorityID,
     MembershipNo,
     ConfirmationLetterNo,
-    ShareCertificateNumber
+    ShareCertificateNumber,
   } = req.query;
 
   // Build query based on available fields
@@ -139,9 +169,11 @@ const checkDuplicates = async (req, res) => {
         fields: {
           SeniorityID: existing.SeniorityID === SeniorityID,
           MembershipNo: existing.MembershipNo === MembershipNo,
-          ConfirmationLetterNo: existing.ConfirmationLetterNo === ConfirmationLetterNo,
-          ShareCertificateNumber: existing.ShareCertificateNumber === ShareCertificateNumber
-        }
+          ConfirmationLetterNo:
+            existing.ConfirmationLetterNo === ConfirmationLetterNo,
+          ShareCertificateNumber:
+            existing.ShareCertificateNumber === ShareCertificateNumber,
+        },
       });
     }
 
@@ -154,29 +186,33 @@ const checkDuplicates = async (req, res) => {
 
 const updateStatus = async (req, res) => {
   try {
-    const member = await Member.findByIdAndUpdate(req.params.id, {
-      isActive: req.body.isActive
-    }, { new: true });
+    const member = await Member.findByIdAndUpdate(
+      req.params.id,
+      {
+        isActive: req.body.isActive,
+      },
+      { new: true }
+    );
 
     res.status(200).json(member);
   } catch (error) {
     res.status(500).json({ error: "Failed to update status" });
   }
-}
+};
 
 const getInactiveMembers = async (req, res) => {
   try {
-    console.log('Fetching inactive members...');
-    
+    console.log("Fetching inactive members...");
+
     const inactiveMembers = await Member.find({ isActive: false });
-    console.log(inactiveMembers,'inactive members');
-    
+    console.log(inactiveMembers, "inactive members");
+
     res.status(200).json(inactiveMembers);
   } catch (err) {
-    console.error('Error fetching inactive members:', err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error fetching inactive members:", err);
+    res.status(500).json({ error: "Server error" });
   }
-}
+};
 
 const getConfirmation = async (req, res) => {
   try {
@@ -237,6 +273,60 @@ const getAllAffidavits = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch affidavits" });
   }
 };
+const sendMemberLoginDetails = async (req, res) => {
+  try {
+    const { name, email, SeniorityID, password } = req.body;
+
+    // Validate input
+    if (!name || !email || !SeniorityID || !password) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const mailOptions = {
+      from: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
+      to: email,
+      subject: "Member Login Credentials",
+      html: `
+        <div style="border:1px solid #1f4892; font-family: Arial, sans-serif;">
+          <div style="background-color: #1f4892; height: 50px;"></div>
+          <div style="padding: 20px;">
+            <p>Dear <strong>${name}</strong>,</p>
+            <p>From,<br>Defence Habitat Housing Co-operative Society Ltd.</p>
+            <table cellpadding="10">
+              <tr>
+                <td style="background-color: #666; color: white;"><strong>Member ID</strong></td>
+                <td><div style="border: 1px solid #ccc; padding: 8px;">${SeniorityID}</div></td>
+              </tr>
+              <tr>
+                <td style="background-color: #666; color: white;"><strong>Email</strong></td>
+                <td><div style="border: 1px solid #ccc; padding: 8px;">${email}</div></td>
+              </tr>
+              <tr>
+                <td style="background-color: #666; color: white;"><strong>Password</strong></td>
+                <td><div style="border: 1px solid #ccc; padding: 8px;">${password}</div></td>
+              </tr>
+            </table>
+            <p>Click here to login: <a href="https://defencehousingsociety.com/memberlogin">https://defencehousingsociety.com/memberlogin</a></p>
+            <p><strong>THANK YOU</strong></p>
+            <p><strong>For further details, contact</strong><br>
+            Behind Swathi Garden Hotel<br>
+            E Block, Sahakarnagar,<br>
+            Bengaluru - 560 092. Ph: 080 - 29903931</p>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      message: `Login credentials shared to ${email} successfully`,
+    });
+  } catch (err) {
+    console.error("Error sending email:", err);
+    res.status(500).json({ error: "Failed to send email" });
+  }
+};
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -245,5 +335,6 @@ export default {
   getInactiveMembers,
   getConfirmation,
   addConfirmation,
-  getAllAffidavits
+  getAllAffidavits,
+  sendMemberLoginDetails
 };

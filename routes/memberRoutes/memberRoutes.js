@@ -17,7 +17,7 @@ router.get('/inactive-members',memberController.getInactiveMembers);
 router.get('/get-confirmation/:id',memberController.getConfirmation);
 router.post('/add-confirmation/:id', upload.single('affidivate'), memberController.addConfirmation);
 router.get('/all', memberController.getAllAffidavits);
+router.post("/membercredentials", MemberController.sendMemberLoginDetails);
 
 
 export default router;
-
