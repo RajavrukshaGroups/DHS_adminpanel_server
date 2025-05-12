@@ -18,6 +18,7 @@ router.get('/get-confirmation/:id',memberController.getConfirmation);
 router.post('/add-confirmation/:id', upload.single('affidivate'), memberController.addConfirmation);
 router.get('/all', memberController.getAllAffidavits);
 router.post("/membercredentials", MemberController.sendMemberLoginDetails);
+router.delete('/delete-member/:id', MemberController.deleteMember);
 
 
 export default router;

@@ -327,6 +327,25 @@ const sendMemberLoginDetails = async (req, res) => {
     res.status(500).json({ error: "Failed to send email" });
   }
 };
+ 
+// Exporting all the functions
+const deleteMember = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedMember = await Member.findByIdAndDelete(id);
+    if (!deletedMember) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    res.status(200).json({ message: "Member deleted successfully" });
+  } catch (error) {
+    console.error("Delete error:", error);
+    res.status(500).json({ message: "Server error while deleting member" });
+  }
+}
+
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -336,5 +355,6 @@ export default {
   getConfirmation,
   addConfirmation,
   getAllAffidavits,
-  sendMemberLoginDetails
-};
+  sendMemberLoginDetails,
+  deleteMember
+ };

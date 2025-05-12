@@ -13,7 +13,7 @@ const app = express();
 // dotenv.config();
 app.use(express.json());
 connectDB();
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended : true }));
 
 const allowedOrigins = ["http://localhost:5173"];
 // const allowedOrigins = ["http://localhost:5175"];
