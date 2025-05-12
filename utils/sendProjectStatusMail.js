@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { transporter } from "./emailTransporter.js";
 
 export const sendProjectStatusEmails = async ({
   projectName,
@@ -10,13 +10,13 @@ export const sendProjectStatusEmails = async ({
 }) => {
   if (!memberEmails || memberEmails.length === 0) return;
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.DHS_NODEMAILER_MAIL,
-      pass: process.env.DHS_NODEMAILER_KEY,
-    },
-  });
+  //   const transporter = nodemailer.createTransport({
+  //     service: "gmail",
+  //     auth: {
+  //       user: process.env.DHS_NODEMAILER_MAIL,
+  //       pass: process.env.DHS_NODEMAILER_KEY,
+  //     },
+  //   });
 
   const imageHtml = imageUrls
     .map((url) => {
