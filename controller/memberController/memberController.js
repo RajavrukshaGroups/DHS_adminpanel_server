@@ -357,4 +357,4 @@ export default {
   getAllAffidavits,
   sendMemberLoginDetails,
   deleteMember
-};
+ };
