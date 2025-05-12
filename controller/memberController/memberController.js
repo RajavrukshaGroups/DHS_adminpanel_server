@@ -1,5 +1,7 @@
 
 import Member from "../../model/memberModel.js"; // adjust path as needed
+import upload from "../../middleware/multer.js";
+import MemberAffidavit from '../../model/memberAffidavit.js'; // adjust path as needed
 
 import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path as needed
 import {generateUniquePassword} from "../../utils/generatePassword.js";
@@ -176,11 +178,72 @@ const getInactiveMembers = async (req, res) => {
   }
 }
 
+const getConfirmation = async (req, res) => {
+  try {
+    const member = await Member.findById(req.params.id);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+    res.status(200).json(member);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+}
+const addConfirmation = async (req, res) => {
+  try {
+    console.log("Received file:", req.file);
+    console.log("Received body:", req.body);
+    console.log("Received params:", req.params);
+    
+    const { id } = req.params;
 
+    const result = await uploadToCloudinary(req.file.buffer);
+
+    const affidavitUrl = result.secure_url;
+
+    // Use the URL along with other form fields
+    const newAffidavit = new MemberAffidavit({
+      userId: req.params.id,
+      projectAddress: req.body.projectAddress,
+      chequeNo: req.body.ChequeNo,
+      duration: req.body.Duration,
+      affidavitUrl: result.secure_url,
+      cloudinaryId: result.public_id,
+    });
+    
+    await newAffidavit.save();
+    // Example: save to database
+    // await updateMember(id, memberData);
+
+    res.status(200).json({
+      message: "Affidavit uploaded successfully",
+      data: newAffidavit,
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ error: "Failed to upload affidavit" });
+  }
+}
+const getAllAffidavits = async (req, res) => {
+  try {
+    const data = await MemberAffidavit.find()
+      .populate("userId", "refname name email mobileNumber SeniorityID ReceiptNo Amount") // adjust fields as needed
+      .sort({ createdAt: -1 });
+      console.log(data,'ddddddddddddddddd');
+      
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching affidavits:", error);
+    res.status(500).json({ message: "Failed to fetch affidavits" });
+  }
+};
 export default {
   addMemberDetails,
   getMemberDetails,
   checkDuplicates,
   updateStatus,
-  getInactiveMembers
+  getInactiveMembers,
+  getConfirmation,
+  addConfirmation,
+  getAllAffidavits
 };
