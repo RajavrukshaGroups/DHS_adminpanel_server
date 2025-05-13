@@ -33,6 +33,10 @@ const projectSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    location: {
+      type: String,
+      trim: true,
+    },
     status: {
       type: String,
       enum: ["current", "completed"],

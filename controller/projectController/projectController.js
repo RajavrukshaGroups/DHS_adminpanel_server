@@ -8,9 +8,15 @@ import { sendProjectStatusEmails } from "../../utils/sendProjectStatusMail.js";
 
 const addProjectDetails = async (req, res) => {
   try {
-    const { projectName, shortCode, status, dimensions } = req.body;
+    const { projectName, shortCode, status, dimensions, location } = req.body;
 
-    if (!projectName || !shortCode || !status || !Array.isArray(dimensions)) {
+    if (
+      !projectName ||
+      !shortCode ||
+      !status ||
+      !location ||
+      !Array.isArray(dimensions)
+    ) {
       return res
         .status(400)
         .json({ message: "All required fields must be provided." });
@@ -64,6 +70,7 @@ const addProjectDetails = async (req, res) => {
       shortCode: shortCodeLower,
       status,
       dimensions,
+      location,
     });
 
     await newProject.save();
@@ -87,7 +94,14 @@ const getProjectDetails = async (req, res) => {
   try {
     const projects = await Project.find(
       {},
-      { projectName: 1, dimensions: 1, status: 1, shortCode: 1, _id: 0 }
+      {
+        projectName: 1,
+        dimensions: 1,
+        status: 1,
+        shortCode: 1,
+        location: 1,
+        _id: 0,
+      }
     );
     res.status(200).json({
       success: true,
@@ -104,13 +118,19 @@ const getProjectDetails = async (req, res) => {
 };
 
 const updateLandDetails = async (req, res) => {
-  const { projectName, dimensionId, pricePerSqft, propertyCost } = req.body;
+  const { projectName, dimensionId, pricePerSqft, propertyCost, location } =
+    req.body;
 
   try {
     const project = await Project.findOne({ projectName });
     if (!project) {
       return res.status(400).json({
         message: "Project not found.",
+      });
+    }
+    if (!location) {
+      return res.status(400).json({
+        message: "Location not found.",
       });
     }
     const dimension = project.dimensions.id(dimensionId);
@@ -120,6 +140,7 @@ const updateLandDetails = async (req, res) => {
 
     dimension.pricePerSqft = pricePerSqft;
     dimension.propertyCost = propertyCost;
+    project.location = location;
 
     await project.save();
 
