@@ -15,8 +15,8 @@ app.use(express.json());
 connectDB();
 app.use(express.urlencoded({ extended : true }));
 
-const allowedOrigins = ["http://localhost:5173"];
-// const allowedOrigins = ["http://localhost:5175"];
+// const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = ["http://localhost:5175"];
 
 app.use(
   cors({
