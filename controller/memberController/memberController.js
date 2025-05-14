@@ -1,10 +1,12 @@
 import Member from "../../model/memberModel.js"; // adjust path as needed
+import Receipt from "../../model/receiptModel.js";
 import upload from "../../middleware/multer.js";
-import MemberAffidavit from '../../model/memberAffidavit.js'; // adjust path as needed
+import MemberAffidavit from "../../model/memberAffidavit.js"; // adjust path as needed
 
 import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path as needed
 import { generateUniquePassword } from "../../utils/generatePassword.js";
 import { transporter } from "../../utils/emailTransporter.js";
+import { createReceipt } from "../receiptController/receiptController.js";
 const addMemberDetails = async (req, res) => {
   try {
     const data = req.fields;
@@ -59,20 +61,20 @@ const addMemberDetails = async (req, res) => {
       MembershipNo: data.membershipNo,
       ConfirmationLetterNo: data.cunfirmationLetterNo,
       ShareCertificateNumber: data.shareCertificateNo,
-      ReceiptNo: data.recieptNo,
+      // ReceiptNo: data.recieptNo,
       date: new Date(data.date),
-      NoofShares: Number(data.numberOfShares),
-      ShareFee: Number(data.shareFee),
-      MembershipFee: Number(data.memberShipFee),
-      ApplicationFee: Number(data.applicationFee),
-      AdmissionFee: Number(data.adminissionFee),
-      MiscellaneousExpenses: Number(data.miscellaneousExpenses),
-      PaymentType: data.paymentType,
-      PaymentMode: data.paymentMode,
-      BankName: data.bankName,
-      BranchName: data.branchName,
-      Amount: Number(data.amount),
-      DDNumber: "", // You can update this if needed
+      // NoofShares: Number(data.numberOfShares),
+      // ShareFee: Number(data.shareFee),
+      // MembershipFee: Number(data.memberShipFee),
+      // ApplicationFee: Number(data.applicationFee),
+      // AdmissionFee: Number(data.adminissionFee),
+      // MiscellaneousExpenses: Number(data.miscellaneousExpenses),
+      // PaymentType: data.paymentType,
+      // PaymentMode: data.paymentMode,
+      // BankName: data.bankName,
+      // BranchName: data.branchName,
+      // Amount: Number(data.amount),
+      DDNumber: "",
       propertyDetails: {
         projectName: data.projectName || "",
         propertySize: Number(data.PropertySize) || 0,
@@ -88,6 +90,7 @@ const addMemberDetails = async (req, res) => {
     const newMember = new Member(mappedData);
     await newMember.save();
 
+    await createReceipt(newMember._id, data);
     res.status(201).json({ message: "Member saved successfully!" });
   } catch (error) {
     console.error("Add Member Error:", error);
@@ -224,13 +227,13 @@ const getConfirmation = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
-}
+};
 const addConfirmation = async (req, res) => {
   try {
     console.log("Received file:", req.file);
     console.log("Received body:", req.body);
     console.log("Received params:", req.params);
-    
+
     const { id } = req.params;
 
     const result = await uploadToCloudinary(req.file.buffer);
@@ -246,7 +249,7 @@ const addConfirmation = async (req, res) => {
       affidavitUrl: result.secure_url,
       cloudinaryId: result.public_id,
     });
-    
+
     await newAffidavit.save();
     // Example: save to database
     // await updateMember(id, memberData);
@@ -259,14 +262,17 @@ const addConfirmation = async (req, res) => {
     console.error("Upload error:", error);
     res.status(500).json({ error: "Failed to upload affidavit" });
   }
-}
+};
 const getAllAffidavits = async (req, res) => {
   try {
     const data = await MemberAffidavit.find()
-      .populate("userId", "refname name email mobileNumber SeniorityID ReceiptNo Amount") // adjust fields as needed
+      .populate(
+        "userId",
+        "refname name email mobileNumber SeniorityID ReceiptNo Amount"
+      ) // adjust fields as needed
       .sort({ createdAt: -1 });
-      console.log(data,'ddddddddddddddddd');
-      
+    console.log(data, "ddddddddddddddddd");
+
     res.status(200).json(data);
   } catch (error) {
     console.error("Error fetching affidavits:", error);
@@ -327,7 +333,7 @@ const sendMemberLoginDetails = async (req, res) => {
     res.status(500).json({ error: "Failed to send email" });
   }
 };
- 
+
 // Exporting all the functions
 const deleteMember = async (req, res) => {
   try {
@@ -343,8 +349,7 @@ const deleteMember = async (req, res) => {
     console.error("Delete error:", error);
     res.status(500).json({ message: "Server error while deleting member" });
   }
-}
-
+};
 
 export default {
   addMemberDetails,
@@ -356,5 +361,5 @@ export default {
   addConfirmation,
   getAllAffidavits,
   sendMemberLoginDetails,
-  deleteMember
- };
+  deleteMember,
+};
