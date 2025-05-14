@@ -72,6 +72,8 @@ const addMemberDetails = async (req, res) => {
       BankName: data.bankName,
       BranchName: data.branchName,
       Amount: Number(data.amount),
+      chequeNo:data.checqueNumber,
+      transactionId:data.transactionId,
       DDNumber: "", // You can update this if needed
       propertyDetails: {
         projectName: data.projectName || "",
@@ -116,6 +118,7 @@ const getMemberDetails = async (req, res) => {
     const members = await Member.find(query).skip(skip).limit(limit);
 
     if (search && members.length === 0) {
+      
       return res.status(404).json({
         success: false,
         message: `No members found matching ${search}`,

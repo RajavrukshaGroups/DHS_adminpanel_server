@@ -170,8 +170,14 @@ const memberSchema =new mongoose.Schema({
            },
            password:{
             type:String,
+           },
+           chequeNo:{
+            type:String,
           
            },
+            transactionId:{
+              type:String,
+            },
          //   DDNumber:{
          //    type:String,
          //  

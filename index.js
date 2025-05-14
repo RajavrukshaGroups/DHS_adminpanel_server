@@ -15,8 +15,8 @@ app.use(express.json());
 connectDB();
 app.use(express.urlencoded({ extended : true }));
 
-// const allowedOrigins = ["http://localhost:5173"];
-const allowedOrigins = ["http://localhost:5175"];
+const allowedOrigins = ["http://localhost:5173"];
+// const allowedOrigins = ["http://localhost:5175"];
 
 app.use(
   cors({
@@ -40,3 +40,31 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+
+
+
+// // checkque
+// // ------------
+// // bankname
+// // branchname
+// // amount
+// // checknumber
+
+// Netbanking/upi
+// ------------
+// // bankname
+// //branchname
+// //amount
+// //transactionid
+
+// cash 
+// ------------
+// // amount
+
+// // DD 
+// ------------
+// // bankname
+// // branchname
+// // amount
+// // ddnumber
