@@ -2,11 +2,11 @@ import Member from "../../model/memberModel.js"; // adjust path as needed
 import Receipt from "../../model/receiptModel.js";
 import upload from "../../middleware/multer.js";
 import MemberAffidavit from "../../model/memberAffidavit.js"; // adjust path as needed
-
 import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path as needed
 import { generateUniquePassword } from "../../utils/generatePassword.js";
 import { transporter } from "../../utils/emailTransporter.js";
 import { createReceipt } from "../receiptController/receiptController.js";
+
 const addMemberDetails = async (req, res) => {
   try {
     const data = req.fields;
@@ -119,6 +119,7 @@ const getMemberDetails = async (req, res) => {
     const members = await Member.find(query).skip(skip).limit(limit);
 
     if (search && members.length === 0) {
+      
       return res.status(404).json({
         success: false,
         message: `No members found matching ${search}`,
@@ -220,6 +221,7 @@ const getInactiveMembers = async (req, res) => {
 const getConfirmation = async (req, res) => {
   try {
     const member = await Member.findById(req.params.id);
+
     if (!member) {
       return res.status(404).json({ message: "Member not found" });
     }
@@ -233,13 +235,9 @@ const addConfirmation = async (req, res) => {
     console.log("Received file:", req.file);
     console.log("Received body:", req.body);
     console.log("Received params:", req.params);
-
     const { id } = req.params;
-
     const result = await uploadToCloudinary(req.file.buffer);
-
     const affidavitUrl = result.secure_url;
-
     // Use the URL along with other form fields
     const newAffidavit = new MemberAffidavit({
       userId: req.params.id,
@@ -249,11 +247,9 @@ const addConfirmation = async (req, res) => {
       affidavitUrl: result.secure_url,
       cloudinaryId: result.public_id,
     });
-
     await newAffidavit.save();
     // Example: save to database
     // await updateMember(id, memberData);
-
     res.status(200).json({
       message: "Affidavit uploaded successfully",
       data: newAffidavit,
