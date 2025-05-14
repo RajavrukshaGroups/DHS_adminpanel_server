@@ -175,9 +175,9 @@ const memberSchema =new mongoose.Schema({
             type:String,
           
            },
-            transactionId:{
-              type:String,
-            },
+             transactionId:{
+               type:String,
+             },
          //   DDNumber:{
          //    type:String,
          //  
