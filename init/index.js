@@ -15,7 +15,8 @@ const main = async () => {
     // await Listing.deleteMany({});
     // await Booking.deleteMany({});
     // await AdminLogin.insertMany(initData);
-    await MemberModel.insertMany(memberDetails);
+    // await MemberModel.insertMany(memberDetails);
+    await MemberModel.deleteMany({});
     // await RoomAvailability.deleteMany({});
     // await RoomAvailability.insertMany(roomAvailabilityData);
     // await Admin.insertMany(adminLogs);
