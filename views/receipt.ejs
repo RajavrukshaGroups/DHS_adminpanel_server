@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Receipt</title>
+    <link rel="stylesheet" href="/css/receipt.css" />
+  </head>
+  <body>
+    <div class="receipt-box">
+      <header>
+        <img
+          src="https://res.cloudinary.com/dwmeclnky/image/upload/v1747305009/dhs-new-logo_kmxqfk.png"
+          alt="DHS Logo"
+          class="logo"
+        />
+        <div class="header-text">
+          <h1>DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD.</h1>
+          <p>
+            Behind Swathi Garden Hotel, E-Block, Sahakar Nagar, Bangalore –
+            560092
+          </p>
+          <p>Mobile: +91 7026147770</p>
+        </div>
+      </header>
+
+      <section class="receipt-header">
+        <div>
+          No. <strong class="highlight-red"><%= receiptNumber %></strong>
+        </div>
+        <div class="receipt">RECEIPT</div>
+        <div>Date : <strong><%= date %></strong></div>
+      </section>
+
+      <section class="details">
+        <p>Received from Smt./Sri : <strong><%= name %></strong></p>
+        <p>Address : <strong><%= address %></strong></p>
+        <p>Rupees : <strong><%= amountInWords %></strong></p>
+        <p>
+          RTGS/CHEQUES/DD No :
+          ..................................................
+        </p>
+        <p>
+          Branch : ............................... Bank :
+          ...............................
+        </p>
+        <p>Membership Fee : <strong><%= total %></strong></p>
+      </section>
+
+      <table class="fee-table">
+        <thead>
+          <tr>
+            <th>Sl No</th>
+            <th>Particulars</th>
+            <th>L.F</th>
+            <th>Rs.</th>
+            <th>Ps.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% items.forEach((item, idx) => { %>
+          <tr>
+            <td><%= idx + 1 %></td>
+            <td><%= item.name %></td>
+            <td>..................</td>
+            <td><%= item.amount %></td>
+            <td>00</td>
+          </tr>
+          <% }); %>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3">Total</td>
+            <td><%= total %></td>
+            <td>00</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="signature">
+        <img
+          src="https://res.cloudinary.com/dwmeclnky/image/upload/v1747303140/sign-sec_bzvsze.jpg"
+          alt="Signature"
+        />
+        <div class="footer-role">President / Secretary</div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 // receiptController.js
 import Receipt from "../../model/receiptModel.js";
 import Member from "../../model/memberModel.js";
+import numberToWords from "number-to-words";
 
 export const createReceipt = async (memberId, data) => {
   try {
@@ -151,4 +152,68 @@ const fetchReceipts = async (req, res) => {
   }
 };
 
-export default { fetchReceipts };
+const getReceiptDetailsById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const receipt = await Receipt.findById(id).populate({
+      path: "member",
+      select: "name permanentAddress SeniorityID propertyDetails mobileNumber email",
+    });
+
+    if (!receipt) {
+      return res.status(404).json({
+        success: false,
+        message: "Receipt not found",
+      });
+    }
+
+    const receiptData = {
+      receiptNumber: receipt.receiptNo,
+      date: receipt.date.toLocaleDateString("en-GB"),
+      name: receipt.member.name,
+      address: receipt.member.permanentAddress || "-",
+      amountInWords: convertNumberToWords(receipt.amount),
+      total: receipt.amount,
+      items: [
+        { name: "Membership Fee", amount: receipt.membershipFee },
+        { name: "Admission Fee", amount: receipt.admissionFee },
+        { name: "Share Fee", amount: receipt.shareFee },
+        { name: "Application Fee", amount: receipt.applicationFee },
+        { name: "Site Down Payment", amount: receipt.siteDownPayment },
+        { name: "Site Advance", amount: receipt.siteAdvance },
+        { name: "1st Installment", amount: receipt.firstInstallment },
+        { name: "2nd Installment", amount: receipt.secondInstallment },
+        { name: "3rd Installment", amount: receipt.thirdInstallment },
+        { name: "4th Installment", amount: receipt.fourthInstallment },
+        {
+          name: "Miscellaneous Expenses",
+          amount: receipt.miscellaneousExpenses,
+        },
+        { name: "Other Charges", amount: receipt.otherCharges },
+      ].filter((item) => item.amount > 0), // only show items with value
+    };
+
+    console.log("receipt data", receiptData);
+
+    // res.render("receipt", { receipt: receiptData });
+    res.render("receipt", { ...receiptData });
+  } catch (err) {
+    console.error("Error fetching single receipt:", err);
+    res.status(500).send("Failed to fetch receipt details.");
+  }
+};
+
+// Converts number to capitalized words + "Only"
+function convertNumberToWords(amount) {
+  return (
+    numberToWords
+      .toWords(amount || 0)
+      .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
+  );
+}
+
+export default {
+  fetchReceipts,
+  getReceiptDetailsById,
+};
