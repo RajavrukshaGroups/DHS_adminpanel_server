@@ -19,6 +19,9 @@ const receiptSchema = new mongoose.Schema({
   bankName: String,
   branchName: String,
   amount: Number,
+  chequeNo: String,
+  transactionId: String,
+  DDNumber: String,
   createdAt: {
     type: Date,
     default: Date.now,

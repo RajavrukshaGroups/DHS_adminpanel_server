@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const propertyDetailsSchema = new mongoose.Schema({
@@ -106,17 +105,15 @@ const memberSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-             chequeNo:{
-            type:String,
-          
-           },
-             transactionId:{
-               type:String,
-             },
-           DDNumber:{
-            type:String,
-          
-           }
+  // chequeNo: {
+  //   type: String,
+  // },
+  // transactionId: {
+  //   type: String,
+  // },
+  // DDNumber: {
+  //   type: String,
+  // },
 });
 
 const Member = mongoose.model("Member", memberSchema);

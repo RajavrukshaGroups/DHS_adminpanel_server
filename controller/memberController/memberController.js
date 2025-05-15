@@ -86,6 +86,7 @@ const addMemberDetails = async (req, res) => {
         breadth: Number(data.plotBreadth) || 0,
       },
     };
+    console.log("mapped data",mappedData)
 
     const newMember = new Member(mappedData);
     await newMember.save();
