@@ -43,58 +43,6 @@ export const createReceipt = async (memberId, data) => {
   }
 };
 
-// const fetchReceipts = async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const search = req.query.search || "";
-//     const skip = (page - 1) * limit;
-
-//     // Build dynamic query
-//     const query = search
-//       ? {
-//           $or: [
-//             { receiptNo: { $regex: search, $options: "i" } },
-//             { "member.name": { $regex: search, $options: "i" } },
-//             { "member.SeniorityID": { $regex: search, $options: "i" } },
-//             {
-//               "member.propertyDetails.projectName": {
-//                 $regex: search,
-//                 $options: "i",
-//               },
-//             },
-//           ],
-//         }
-//       : {};
-
-//     // Count total matching documents
-//     const totalCount = await Receipt.find(query)
-//       .populate("member")
-//       .countDocuments();
-
-//     // Get matching receipts with population
-//     const receipts = await Receipt.find(query)
-//       .populate({
-//         path: "member",
-//         select:
-//           "name mobileNumber email SeniorityID isActive date propertyDetails",
-//       })
-//       .sort({ date: -1 })
-//       .skip(skip)
-//       .limit(limit);
-
-//     const totalPages = Math.ceil(totalCount / limit);
-
-//     res.status(200).json({
-//       data: receipts,
-//       totalPages,
-//       currentPage: page,
-//     });
-//   } catch (err) {
-//     console.error("error fetching receipts", err);
-//     res.status(500).json({ error: "failed to fetch receipts." });
-//   }
-// };
 
 const fetchReceipts = async (req, res) => {
   try {
