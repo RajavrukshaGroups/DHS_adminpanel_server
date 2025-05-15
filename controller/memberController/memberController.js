@@ -453,6 +453,7 @@ const updateMemberDetails = async (req, res) => {
 
 
 export default {
+  
   addMemberDetails,
   getMemberDetails,
   checkDuplicates,
