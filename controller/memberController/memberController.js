@@ -348,6 +348,110 @@ const deleteMember = async (req, res) => {
   }
 };
 
+const getMemberById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const member = await Member.findById(id);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    res.status(200).json(member);
+  } catch (error) {
+    console.error("Fetch error:", error);
+    res.status(500).json({ message: "Server error while fetching member" });
+  }
+}
+
+const updateMemberDetails = async (req, res) => {
+  try {
+    console.log("Received request to update member details...");
+    console.log("Updating member details...");
+    console.log("Received files:", req.files);
+    console.log("Received data:", req.fields);
+    const data = req.fields;
+    const files = req.files;
+    const memberId = req.params.id; // ID should come from URL
+    console.log("Updating Member ID:", memberId);
+
+    let memberPhotoUrl = "";
+    let memberSignUrl = "";
+
+    // Upload new member photo if provided
+    if (files?.memberPhoto) {
+      const photoFile = files.memberPhoto;
+      const result = await uploadToCloudinary(
+        photoFile.buffer || photoFile.path
+      );
+      memberPhotoUrl = result.secure_url;
+    }
+
+    // Upload new member sign if provided
+    if (files?.memberSign) {
+      const signFile = files.memberSign;
+      const result = await uploadToCloudinary(
+        signFile.buffer || signFile.path
+      );
+      memberSignUrl = result.secure_url;
+    }
+
+    const updateData = {
+      refname: data.refencName,
+      rankDesignation: data.rankDesignation,
+      serviceId: data.ServiceId,
+      relationship: data.relationship,
+      saluation: data.salutation,
+      name: data.name,
+      mobileNumber: Number(data.mobile),
+      AlternativeNumber: Number(data.altMobile),
+      email: data.email,
+      dateofbirth: new Date(data.dob),
+      fatherName: data.fatherSpouse,
+      contactAddress: data.correspondenceAddress,
+      permanentAddress: data.permanentAddress,
+      workingAddress: data.workingAddress,
+      nomineeName: data.nomineeName,
+      nomineeAge: Number(data.nomineeAge),
+      nomineeRelation: data.nomineeRelationship,
+      nomineeAddress: data.nomineeAddress,
+      SeniorityID: data.seniorityId,
+      MembershipNo: data.membershipNo,
+      ConfirmationLetterNo: data.cunfirmationLetterNo,
+      ShareCertificateNumber: data.shareCertificateNo,
+      date: new Date(data.date),
+      propertyDetails: {
+        projectName: data.projectName || "",
+        propertySize: Number(data.PropertySize) || 0,
+        pricePerSqft: Number(data.perSqftPropertyPrice) || 0,
+        propertyCost: Number(data.selectedPropertyCost?.replace(/,/g, "")) || 0,
+        percentage: Number(data.percentage) || 0,
+        percentageCost: Number(data.percentageCost?.replace(/,/g, "")) || 0,
+        length: Number(data.plotLength) || 0,
+        breadth: Number(data.plotBreadth) || 0,
+      },
+    };
+
+    // Conditionally add photo/sign if uploaded
+    if (memberPhotoUrl) updateData.MemberPhoto = memberPhotoUrl;
+    if (memberSignUrl) updateData.MemberSign = memberSignUrl;
+
+    const updatedMember = await Member.findByIdAndUpdate(memberId, updateData, {
+      new: true,
+    });
+
+    if (!updatedMember) {
+      return res.status(404).json({ error: "Member not found." });
+    }
+
+    res.status(200).json({ message: "Member updated successfully!", updatedMember });
+  } catch (error) {
+    console.error("Update Member Error:", error);
+    res.status(500).json({ error: "Failed to update member." });
+  }
+};
+
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -359,4 +463,6 @@ export default {
   getAllAffidavits,
   sendMemberLoginDetails,
   deleteMember,
+  getMemberById,
+  updateMemberDetails
 };

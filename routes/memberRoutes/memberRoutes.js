@@ -19,6 +19,8 @@ router.post('/add-confirmation/:id', upload.single('affidivate'), memberControll
 router.get('/all', memberController.getAllAffidavits);
 router.post("/membercredentials", MemberController.sendMemberLoginDetails);
 router.delete('/delete-member/:id', MemberController.deleteMember);
+router.get('/get-member/:id', MemberController.getMemberById);
+router.put('/update-member/:id', formidable({ multiples: true }), MemberController.updateMemberDetails);
 
 
 export default router;
