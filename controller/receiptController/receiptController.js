@@ -20,7 +20,10 @@ export const createReceipt = async (memberId, data) => {
       bankName: data.bankName,
       branchName: data.branchName,
       amount: Number(data.amount),
+      chequeNumber: data.chequeNumber,
+      ddNumber: data.ddNumber,
     };
+    console.log("checkNocheck", receiptData);
 
     const receipt = new Receipt(receiptData);
     await receipt.save();
@@ -106,7 +109,8 @@ const getReceiptDetailsById = async (req, res) => {
 
     const receipt = await Receipt.findById(id).populate({
       path: "member",
-      select: "name permanentAddress SeniorityID propertyDetails mobileNumber email",
+      select:
+        "name permanentAddress SeniorityID propertyDetails mobileNumber email",
     });
 
     if (!receipt) {
@@ -123,6 +127,10 @@ const getReceiptDetailsById = async (req, res) => {
       address: receipt.member.permanentAddress || "-",
       amountInWords: convertNumberToWords(receipt.amount),
       total: receipt.amount,
+      bankName: receipt.bankName,
+      branchName: receipt.branchName,
+      chequeNumber: receipt.chequeNumber,
+      ddNumber: receipt.ddNumber,
       items: [
         { name: "Membership Fee", amount: receipt.membershipFee },
         { name: "Admission Fee", amount: receipt.admissionFee },
@@ -142,7 +150,7 @@ const getReceiptDetailsById = async (req, res) => {
       ].filter((item) => item.amount > 0), // only show items with value
     };
 
-    console.log("receipt data", receiptData);
+    console.log("receipt data123", receiptData);
 
     // res.render("receipt", { receipt: receiptData });
     res.render("receipt", { ...receiptData });
