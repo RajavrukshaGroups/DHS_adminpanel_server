@@ -6,6 +6,7 @@ import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path a
 import { generateUniquePassword } from "../../utils/generatePassword.js";
 import { transporter } from "../../utils/emailTransporter.js";
 import { createReceipt } from "../receiptController/receiptController.js";
+import Project from "../../model/projectModel.js"; // make sure the path is correct
 
 const addMemberDetails = async (req, res) => {
   try {
@@ -218,6 +219,20 @@ const getInactiveMembers = async (req, res) => {
   }
 };
 
+// const getConfirmation = async (req, res) => {
+//   try {
+//     const member = await Member.findById(req.params.id)
+//     console.log(member, "member details");
+//     if (!member) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+
+//     res.status(200).json(member);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
+
 const getConfirmation = async (req, res) => {
   try {
     const member = await Member.findById(req.params.id);
@@ -225,11 +240,25 @@ const getConfirmation = async (req, res) => {
     if (!member) {
       return res.status(404).json({ message: "Member not found" });
     }
-    res.status(200).json(member);
+
+    // Find the project using projectName
+    const project = await Project.findOne({
+      projectName: member.propertyDetails.projectName,
+    });
+
+    console.log(project, "project details");
+
+    const projectLocation = project?.location || "Location not found";
+
+    res.status(200).json({
+      ...member.toObject(),
+      projectLocation,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 const addConfirmation = async (req, res) => {
   try {
     console.log("Received file:", req.file);
