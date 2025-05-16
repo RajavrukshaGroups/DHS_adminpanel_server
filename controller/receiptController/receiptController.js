@@ -235,7 +235,27 @@ function convertNumberToWords(amount) {
   );
 }
 
+//for receipt history at View User Details
+const getViewReceiptHistory = async (req, res) => {
+  try {
+    const memberId = req.params.id;
+    const member = await Member.findById(memberId);
+
+    if (!member) return res.status(404).json({ message: "Member not found" });
+
+    const receipts = await Receipt.find({
+      _id: { $in: member.receiptIds },
+    });
+
+    res.status(200).json(receipts);
+  } catch (err) {
+    console.error("Error fetching receipts:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
+  getViewReceiptHistory,
 };
