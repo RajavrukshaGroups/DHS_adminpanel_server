@@ -11,8 +11,8 @@ const addMemberDetails = async (req, res) => {
   try {
     const data = req.fields;
     const files = req.files;
-    console.log("Received files:", files);
-    console.log("Received data:", data);
+    console.log("check files:", files);
+    console.log("check data:", data);
 
     let memberPhotoUrl = "";
     let memberSignUrl = "";
@@ -74,7 +74,7 @@ const addMemberDetails = async (req, res) => {
       // BankName: data.bankName,
       // BranchName: data.branchName,
       // Amount: Number(data.amount),
-      DDNumber: "",
+      // DDNumber: "",
       propertyDetails: {
         projectName: data.projectName || "",
         propertySize: Number(data.PropertySize) || 0,
@@ -86,7 +86,7 @@ const addMemberDetails = async (req, res) => {
         breadth: Number(data.plotBreadth) || 0,
       },
     };
-    console.log("mapped data",mappedData)
+    console.log("mapped data", mappedData);
 
     const newMember = new Member(mappedData);
     await newMember.save();
@@ -120,7 +120,6 @@ const getMemberDetails = async (req, res) => {
     const members = await Member.find(query).skip(skip).limit(limit);
 
     if (search && members.length === 0) {
-      
       return res.status(404).json({
         success: false,
         message: `No members found matching ${search}`,
