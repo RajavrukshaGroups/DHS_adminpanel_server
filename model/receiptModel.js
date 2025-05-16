@@ -1,4 +1,89 @@
+// import mongoose from "mongoose";
+
+// const receiptSchema = new mongoose.Schema({
+//   member: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "Member",
+//     required: true,
+//   },
+//   receiptNo: String,
+//   date: Date,
+//   noOfShares: Number,
+//   shareFee: Number,
+//   membershipFee: Number,
+//   applicationFee: Number,
+//   admissionFee: Number,
+//   miscellaneousExpenses: Number,
+//   paymentType: String,
+//   paymentMode: String,
+//   bankName: String,
+//   branchName: String,
+//   amount: Number,
+//   chequeNumber: String,
+//   transactionId: String,
+//   ddNumber: String,
+//   createdAt: {
+//     type: Date,
+//     default: Date.now,
+//   },
+// });
+
+// const Receipt = mongoose.model("Receipt", receiptSchema);
+// export default Receipt;
+
 import mongoose from "mongoose";
+
+const paymentEntrySchema = new mongoose.Schema({
+  receiptNo: { type: String, required: true },
+  date: { type: Date, required: true },
+  paymentType: { type: String, required: true }, // 'Membership Fee', 'Site Advance', 'Installment', etc.
+  installmentNumber: Number, // Only for paymentType === 'Installment'
+  paymentMode: { type: String, required: true },
+  bankName: String,
+  branchName: String,
+  amount: { type: Number, required: true },
+  chequeNumber: String,
+  transactionId: String,
+  ddNumber: String,
+  paid: { type: Boolean, default: true },
+
+  // Membership-specific fields:
+  applicationFee: {
+    type: Number,
+    required: function () {
+      return this.paymentType === "Membership Fee";
+    },
+  },
+  admissionFee: {
+    type: Number,
+    required: function () {
+      return this.paymentType === "Membership Fee";
+    },
+  },
+  miscellaneousExpenses: {
+    type: Number,
+    required: function () {
+      return this.paymentType === "Membership Fee";
+    },
+  },
+  membershipFee: {
+    type: Number,
+    required: function () {
+      return this.paymentType === "Membership Fee";
+    },
+  },
+  shareFee: {
+    type: Number,
+    required: function () {
+      return this.paymentType === "Membership Fee";
+    },
+  },
+
+  // createdAt: {
+  //   type: Date,
+  //   default: Date.now,
+  // },
+});
 
 const receiptSchema = new mongoose.Schema({
   member: {
@@ -6,26 +91,7 @@ const receiptSchema = new mongoose.Schema({
     ref: "Member",
     required: true,
   },
-  receiptNo: String,
-  date: Date,
-  noOfShares: Number,
-  shareFee: Number,
-  membershipFee: Number,
-  applicationFee: Number,
-  admissionFee: Number,
-  miscellaneousExpenses: Number,
-  paymentType: String,
-  paymentMode: String,
-  bankName: String,
-  branchName: String,
-  amount: Number,
-  chequeNumber: String,
-  transactionId: String,
-  ddNumber: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  payments: [paymentEntrySchema],
 });
 
 const Receipt = mongoose.model("Receipt", receiptSchema);
