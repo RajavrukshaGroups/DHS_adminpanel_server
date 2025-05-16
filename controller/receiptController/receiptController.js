@@ -3,35 +3,91 @@ import Receipt from "../../model/receiptModel.js";
 import Member from "../../model/memberModel.js";
 import numberToWords from "number-to-words";
 
+// export const createReceipt = async (memberId, data) => {
+//   try {
+//     const receiptData = {
+//       member: memberId,
+//       receiptNo: data.recieptNo,
+//       date: new Date(data.date),
+//       noOfShares: Number(data.numberOfShares),
+//       shareFee: Number(data.shareFee),
+//       membershipFee: Number(data.memberShipFee),
+//       applicationFee: Number(data.applicationFee),
+//       admissionFee: Number(data.adminissionFee),
+//       miscellaneousExpenses: Number(data.miscellaneousExpenses),
+//       paymentType: data.paymentType,
+//       paymentMode: data.paymentMode,
+//       bankName: data.bankName,
+//       branchName: data.branchName,
+//       amount: Number(data.amount),
+//       chequeNumber: data.chequeNumber,
+//       ddNumber: data.ddNumber,
+//       transactionId: data.transactionId,
+//     };
+//     console.log("checkNocheck", receiptData);
+
+//     const receipt = new Receipt(receiptData);
+//     await receipt.save();
+
+//     // Push the created receipt's ID into the member's receiptIds array
+//     await Member.findByIdAndUpdate(memberId, {
+//       // $push: { receiptIds: receipt._id },  Add the receipt ID to the member's receiptIds array
+//       $addToSet: { receiptIds: receipt._id }, // Use $addToSet to prevent duplication
+//     });
+
+//     return {
+//       status: 200,
+//       data: receipt,
+//     };
+//   } catch (error) {
+//     console.error("Error creating receipt:", error);
+//     return {
+//       status: 500,
+//       error: error.message,
+//     };
+//   }
+// };
+
 export const createReceipt = async (memberId, data) => {
   try {
-    const receiptData = {
-      member: memberId,
+    const paymentEntry = {
       receiptNo: data.recieptNo,
       date: new Date(data.date),
-      noOfShares: Number(data.numberOfShares),
-      shareFee: Number(data.shareFee),
-      membershipFee: Number(data.memberShipFee),
-      applicationFee: Number(data.applicationFee),
-      admissionFee: Number(data.adminissionFee),
-      miscellaneousExpenses: Number(data.miscellaneousExpenses),
-      paymentType: data.paymentType,
+      paymentType: data.paymentType, // 'Membership Fee'
+      installmentNumber: data.installmentNumber || undefined,
       paymentMode: data.paymentMode,
       bankName: data.bankName,
       branchName: data.branchName,
       amount: Number(data.amount),
       chequeNumber: data.chequeNumber,
       ddNumber: data.ddNumber,
+      transactionId: data.transactionId,
+
+      // Membership Fee breakdown
+      applicationFee: Number(data.applicationFee),
+      admissionFee: Number(data.adminissionFee),
+      miscellaneousExpenses: Number(data.miscellaneousExpenses),
+      membershipFee: Number(data.memberShipFee),
+      shareFee: Number(data.shareFee),
     };
-    console.log("checkNocheck", receiptData);
 
-    const receipt = new Receipt(receiptData);
+    let receipt = await Receipt.findOne({ member: memberId });
+
+    if (receipt) {
+      // Add new payment entry to existing receipt
+      receipt.payments.push(paymentEntry);
+    } else {
+      // Create new receipt document
+      receipt = new Receipt({
+        member: memberId,
+        payments: [paymentEntry],
+      });
+    }
+
     await receipt.save();
-
-    // Push the created receipt's ID into the member's receiptIds array
+    // ✅ Add receipt ID to member.receiptIds (use $addToSet to avoid duplicates)
     await Member.findByIdAndUpdate(memberId, {
-      // $push: { receiptIds: receipt._id },  Add the receipt ID to the member's receiptIds array
-      $addToSet: { receiptIds: receipt._id }, // Use $addToSet to prevent duplication
+      $addToSet: { receiptIds: receipt._id },
     });
 
     return {
@@ -46,7 +102,6 @@ export const createReceipt = async (memberId, data) => {
     };
   }
 };
-
 
 const fetchReceipts = async (req, res) => {
   try {
@@ -106,6 +161,7 @@ const fetchReceipts = async (req, res) => {
 const getReceiptDetailsById = async (req, res) => {
   try {
     const { id } = req.params;
+    const { paymentType } = req.query;
 
     const receipt = await Receipt.findById(id).populate({
       path: "member",
@@ -120,37 +176,47 @@ const getReceiptDetailsById = async (req, res) => {
       });
     }
 
+    const payment = receipt.payments.find((p) => p.paymentType === paymentType);
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: `Payment of type "${paymentType}" not found for this receipt.`,
+      });
+    }
+
+    console.log("reciept render", receipt);
+
     const receiptData = {
-      receiptNumber: receipt.receiptNo,
-      date: receipt.date.toLocaleDateString("en-GB"),
+      receiptNumber: payment.receiptNo,
+      date: new Date(payment.date).toLocaleDateString("en-GB"),
       name: receipt.member.name,
       address: receipt.member.permanentAddress || "-",
-      amountInWords: convertNumberToWords(receipt.amount),
-      total: receipt.amount,
-      bankName: receipt.bankName,
-      branchName: receipt.branchName,
-      chequeNumber: receipt.chequeNumber,
-      ddNumber: receipt.ddNumber,
+      amountInWords: convertNumberToWords(payment.amount),
+      total: payment.amount,
+      bankName: payment.bankName,
+      branchName: payment.branchName,
+      chequeNumber: payment.chequeNumber,
+      ddNumber: payment.ddNumber,
+      transactionId: payment.transactionId,
       items: [
-        { name: "Membership Fee", amount: receipt.membershipFee },
-        { name: "Admission Fee", amount: receipt.admissionFee },
-        { name: "Share Fee", amount: receipt.shareFee },
-        { name: "Application Fee", amount: receipt.applicationFee },
-        { name: "Site Down Payment", amount: receipt.siteDownPayment },
-        { name: "Site Advance", amount: receipt.siteAdvance },
-        { name: "1st Installment", amount: receipt.firstInstallment },
-        { name: "2nd Installment", amount: receipt.secondInstallment },
-        { name: "3rd Installment", amount: receipt.thirdInstallment },
-        { name: "4th Installment", amount: receipt.fourthInstallment },
+        { name: "Membership Fee", amount: payment.membershipFee },
+        { name: "Admission Fee", amount: payment.admissionFee },
+        { name: "Share Fee", amount: payment.shareFee },
+        { name: "Application Fee", amount: payment.applicationFee },
+        { name: "Site Down Payment", amount: payment.siteDownPayment },
+        { name: "Site Advance", amount: payment.siteAdvance },
+        { name: "1st Installment", amount: payment.firstInstallment },
+        { name: "2nd Installment", amount: payment.secondInstallment },
+        { name: "3rd Installment", amount: payment.thirdInstallment },
+        { name: "4th Installment", amount: payment.fourthInstallment },
         {
           name: "Miscellaneous Expenses",
-          amount: receipt.miscellaneousExpenses,
+          amount: payment.miscellaneousExpenses,
         },
-        { name: "Other Charges", amount: receipt.otherCharges },
+        { name: "Other Charges", amount: payment.otherCharges },
       ].filter((item) => item.amount > 0), // only show items with value
     };
-
-    console.log("receipt data123", receiptData);
 
     // res.render("receipt", { receipt: receiptData });
     res.render("receipt", { ...receiptData });

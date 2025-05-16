@@ -3,6 +3,7 @@ import initData from "./logindata.js";
 import memberDetails from "./memberData.js";
 import AdminLogin from "../model/authModel.js";
 import MemberModel from "../model/memberModel.js";
+import ReceiptModel from "../model/receiptModel.js";
 
 // const MONGO_URL = "mongodb://127.0.0.1:27017/plumeria";
 const MONGO_URL = "mongodb://127.0.0.1:27017/DHS-Admin";
@@ -16,7 +17,8 @@ const main = async () => {
     // await Booking.deleteMany({});
     // await AdminLogin.insertMany(initData);
     // await MemberModel.insertMany(memberDetails);
-    await MemberModel.deleteMany({});
+    // await MemberModel.deleteMany({});
+    await ReceiptModel.deleteMany({});
     // await RoomAvailability.deleteMany({});
     // await RoomAvailability.insertMany(roomAvailabilityData);
     // await Admin.insertMany(adminLogs);
