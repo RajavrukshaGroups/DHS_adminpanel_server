@@ -28,7 +28,7 @@ const projectSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    shortCode: {
+    shortCode: {  
       type: String,
       required: true,
       trim: true,
