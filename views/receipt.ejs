@@ -37,18 +37,16 @@
         <p>Rupees : <strong><%= amountInWords %></strong></p>
         <p>
           RTGS/CHEQUES/DD No :
-          <strong><%=chequeNumber || ddNumber || transactionId%></strong>
-        </p>
-        <p>Bank : <strong><%=bankName%></strong></p>
-        <p>Branch : <strong><%=branchName%></strong></p>
-        <!-- <p>
-          Branch :<strong><%=branchName%></strong> Bank :<strong
-            ><%=bankName%></strong
+          <strong
+            ><%= chequeNumber || ddNumber || transactionId || "-" %></strong
           >
-        </p> -->
-        <p>Membership Fee : <strong><%= total %></strong></p>
+        </p>
+        <p>Bank : <strong><%= bankName || "-" %></strong></p>
+        <p>Branch : <strong><%= branchName || "-" %></strong></p>
+        <p>Amount : <strong><%= total %></strong></p>
       </section>
 
+      <% if (items.length > 0) { %>
       <table class="fee-table">
         <thead>
           <tr>
@@ -60,6 +58,15 @@
           </tr>
         </thead>
         <tbody>
+          <!-- <% items.forEach((item, idx) => { %>
+          <tr>
+            <td><%= idx + 1 %></td>
+            <td><%= item.name %></td>
+            <td>..................</td>
+            <td><%= item.amount %></td>
+            <td>00</td>
+          </tr>
+          <% }); %> -->
           <% items.forEach((item, idx) => { %>
           <tr>
             <td><%= idx + 1 %></td>
@@ -78,6 +85,11 @@
           </tr>
         </tfoot>
       </table>
+      <% } else { %>
+      <p class="no-items">
+        No itemized fee breakdown available for this payment type.
+      </p>
+      <% } %>
 
       <div class="signature">
         <img

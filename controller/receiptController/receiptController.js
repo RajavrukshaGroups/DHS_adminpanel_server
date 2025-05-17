@@ -49,6 +49,7 @@ import numberToWords from "number-to-words";
 // };
 
 export const createReceipt = async (memberId, data) => {
+  console.log("data new receipt", data);
   try {
     const paymentEntry = {
       receiptNo: data.recieptNo,
@@ -64,11 +65,11 @@ export const createReceipt = async (memberId, data) => {
       transactionId: data.transactionId,
 
       // Membership Fee breakdown
-      applicationFee: Number(data.applicationFee),
-      admissionFee: Number(data.adminissionFee),
-      miscellaneousExpenses: Number(data.miscellaneousExpenses),
-      membershipFee: Number(data.memberShipFee),
-      shareFee: Number(data.shareFee),
+      applicationFee: Number(data.applicationFee) || undefined,
+      admissionFee: Number(data.adminissionFee) || undefined,
+      miscellaneousExpenses: Number(data.miscellaneousExpenses) || undefined,
+      membershipFee: Number(data.memberShipFee) || undefined,
+      shareFee: Number(data.shareFee) || undefined,
     };
 
     let receipt = await Receipt.findOne({ member: memberId });
@@ -87,7 +88,7 @@ export const createReceipt = async (memberId, data) => {
     await receipt.save();
     // ✅ Add receipt ID to member.receiptIds (use $addToSet to avoid duplicates)
     await Member.findByIdAndUpdate(memberId, {
-      $addToSet: { receiptIds: receipt._id },
+      $addToSet: { receiptId: receipt._id },
     });
 
     return {
@@ -158,6 +159,84 @@ const fetchReceipts = async (req, res) => {
   }
 };
 
+// const getReceiptDetailsById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { paymentType } = req.query;
+
+//     const receipt = await Receipt.findById(id).populate({
+//       path: "member",
+//       select:
+//         "name permanentAddress SeniorityID propertyDetails mobileNumber email",
+//     });
+
+//     if (!receipt) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Receipt not found",
+//       });
+//     }
+
+//     const payment = receipt.payments.find((p) => p.paymentType === paymentType);
+//     console.log("payment-project-type", payment);
+
+//     if (!payment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: `Payment of type "${paymentType}" not found for this receipt.`,
+//       });
+//     }
+
+//     console.log("reciept render", receipt);
+
+//     const receiptData = {
+//       receiptNumber: payment.receiptNo,
+//       date: new Date(payment.date).toLocaleDateString("en-GB"),
+//       name: receipt.member.name,
+//       address: receipt.member.permanentAddress || "-",
+//       amountInWords: convertNumberToWords(payment.amount),
+//       total: payment.amount,
+//       bankName: payment.bankName,
+//       branchName: payment.branchName,
+//       chequeNumber: payment.chequeNumber,
+//       ddNumber: payment.ddNumber,
+//       transactionId: payment.transactionId,
+//       items: [
+//         { name: "Membership Fee", amount: payment.membershipFee },
+//         { name: "Admission Fee", amount: payment.admissionFee },
+//         { name: "Share Fee", amount: payment.shareFee },
+//         { name: "Application Fee", amount: payment.applicationFee },
+//         { name: "Site Down Payment", amount: payment.siteDownPayment },
+//         { name: "Site Advance", amount: payment.siteAdvance },
+//         { name: "1st Installment", amount: payment.firstInstallment },
+//         { name: "2nd Installment", amount: payment.secondInstallment },
+//         { name: "3rd Installment", amount: payment.thirdInstallment },
+//         { name: "4th Installment", amount: payment.fourthInstallment },
+//         {
+//           name: "Miscellaneous Expenses",
+//           amount: payment.miscellaneousExpenses,
+//         },
+//         { name: "Other Charges", amount: payment.otherCharges },
+//       ].filter((item) => item.amount > 0), // only show items with value
+//     };
+//     console.log("receipts-data-123", receiptData);
+//     // res.render("receipt", { receipt: receiptData });
+//     res.render("receipt", { ...receiptData });
+//   } catch (err) {
+//     console.error("Error fetching single receipt:", err);
+//     res.status(500).send("Failed to fetch receipt details.");
+//   }
+// };
+
+// // Converts number to capitalized words + "Only"
+// function convertNumberToWords(amount) {
+//   return (
+//     numberToWords
+//       .toWords(amount || 0)
+//       .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
+//   );
+// }
+
 const getReceiptDetailsById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -177,6 +256,7 @@ const getReceiptDetailsById = async (req, res) => {
     }
 
     const payment = receipt.payments.find((p) => p.paymentType === paymentType);
+    console.log("payment", payment);
 
     if (!payment) {
       return res.status(404).json({
@@ -185,7 +265,50 @@ const getReceiptDetailsById = async (req, res) => {
       });
     }
 
-    console.log("reciept render", receipt);
+    // const allItems = [
+    //   { name: "Membership Fee", amount: payment.membershipFee },
+    //   { name: "Admission Fee", amount: payment.admissionFee },
+    //   { name: "Share Fee", amount: payment.shareFee },
+    //   { name: "Application Fee", amount: payment.applicationFee },
+    //   { name: "Site Down Payment", amount: payment.siteDownPayment },
+    //   // { name: "Site Advance", amount: payment.siteAdvance },
+    //   { name: "Site Advance", amount: payment.amount },
+    //   { name: "1st Installment", amount: payment.firstInstallment },
+    //   { name: "2nd Installment", amount: payment.secondInstallment },
+    //   { name: "3rd Installment", amount: payment.thirdInstallment },
+    //   { name: "4th Installment", amount: payment.fourthInstallment },
+    //   { name: "Miscellaneous Expenses", amount: payment.miscellaneousExpenses },
+    //   { name: "Other Charges", amount: payment.otherCharges },
+    // ];
+
+    const allItems = [
+      { name: "Membership Fee", amount: payment.membershipFee || 0 },
+      { name: "Admission Fee", amount: payment.admissionFee || 0 },
+      { name: "Share Fee", amount: payment.shareFee || 0 },
+      { name: "Application Fee", amount: payment.applicationFee || 0 },
+      {
+        name: "Site Down Payment",
+        amount: payment.paymentType === "siteDownPayment" ? payment.amount : 0,
+      },
+      {
+        name: "Site Advance",
+        amount: payment.paymentType === "siteAdvance" ? payment.amount : 0,
+      },
+      { name: "1st Installment", amount: payment.firstInstallment || 0 },
+      { name: "2nd Installment", amount: payment.secondInstallment || 0 },
+      { name: "3rd Installment", amount: payment.thirdInstallment || 0 },
+      {
+        name: "Miscellaneous Expenses",
+        amount: payment.miscellaneousExpenses || 0,
+      },
+      { name: "Other Charges", amount: payment.otherCharges || 0 },
+    ];
+
+    // const filteredItems = allItems.filter((item) => item.amount > 0);
+    const filteredItems = allItems.map((item) => ({
+      ...item,
+      amount: item.amount || 0, // default to 0 if undefined/null
+    }));
 
     const receiptData = {
       receiptNumber: payment.receiptNo,
@@ -194,31 +317,16 @@ const getReceiptDetailsById = async (req, res) => {
       address: receipt.member.permanentAddress || "-",
       amountInWords: convertNumberToWords(payment.amount),
       total: payment.amount,
-      bankName: payment.bankName,
-      branchName: payment.branchName,
-      chequeNumber: payment.chequeNumber,
-      ddNumber: payment.ddNumber,
-      transactionId: payment.transactionId,
-      items: [
-        { name: "Membership Fee", amount: payment.membershipFee },
-        { name: "Admission Fee", amount: payment.admissionFee },
-        { name: "Share Fee", amount: payment.shareFee },
-        { name: "Application Fee", amount: payment.applicationFee },
-        { name: "Site Down Payment", amount: payment.siteDownPayment },
-        { name: "Site Advance", amount: payment.siteAdvance },
-        { name: "1st Installment", amount: payment.firstInstallment },
-        { name: "2nd Installment", amount: payment.secondInstallment },
-        { name: "3rd Installment", amount: payment.thirdInstallment },
-        { name: "4th Installment", amount: payment.fourthInstallment },
-        {
-          name: "Miscellaneous Expenses",
-          amount: payment.miscellaneousExpenses,
-        },
-        { name: "Other Charges", amount: payment.otherCharges },
-      ].filter((item) => item.amount > 0), // only show items with value
+      bankName: payment.bankName || "",
+      branchName: payment.branchName || "",
+      chequeNumber: payment.chequeNumber || "",
+      ddNumber: payment.ddNumber || "",
+      transactionId: payment.transactionId || "",
+      items: filteredItems,
     };
 
-    // res.render("receipt", { receipt: receiptData });
+    console.log("receipt data", receiptData);
+
     res.render("receipt", { ...receiptData });
   } catch (err) {
     console.error("Error fetching single receipt:", err);
@@ -244,7 +352,7 @@ const getViewReceiptHistory = async (req, res) => {
     if (!member) return res.status(404).json({ message: "Member not found" });
 
     const receipts = await Receipt.find({
-      _id: { $in: member.receiptIds },
+      _id: { $in: member.receiptId },
     });
 
     res.status(200).json(receipts);
