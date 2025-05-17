@@ -43,7 +43,15 @@
         </p>
         <p>Bank : <strong><%= bankName || "-" %></strong></p>
         <p>Branch : <strong><%= branchName || "-" %></strong></p>
-        <p>Amount : <strong><%= total %></strong></p>
+        <% if (projectName) { %>
+        <p>
+          Project Name: <strong class="capitalize"><%= projectName %></strong>
+        </p>
+        <% } %> <% if (projectName) { %>
+        <p>Plot Dimension: <strong><%= plotDimension %></strong></p>
+        <% } %>
+
+        <!-- <p>Amount : <strong><%= total %></strong></p> -->
       </section>
 
       <% if (items.length > 0) { %>
