@@ -88,12 +88,16 @@ const memberSchema = new mongoose.Schema({
   ShareCertificateNumber: {
     type: String,
   },
-  receiptIds: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Receipt",
-    },
-  ],
+  // receiptIds: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "Receipt",
+  //   },
+  // ],
+  receiptId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Receipt",
+  },
   isActive: {
     type: Boolean,
     default: true,
