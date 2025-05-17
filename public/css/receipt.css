@@ -145,7 +145,3 @@ header {
 .highlight-red {
   color: red;
 }
-
-.capitalize {
-  text-transform: capitalize;
-}

@@ -390,7 +390,7 @@ const getMemberById = async (req, res) => {
     console.error("Fetch error:", error);
     res.status(500).json({ message: "Server error while fetching member" });
   }
-};
+}
 
 const updateMemberDetails = async (req, res) => {
   try {
@@ -418,7 +418,9 @@ const updateMemberDetails = async (req, res) => {
     // Upload new member sign if provided
     if (files?.memberSign) {
       const signFile = files.memberSign;
-      const result = await uploadToCloudinary(signFile.buffer || signFile.path);
+      const result = await uploadToCloudinary(
+        signFile.buffer || signFile.path
+      );
       memberSignUrl = result.secure_url;
     }
 
@@ -470,45 +472,15 @@ const updateMemberDetails = async (req, res) => {
       return res.status(404).json({ error: "Member not found." });
     }
 
-    res
-      .status(200)
-      .json({ message: "Member updated successfully!", updatedMember });
+    res.status(200).json({ message: "Member updated successfully!", updatedMember });
   } catch (error) {
     console.error("Update Member Error:", error);
     res.status(500).json({ error: "Failed to update member." });
   }
 };
 
-const addReceiptToMember = async (req, res) => {
-  try {
-    const { memberId } = req.params;
-    console.log("memberId",memberId)
-    const data = req.body;
-    console.log("data receipt",data)
 
-    // 1. Fetch the existing member
-    const existingMember = await Member.findById(memberId);
 
-    if (!existingMember) {
-      return res.status(404).json({ error: "Member not found" });
-    }
-
-    // 2. Call the same createReceipt logic used in addMemberDetails
-    const receiptResponse = await createReceipt(memberId, data);
-
-    if (receiptResponse.status === 200) {
-      res.status(200).json({
-        message: "Receipt added successfully",
-        receipt: receiptResponse.data,
-      });
-    } else {
-      res.status(500).json({ error: receiptResponse.error });
-    }
-  } catch (error) {
-    console.error("Error in addReceiptToMember:", error);
-    res.status(500).json({ error: "Failed to add receipt to member" });
-  }
-};
 
 export default {
   addMemberDetails,
@@ -522,6 +494,5 @@ export default {
   sendMemberLoginDetails,
   deleteMember,
   getMemberById,
-  updateMemberDetails,
-  addReceiptToMember,
+  updateMemberDetails
 };
