@@ -255,6 +255,8 @@ const getReceiptDetailsById = async (req, res) => {
       });
     }
 
+    console.log("receipt-member", receipt);
+
     const payment = receipt.payments.find((p) => p.paymentType === paymentType);
     console.log("payment", payment);
 
@@ -311,6 +313,14 @@ const getReceiptDetailsById = async (req, res) => {
     }));
 
     const receiptData = {
+      projectName:
+        payment.paymentType.toLowerCase() === "membership fee"
+          ? ""
+          : receipt.member.propertyDetails.projectName,
+      plotDimension:
+        payment.paymentType.toLowerCase() === "membership fee"
+          ? ""
+          : `${receipt.member.propertyDetails.length} X ${receipt.member.propertyDetails.breadth}`,
       receiptNumber: payment.receiptNo,
       date: new Date(payment.date).toLocaleDateString("en-GB"),
       name: receipt.member.name,
