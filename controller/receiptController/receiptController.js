@@ -2,6 +2,8 @@
 import Receipt from "../../model/receiptModel.js";
 import Member from "../../model/memberModel.js";
 import numberToWords from "number-to-words";
+import MemberAffidavit from "../../model/memberAffidavit.js";
+import { log } from "console";
 
 // export const createReceipt = async (memberId, data) => {
 //   try {
@@ -254,8 +256,31 @@ const getViewReceiptHistory = async (req, res) => {
   }
 };
 
+const getAffidavitByUserId = async (req, res ) => {
+  console.log('function is called ',req.params.id);
+  const { id } = req.params; // userId passed in URL
+  try {
+    const data = await MemberAffidavit.find({ userId: id })
+      .populate(
+        "userId",
+        "refname name email mobileNumber SeniorityID ReceiptNo Amount"
+      )
+      .sort({ createdAt: -1 });
+    if (data.length === 0) {
+      return res.status(404).json({ message: "No affidavits found for this user" });
+    }
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching affidavits by user ID:", error);
+    res.status(500).json({ message: "Failed to fetch affidavits" });
+  }
+};
+
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
   getViewReceiptHistory,
+  getAffidavitByUserId
 };

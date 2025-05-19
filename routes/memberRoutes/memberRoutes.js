@@ -9,6 +9,7 @@ import {uploadToCloudinary} from '../../utils/cloudinary.js'; // adjust path as 
 import upload from "../../middleware/multer.js";
 import MemberAffidavit from '../../model/memberAffidavit.js'; // adjust path as needed
 
+
 router.post('/add-member', formidable({ multiples: true }), MemberController.addMemberDetails);
 router.get('/view-member-details', MemberController.getMemberDetails);
 router.get('/check-duplicates',memberController.checkDuplicates);
@@ -16,11 +17,12 @@ router.get('/check-duplicates',memberController.checkDuplicates);
 router.get('/inactive-members',memberController.getInactiveMembers);
 router.get('/get-confirmation/:id',memberController.getConfirmation);
 router.post('/add-confirmation/:id', upload.single('affidivate'), memberController.addConfirmation);
-router.get('/all', memberController.getAllAffidavits);
+router.get('/all', memberController.getAllAffidavits);       
 router.post("/membercredentials", MemberController.sendMemberLoginDetails);
 router.delete('/delete-member/:id', MemberController.deleteMember);
 router.get('/get-member/:id', MemberController.getMemberById);
 router.put('/update-member/:id', formidable({ multiples: true }), MemberController.updateMemberDetails);
+
 
 
 export default router;

@@ -8,7 +8,7 @@ import MemberAffidavit from "../../model/memberAffidavit.js";
 router.get("/get-receipt-details", ReceiptController.fetchReceipts);
 router.get("/get-receipt-details/:id", ReceiptController.getReceiptDetailsById);
 router.get("/receipts/member/:id", ReceiptController.getViewReceiptHistory);
-
+router.get("/get-affidavit/:id",ReceiptController.getAffidavitByUserId)
 // router.get('/view-confirmation/:id', async (req, res) => {
 //     console.log("Fetching confirmation letter for member ID:", req.params.id);
 //     const memberId = req.params.id;
@@ -53,5 +53,8 @@ router.get("/view-confirmation/:memberId", async (req, res) => {
 });
 
 export default router;
+
+
+
 
 // export default router;

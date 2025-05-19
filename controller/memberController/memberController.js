@@ -235,8 +235,9 @@ const getInactiveMembers = async (req, res) => {
 
 const getConfirmation = async (req, res) => {
   try {
+    console.log('function is runnign',req.params.id);
     const member = await Member.findById(req.params.id);
-
+    console.log(member,'finded member');
     if (!member) {
       return res.status(404).json({ message: "Member not found" });
     }
@@ -288,6 +289,7 @@ const addConfirmation = async (req, res) => {
     res.status(500).json({ error: "Failed to upload affidavit" });
   }
 };
+
 const getAllAffidavits = async (req, res) => {
   try {
     const data = await MemberAffidavit.find()
@@ -304,6 +306,7 @@ const getAllAffidavits = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch affidavits" });
   }
 };
+
 const sendMemberLoginDetails = async (req, res) => {
   try {
     const { name, email, SeniorityID, password } = req.body;

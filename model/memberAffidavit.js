@@ -1,5 +1,4 @@
 // models/MemberAffidavit.js
-
 import mongoose from "mongoose";
 
 const memberAffidavitSchema = new mongoose.Schema({
@@ -16,7 +15,6 @@ const memberAffidavitSchema = new mongoose.Schema({
   },
   duration: {
     type: String,
-
   },
   affidavitUrl: {
     type: String,
