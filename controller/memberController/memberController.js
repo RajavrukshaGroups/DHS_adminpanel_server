@@ -233,32 +233,6 @@ const getInactiveMembers = async (req, res) => {
 //   }
 // };
 
-// const getConfirmation = async (req, res) => {
-//   try {
-//     const member = await Member.findById(req.params.id);
-
-//     if (!member) {
-//       return res.status(404).json({ message: "Member not found" });
-//     }
-
-//     // Find the project using projectName
-//     const project = await Project.findOne({
-//       projectName: member.propertyDetails.projectName,
-//     });
-
-//     console.log(project, "project details");
-
-//     const projectLocation = project?.location || "Location not found";
-
-//     res.status(200).json({
-//       ...member.toObject(),
-//       projectLocation,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error });
-//   }
-// };
-
 const getConfirmation = async (req, res) => {
   try {
     const member = await Member.findById(req.params.id);
@@ -272,29 +246,55 @@ const getConfirmation = async (req, res) => {
       projectName: member.propertyDetails.projectName,
     });
 
+    console.log(project, "project details");
+
     const projectLocation = project?.location || "Location not found";
-
-    // Exclude 'Membership Fee' from paymentDetails
-    const paymentsExcludingMembership = member.paymentDetails.filter(
-      (payment) => payment.paymentType !== "Membership Fee"
-    );
-
-    // Calculate total amount excluding membership fee
-    const totalAmount = paymentsExcludingMembership.reduce(
-      (sum, payment) => sum + (payment.amount || 0),
-      0
-    );
 
     res.status(200).json({
       ...member.toObject(),
       projectLocation,
-      paymentsExcludingMembership,
-      totalAmount,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+// const getConfirmation = async (req, res) => {
+//   try {
+//     const member = await Member.findById(req.params.id);
+
+//     if (!member) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+
+//     // Find the project using projectName
+//     const project = await Project.findOne({
+//       projectName: member.propertyDetails.projectName,
+//     });
+
+//     const projectLocation = project?.location || "Location not found";
+
+//     // Exclude 'Membership Fee' from paymentDetails
+//     const paymentsExcludingMembership = member.paymentDetails.filter(
+//       (payment) => payment.paymentType !== "Membership Fee"
+//     );
+
+//     // Calculate total amount excluding membership fee
+//     const totalAmount = paymentsExcludingMembership.reduce(
+//       (sum, payment) => sum + (payment.amount || 0),
+//       0
+//     );
+
+//     res.status(200).json({
+//       ...member.toObject(),
+//       projectLocation,
+//       paymentsExcludingMembership,
+//       totalAmount,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
 
 
 const addConfirmation = async (req, res) => {
