@@ -2,6 +2,7 @@
 import Receipt from "../../model/receiptModel.js";
 import Member from "../../model/memberModel.js";
 import numberToWords from "number-to-words";
+import MemberAffidavit from "../../model/memberAffidavit.js";
 
 // export const createReceipt = async (memberId, data) => {
 //   try {
@@ -372,8 +373,32 @@ const getViewReceiptHistory = async (req, res) => {
   }
 };
 
+const viewconfirmation =async(req,res)=>{
+  try {
+    const { memberId } = req.params;
+    console.log(memberId,'memberiddddddddd');
+    const affidavit = await MemberAffidavit.findOne({
+      userId: memberId,
+    }).populate("userId");
+
+    console.log("Affidavit data:", affidavit);
+
+    if (!affidavit) {
+      return res.status(404).send("Affidavit not found");
+    }
+
+    res.render("viewsiteBookingConfirmation", { member: affidavit });
+} catch (error) {
+    console.error("Error:", error);
+    // Return here too
+    return res.status(500).send("Server Error");
+  }
+}
+
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
   getViewReceiptHistory,
+  viewconfirmation
 };

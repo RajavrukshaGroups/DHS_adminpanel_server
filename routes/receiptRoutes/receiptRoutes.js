@@ -6,5 +6,5 @@ import ReceiptController from "../../controller/receiptController/receiptControl
 router.get("/get-receipt-details", ReceiptController.fetchReceipts);
 router.get("/get-receipt-details/:id", ReceiptController.getReceiptDetailsById);
 router.get("/receipts/member/:id", ReceiptController.getViewReceiptHistory);
-
+router.get("/view-confirmation/:memberId",ReceiptController.viewconfirmation)
 export default router;
