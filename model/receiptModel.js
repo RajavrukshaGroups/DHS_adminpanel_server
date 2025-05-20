@@ -37,7 +37,7 @@ const paymentEntrySchema = new mongoose.Schema({
   receiptNo: { type: String, required: true },
   date: { type: Date, required: true },
   paymentType: { type: String, required: true }, // 'Membership Fee', 'Site Advance', 'Installment', etc.
-  installmentNumber: Number, // Only for paymentType === 'Installment'
+  installmentNumber: String, // Only for paymentType === 'Installment'
   paymentMode: { type: String, required: true },
   bankName: String,
   branchName: String,

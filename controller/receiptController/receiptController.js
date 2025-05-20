@@ -4,51 +4,6 @@ import Member from "../../model/memberModel.js";
 import numberToWords from "number-to-words";
 import MemberAffidavit from "../../model/memberAffidavit.js";
 
-// export const createReceipt = async (memberId, data) => {
-//   try {
-//     const receiptData = {
-//       member: memberId,
-//       receiptNo: data.recieptNo,
-//       date: new Date(data.date),
-//       noOfShares: Number(data.numberOfShares),
-//       shareFee: Number(data.shareFee),
-//       membershipFee: Number(data.memberShipFee),
-//       applicationFee: Number(data.applicationFee),
-//       admissionFee: Number(data.adminissionFee),
-//       miscellaneousExpenses: Number(data.miscellaneousExpenses),
-//       paymentType: data.paymentType,
-//       paymentMode: data.paymentMode,
-//       bankName: data.bankName,
-//       branchName: data.branchName,
-//       amount: Number(data.amount),
-//       chequeNumber: data.chequeNumber,
-//       ddNumber: data.ddNumber,
-//       transactionId: data.transactionId,
-//     };
-//     console.log("checkNocheck", receiptData);
-
-//     const receipt = new Receipt(receiptData);
-//     await receipt.save();
-
-//     // Push the created receipt's ID into the member's receiptIds array
-//     await Member.findByIdAndUpdate(memberId, {
-//       // $push: { receiptIds: receipt._id },  Add the receipt ID to the member's receiptIds array
-//       $addToSet: { receiptIds: receipt._id }, // Use $addToSet to prevent duplication
-//     });
-
-//     return {
-//       status: 200,
-//       data: receipt,
-//     };
-//   } catch (error) {
-//     console.error("Error creating receipt:", error);
-//     return {
-//       status: 500,
-//       error: error.message,
-//     };
-//   }
-// };
-
 export const createReceipt = async (memberId, data) => {
   console.log("data new receipt", data);
   try {
@@ -56,7 +11,7 @@ export const createReceipt = async (memberId, data) => {
       receiptNo: data.recieptNo,
       date: new Date(data.date),
       paymentType: data.paymentType, // 'Membership Fee'
-      installmentNumber: data.installmentNumber || undefined,
+      installmentNumber: data.installment || undefined,
       paymentMode: data.paymentMode,
       bankName: data.bankName,
       branchName: data.branchName,
@@ -72,7 +27,7 @@ export const createReceipt = async (memberId, data) => {
       membershipFee: Number(data.memberShipFee) || undefined,
       shareFee: Number(data.shareFee) || undefined,
     };
-
+    console.log("payment entry installment", paymentEntry);
     let receipt = await Receipt.findOne({ member: memberId });
 
     if (receipt) {
@@ -160,88 +115,11 @@ const fetchReceipts = async (req, res) => {
   }
 };
 
-// const getReceiptDetailsById = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { paymentType } = req.query;
-
-//     const receipt = await Receipt.findById(id).populate({
-//       path: "member",
-//       select:
-//         "name permanentAddress SeniorityID propertyDetails mobileNumber email",
-//     });
-
-//     if (!receipt) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Receipt not found",
-//       });
-//     }
-
-//     const payment = receipt.payments.find((p) => p.paymentType === paymentType);
-//     console.log("payment-project-type", payment);
-
-//     if (!payment) {
-//       return res.status(404).json({
-//         success: false,
-//         message: `Payment of type "${paymentType}" not found for this receipt.`,
-//       });
-//     }
-
-//     console.log("reciept render", receipt);
-
-//     const receiptData = {
-//       receiptNumber: payment.receiptNo,
-//       date: new Date(payment.date).toLocaleDateString("en-GB"),
-//       name: receipt.member.name,
-//       address: receipt.member.permanentAddress || "-",
-//       amountInWords: convertNumberToWords(payment.amount),
-//       total: payment.amount,
-//       bankName: payment.bankName,
-//       branchName: payment.branchName,
-//       chequeNumber: payment.chequeNumber,
-//       ddNumber: payment.ddNumber,
-//       transactionId: payment.transactionId,
-//       items: [
-//         { name: "Membership Fee", amount: payment.membershipFee },
-//         { name: "Admission Fee", amount: payment.admissionFee },
-//         { name: "Share Fee", amount: payment.shareFee },
-//         { name: "Application Fee", amount: payment.applicationFee },
-//         { name: "Site Down Payment", amount: payment.siteDownPayment },
-//         { name: "Site Advance", amount: payment.siteAdvance },
-//         { name: "1st Installment", amount: payment.firstInstallment },
-//         { name: "2nd Installment", amount: payment.secondInstallment },
-//         { name: "3rd Installment", amount: payment.thirdInstallment },
-//         { name: "4th Installment", amount: payment.fourthInstallment },
-//         {
-//           name: "Miscellaneous Expenses",
-//           amount: payment.miscellaneousExpenses,
-//         },
-//         { name: "Other Charges", amount: payment.otherCharges },
-//       ].filter((item) => item.amount > 0), // only show items with value
-//     };
-//     console.log("receipts-data-123", receiptData);
-//     // res.render("receipt", { receipt: receiptData });
-//     res.render("receipt", { ...receiptData });
-//   } catch (err) {
-//     console.error("Error fetching single receipt:", err);
-//     res.status(500).send("Failed to fetch receipt details.");
-//   }
-// };
-
-// // Converts number to capitalized words + "Only"
-// function convertNumberToWords(amount) {
-//   return (
-//     numberToWords
-//       .toWords(amount || 0)
-//       .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
-//   );
-// }
-
 const getReceiptDetailsById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { paymentType } = req.query;
+    // const { paymentType } = req.query;
+    const { paymentType, installmentNumber } = req.query;
 
     const receipt = await Receipt.findById(id).populate({
       path: "member",
@@ -258,8 +136,19 @@ const getReceiptDetailsById = async (req, res) => {
 
     console.log("receipt-member", receipt);
 
-    const payment = receipt.payments.find((p) => p.paymentType === paymentType);
-    console.log("payment", payment);
+    // const payment = receipt.payments.find((p) => p.paymentType === paymentType);
+    let payment;
+
+    if (paymentType === "installments" && installmentNumber) {
+      payment = receipt.payments.find(
+        (p) =>
+          p.paymentType === "installments" &&
+          p.installmentNumber === installmentNumber
+      );
+    } else {
+      payment = receipt.payments.find((p) => p.paymentType === paymentType);
+    }
+    console.log("payment installment", payment);
 
     if (!payment) {
       return res.status(404).json({
@@ -267,23 +156,6 @@ const getReceiptDetailsById = async (req, res) => {
         message: `Payment of type "${paymentType}" not found for this receipt.`,
       });
     }
-
-    // const allItems = [
-    //   { name: "Membership Fee", amount: payment.membershipFee },
-    //   { name: "Admission Fee", amount: payment.admissionFee },
-    //   { name: "Share Fee", amount: payment.shareFee },
-    //   { name: "Application Fee", amount: payment.applicationFee },
-    //   { name: "Site Down Payment", amount: payment.siteDownPayment },
-    //   // { name: "Site Advance", amount: payment.siteAdvance },
-    //   { name: "Site Advance", amount: payment.amount },
-    //   { name: "1st Installment", amount: payment.firstInstallment },
-    //   { name: "2nd Installment", amount: payment.secondInstallment },
-    //   { name: "3rd Installment", amount: payment.thirdInstallment },
-    //   { name: "4th Installment", amount: payment.fourthInstallment },
-    //   { name: "Miscellaneous Expenses", amount: payment.miscellaneousExpenses },
-    //   { name: "Other Charges", amount: payment.otherCharges },
-    // ];
-
     const allItems = [
       { name: "Membership Fee", amount: payment.membershipFee || 0 },
       { name: "Admission Fee", amount: payment.admissionFee || 0 },
@@ -297,9 +169,23 @@ const getReceiptDetailsById = async (req, res) => {
         name: "Site Advance",
         amount: payment.paymentType === "siteAdvance" ? payment.amount : 0,
       },
-      { name: "1st Installment", amount: payment.firstInstallment || 0 },
-      { name: "2nd Installment", amount: payment.secondInstallment || 0 },
-      { name: "3rd Installment", amount: payment.thirdInstallment || 0 },
+      {
+        name: "1st Installment",
+        amount:
+          payment.installmentNumber === "firstInstallment" ? payment.amount : 0,
+      },
+      {
+        name: "2nd Installment",
+        amount:
+          payment.installmentNumber === "secondInstallment"
+            ? payment.amount
+            : 0,
+      },
+      {
+        name: "3rd Installment",
+        amount:
+          payment.installmentNumber === "thirdInstallment" ? payment.amount : 0,
+      },
       {
         name: "Miscellaneous Expenses",
         amount: payment.miscellaneousExpenses || 0,
@@ -313,6 +199,12 @@ const getReceiptDetailsById = async (req, res) => {
       amount: item.amount || 0, // default to 0 if undefined/null
     }));
 
+    console.log("filteredItems", filteredItems);
+    const totalAmount = filteredItems.reduce(
+      (sum, item) => sum + item.amount,
+      0
+    );
+
     const receiptData = {
       projectName:
         payment.paymentType.toLowerCase() === "membership fee"
@@ -322,12 +214,14 @@ const getReceiptDetailsById = async (req, res) => {
         payment.paymentType.toLowerCase() === "membership fee"
           ? ""
           : `${receipt.member.propertyDetails.length} X ${receipt.member.propertyDetails.breadth}`,
+      paymentMode: payment.paymentMode,
       receiptNumber: payment.receiptNo,
       date: new Date(payment.date).toLocaleDateString("en-GB"),
       name: receipt.member.name,
       address: receipt.member.permanentAddress || "-",
       amountInWords: convertNumberToWords(payment.amount),
-      total: payment.amount,
+      // total: payment.amount,
+      total: totalAmount,
       bankName: payment.bankName || "",
       branchName: payment.branchName || "",
       chequeNumber: payment.chequeNumber || "",
@@ -336,7 +230,7 @@ const getReceiptDetailsById = async (req, res) => {
       items: filteredItems,
     };
 
-    console.log("receipt data", receiptData);
+    console.log("receipt for installment", receiptData);
 
     res.render("receipt", { ...receiptData });
   } catch (err) {
