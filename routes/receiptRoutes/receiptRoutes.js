@@ -7,4 +7,6 @@ router.get("/get-receipt-details", ReceiptController.fetchReceipts);
 router.get("/get-receipt-details/:id", ReceiptController.getReceiptDetailsById);
 router.get("/receipts/member/:id", ReceiptController.getViewReceiptHistory);
 router.get("/view-confirmation/:memberId",ReceiptController.viewconfirmation)
+router.get("/get-affidavit/:id",ReceiptController.EditAffidavit)
+
 export default router;
