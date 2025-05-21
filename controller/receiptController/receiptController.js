@@ -289,10 +289,18 @@ const viewconfirmation =async(req,res)=>{
   }
 }
 
+const EditAffidavit =async (req,res)=>{
+  try {
+    console.log(req.body,'incoming datas')
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export default {
   fetchReceipts,
   getReceiptDetailsById,
   getViewReceiptHistory,
-  viewconfirmation
+  viewconfirmation,
+  EditAffidavit
 };
