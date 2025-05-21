@@ -30,6 +30,9 @@ const memberAffidavitSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  totalPaidAmount:{
+    type:Number
+  }
 });
 
 const MemberAffidavit = mongoose.model("MemberAffidavit", memberAffidavitSchema);

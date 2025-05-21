@@ -233,28 +233,68 @@ const getInactiveMembers = async (req, res) => {
 //   }
 // };
 
-const getConfirmation = async (req, res) => {
-  try {
-    const member = await Member.findById(req.params.id);
+// const getConfirmation = async (req, res) => {
+//   try {
+//     const member = await Member.findById(req.params.id);
 
+//     if (!member) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+//     // Find the project using projectName
+//     const project = await Project.findOne({
+//       projectName: member.propertyDetails.projectName,
+//     });
+
+//     console.log(project, "project details");
+
+//     const projectLocation = project?.location || "Location not found";
+
+//     res.status(200).json({
+//       ...member.toObject(),
+//       projectLocation,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
+
+const getConfirmation = async (req, res) => {
+
+  try {
+    const memberId = req.params.id;
+
+    const member = await Member.findById(memberId);
     if (!member) {
       return res.status(404).json({ message: "Member not found" });
     }
 
-    // Find the project using projectName
+    // Get project details
     const project = await Project.findOne({
       projectName: member.propertyDetails.projectName,
     });
 
-    console.log(project, "project details");
-
     const projectLocation = project?.location || "Location not found";
+
+    // Get receipts for this member
+    const receipt = await Receipt.findOne({ member: memberId });
+
+    // Calculate total amount from all payments
+    let totalAmount = 0;
+    if (receipt && receipt.payments?.length > 0) {
+      totalAmount = receipt.payments.reduce((sum, payment) => {
+        return sum + (payment.amount || 0);
+      }, 0);
+    }
+    console.log(totalAmount,'total amountttttttttttttttttt');
+    
 
     res.status(200).json({
       ...member.toObject(),
       projectLocation,
+      totalPaidAmount: totalAmount,
     });
   } catch (error) {
+    console.error("Error in getConfirmation:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
@@ -300,7 +340,7 @@ const getConfirmation = async (req, res) => {
 const addConfirmation = async (req, res) => {
   try {
     console.log("Received file:", req.file);
-    console.log("Received body:", req.body);
+    console.log("Received bodyy:", req.body);
     console.log("Received params:", req.params);
     const { id } = req.params;
     const result = await uploadToCloudinary(req.file.buffer);
@@ -313,6 +353,8 @@ const addConfirmation = async (req, res) => {
       duration: req.body.Duration,
       affidavitUrl: result.secure_url,
       cloudinaryId: result.public_id,
+      totalPaidAmount:req.body.Amount
+
     });
     await newAffidavit.save();
     // Example: save to database
