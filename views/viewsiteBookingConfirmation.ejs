@@ -147,6 +147,7 @@
         <div class="title">SITE BOOKING CONFIRMATION</div>
         <div class="content">
           <!-- <h5><%= member%></h5> -->
+           
           <div class="confirmation-text">
             This is to confirm that 
             <span class="bold"><%= member.userId.saluation %>. <%= member.userId.refname %></span> 
@@ -160,8 +161,8 @@
             located at <%= member.projectAddress || "Doddatumkur Village (Near Marasandra), Doddaballapura Taluk" %>. 
             
             You have booked your site by paying an initial amount of 
-            <span class="bold">Rs. <%= member.userId.propertyDetails.percentageCost %></span> /- 
-            (<span class="bold">Rupees <%= member.initialAmountInWords || "_______" %> Only</span>) 
+            <span class="bold">Rs. <%= member.totalPaidAmount %></span> /- 
+            (<span class="bold">Rupees <%= amountInWords || "_______" %> Only</span>) 
             by way of netbanking drawn at 
             <%= member.bankDetails || member.userId.BankName || "_______" %>. 
             

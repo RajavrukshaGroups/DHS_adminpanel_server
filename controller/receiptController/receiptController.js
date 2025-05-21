@@ -4,6 +4,7 @@ import Member from "../../model/memberModel.js";
 import numberToWords from "number-to-words";
 import MemberAffidavit from "../../model/memberAffidavit.js";
 import mongoose from "mongoose";
+import numWords from 'num-words'; // Add this import at the top
 
 export const createReceipt = async (memberId, data) => {
   console.log("data new receipt", data);
@@ -281,8 +282,18 @@ const viewconfirmation =async(req,res)=>{
     if (!affidavit) {
       return res.status(404).send("Affidavit not found");
     }
+      // Convert amount to words
+    const amount = affidavit.totalPaidAmount || 0;
+    const amountInWords = numWords(amount);
+    const formattedAmountInWords = amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
+   console.log(formattedAmountInWords,'ffffffffffffffffffffffffffffff');
+   
+    res.render("viewsiteBookingConfirmation", {
+      member: affidavit,
+      amountInWords: formattedAmountInWords,
+    });
 
-    res.render("viewsiteBookingConfirmation", { member: affidavit });
+    // res.render("viewsiteBookingConfirmation", { member: affidavit });
 } catch (error) {
     console.error("Error:", error);
     // Return here too
