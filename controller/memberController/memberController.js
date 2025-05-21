@@ -279,20 +279,29 @@ const getConfirmation = async (req, res) => {
     const receipt = await Receipt.findOne({ member: memberId });
 
     // Calculate total amount from all payments
-    let totalAmount = 0;
-    if (receipt && receipt.payments?.length > 0) {
-      totalAmount = receipt.payments.reduce((sum, payment) => {
-        return sum + (payment.amount || 0);
-      }, 0);
+     let siteDownPaymentAmount = 0;
+    if (receipt && Array.isArray(receipt.payments)) {
+      for (const payment of receipt.payments) {
+        if (payment.paymentType === "siteDownPayment") {
+          siteDownPaymentAmount += payment.amount;
+        }
+      }
     }
-    console.log(totalAmount,'total amountttttttttttttttttt');
+
+    console.log(siteDownPaymentAmount,);
     
 
     res.status(200).json({
       ...member.toObject(),
       projectLocation,
-      totalPaidAmount: totalAmount,
+      siteDownPaymentAmount, // ✅ Send this to frontend
     });
+
+    // res.status(200).json({
+    //   ...member.toObject(),
+    //   projectLocation,
+    //   totalPaidAmount: totalAmount,
+    // });
   } catch (error) {
     console.error("Error in getConfirmation:", error);
     res.status(500).json({ message: "Server error", error });
@@ -354,7 +363,6 @@ const addConfirmation = async (req, res) => {
       affidavitUrl: result.secure_url,
       cloudinaryId: result.public_id,
       totalPaidAmount:req.body.Amount
-
     });
     await newAffidavit.save();
     // Example: save to database
