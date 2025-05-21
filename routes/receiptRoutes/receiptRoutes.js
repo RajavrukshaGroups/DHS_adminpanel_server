@@ -18,37 +18,34 @@ router.get('/checkMembershipFee/:id', async (req, res) => {
     }
 
     const receipt = await Receipt.findOne({ member: memberId }).lean();
-    if (!receipt || !receipt.payments || receipt.payments.length === 0) {
+
+    if (!receipt || !receipt.payments?.length) {
       return res.json({ feeAdded: false, message: "No payments found." });
     }
 
-    let totalMembershipAmount = 0;
-    let hasNonMembershipPayment = false;
+    const hasNonMembershipPayment = receipt.payments.some(
+      (payment) => payment.paymentType !== "Membership Fee"
+    );
 
-    for (const payment of receipt.payments) {
-      if (payment.paymentType === "Membership Fee") {
-        totalMembershipAmount += payment.amount;
-      } else {
-        hasNonMembershipPayment = true;
-        break;
-      }
-    }
+    const totalMembershipAmount = receipt.payments
+      .filter((payment) => payment.paymentType === "Membership Fee")
+      .reduce((sum, payment) => sum + (payment.amount || 0), 0);
 
     if (hasNonMembershipPayment || totalMembershipAmount > 2500) {
       return res.json({ feeAdded: true });
-    } else {
-      return res.json({
-        feeAdded: false,
-        message: "Please generate the receipt excluding membership fees to proceed with adding a confirmation letter page."
-      });
     }
 
+    return res.json({
+      feeAdded: false,
+      message:
+        "Please add a receipt without membership fees to continue with the confirmation letter.",
+    });
+
   } catch (err) {
-    console.error(err);
+    console.error("Error checking membership fee:", err);
     res.status(500).json({ feeAdded: false, message: "Server error." });
   }
 });
-
 
 
 
