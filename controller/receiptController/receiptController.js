@@ -302,13 +302,7 @@ const viewconfirmation =async(req,res)=>{
   }
 }
 
-const EditAffidavit =async (req,res)=>{
-  try {
-    console.log(req.body,'incoming datas')
-  } catch (error) {
-    console.log(error);
-  }
-}
+
 
 const CheckMembershipFee =async(req,res)=>{
 const memberId = req.params.id;
@@ -352,6 +346,7 @@ export default {
   getReceiptDetailsById,
   getViewReceiptHistory,
   viewconfirmation,
-  EditAffidavit,
-  CheckMembershipFee
+  
+  CheckMembershipFee,
+  
 };
