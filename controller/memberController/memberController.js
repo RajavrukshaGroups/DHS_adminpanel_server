@@ -7,7 +7,7 @@ import { generateUniquePassword } from "../../utils/generatePassword.js";
 import { transporter } from "../../utils/emailTransporter.js";
 import { createReceipt } from "../receiptController/receiptController.js";
 import Project from "../../model/projectModel.js"; // make sure the path is correct
-
+import mongoose from "mongoose";
 const addMemberDetails = async (req, res) => {
   try {
     const data = req.fields;
@@ -206,6 +206,7 @@ const updateStatus = async (req, res) => {
 };
 
 const getInactiveMembers = async (req, res) => {
+  
   try {
     console.log("Fetching inactive members...");
 
@@ -258,13 +259,14 @@ const getInactiveMembers = async (req, res) => {
 //   }
 // };
 
-const getConfirmation = async (req, res) => {
+
+const getConfirmation = async ( req, res) => {
   try {
     const memberId = req.params.id;
-
+    console.log(memberId,'member idd')
     const member = await Member.findById(memberId);
     if (!member) {
-      return res.status(404).json({ message: "Member not found" });
+      return res.status(404).json({ message: "Member not found"});
     }
 
     // Get project details
@@ -273,7 +275,6 @@ const getConfirmation = async (req, res) => {
     });
 
     const projectLocation = project?.location || "Location not found";
-
     // Get receipts for this member
     const receipt = await Receipt.findOne({ member: memberId });
 
@@ -286,15 +287,12 @@ const getConfirmation = async (req, res) => {
         }
       }
     }
-
-    console.log(siteDownPaymentAmount);
-
+    console.log(siteDownPaymentAmount,'site down payment amount');
     res.status(200).json({
       ...member.toObject(),
       projectLocation,
-      siteDownPaymentAmount, // ✅ Send this to frontend
+      siteDownPaymentAmount, 
     });
-
     // res.status(200).json({
     //   ...member.toObject(),
     //   projectLocation,
@@ -305,6 +303,7 @@ const getConfirmation = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 // const getConfirmation = async (req, res) => {
 //   try {
@@ -373,22 +372,23 @@ const addConfirmation = async (req, res) => {
     res.status(500).json({ error: "Failed to upload affidavit" });
   }
 };
-const getAllAffidavits = async (req, res) => {
+
+const getAllAffidavits = async ( req , res ) => {
   try {
     const data = await MemberAffidavit.find()
       .populate(
         "userId",
-        "refname name email mobileNumber SeniorityID ReceiptNo Amount"
-      ) // adjust fields as needed
+        "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo")
+       // adjust fields as needed
       .sort({ createdAt: -1 });
-    console.log(data, "ddddddddddddddddd");
-
+    console.log(data,"ddddddddddddddddd");
     res.status(200).json(data);
   } catch (error) {
     console.error("Error fetching affidavits:", error);
     res.status(500).json({ message: "Failed to fetch affidavits" });
   }
 };
+
 const sendMemberLoginDetails = async (req, res) => {
   try {
     const { name, email, SeniorityID, password } = req.body;
@@ -556,7 +556,7 @@ const updateMemberDetails = async (req, res) => {
     }
 
     res
-      .status(200)
+.status(200)
       .json({ message: "Member updated successfully!", updatedMember });
   } catch (error) {
     console.error("Update Member Error:", error);
@@ -592,6 +592,70 @@ const addReceiptToMember = async (req, res) => {
   } catch (error) {
     console.error("Error in addReceiptToMember:", error);
     res.status(500).json({ error: "Failed to add receipt to member" });
+  }
+};
+
+const editConfirmationLetter = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id,'idddddddddddddd')
+    // Find the existing affidavit by userId
+    const existingAffidavit = await MemberAffidavit.findOne({ userId: id });
+    if (!existingAffidavit) {
+      return res.status(404).json({ message: "Affidavit not found" });
+    }
+    // Optional: Upload new file if provided
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      existingAffidavit.affidavitUrl = result.secure_url;
+      existingAffidavit.cloudinaryId = result.public_id;
+    }
+    // Update other fields
+    existingAffidavit.projectAddress = req.body.projectAddress || existingAffidavit.projectAddress;
+    existingAffidavit.chequeNo = req.body.ChequeNo || existingAffidavit.chequeNo;
+    existingAffidavit.duration = req.body.Duration || existingAffidavit.duration;
+    existingAffidavit.totalPaidAmount = req.body.Amount || existingAffidavit.totalPaidAmount;
+    existingAffidavit.pricePerSqft = req.body.pricePerSqft || existingAffidavit.pricePerSqft;
+    existingAffidavit.PaymentType = req.body.PaymentType || existingAffidavit.PaymentType;
+    existingAffidavit.ConfirmationLetterNo = req.body.ConfirmationLetterNo || existingAffidavit.ConfirmationLetterNo;
+    existingAffidavit.ConfirmationLetterDate = req.body.ConfirmationLetterDate || existingAffidavit.ConfirmationLetterDate;
+    await existingAffidavit.save();
+    res.status(200).json({
+      message: "Confirmation letter updated successfully",
+      data: existingAffidavit,
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ error: "Failed to update confirmation letter" });
+  }
+};
+
+const getAffidavitById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id,'parammssssssssssssssss');
+    // Fetch affidavit/confirmation letter based on userId (memberId)
+    const affidavit = await MemberAffidavit.findOne({ userId: id });
+// const affidavit = await MemberAffidavit.findOne({ userId: new mongoose.Types.ObjectId(id) });
+    console.log(affidavit,'aaaaaaaaaaaaaaaaaaaaaaaa')
+    if (!affidavit) {
+      return res.status(404).json({ message: "Affidavit not found for the given member ID" });
+    }
+    // Optionally get member data if you want to show name or project details
+    const member = await Member.findById(id);
+    const responseData = {
+      name: member?.name || '',
+      propertyDetails: member?.propertyDetails || {},
+      Amount: affidavit.totalPaidAmount || '',
+      PaymentType: affidavit.paymentMethod || '',
+      ConfirmationLetterNo: affidavit.confirmationNumber || '',
+      ConfirmationLetterDate: affidavit.confirmationDate || '',
+      affidavitUrl: affidavit.affidavitUrl || '',
+    };
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error("Error fetching affidavit data:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -650,5 +714,7 @@ export default {
   getMemberById,
   updateMemberDetails,
   addReceiptToMember,
-  editReceiptToMember,
+  editConfirmationLetter,
+  getAffidavitById,
+  editReceiptToMember
 };

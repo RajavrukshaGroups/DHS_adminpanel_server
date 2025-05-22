@@ -16,7 +16,6 @@ const memberAffidavitSchema = new mongoose.Schema({
   },
   duration: {
     type: String,
-
   },
   affidavitUrl: {
     type: String,
@@ -37,3 +36,6 @@ const memberAffidavitSchema = new mongoose.Schema({
 
 const MemberAffidavit = mongoose.model("MemberAffidavit", memberAffidavitSchema);
 export default MemberAffidavit;
+
+
+
