@@ -4,7 +4,9 @@ import Member from "../../model/memberModel.js";
 import numberToWords from "number-to-words";
 import MemberAffidavit from "../../model/memberAffidavit.js";
 import mongoose from "mongoose";
-import numWords from "num-words"; // Add this import at the top
+// import numWords from "num-words";
+// import num2words from "num2words";
+import numWords from "num-words";
 
 export const createReceipt = async (memberId, data) => {
   console.log("data new receipt", data);
@@ -243,11 +245,22 @@ const getReceiptDetailsById = async (req, res) => {
 };
 
 // Converts number to capitalized words + "Only"
+// function convertNumberToWords(amount) {
+//   // return (
+//   //   numberToWords
+//   //     .toWords(amount || 0)
+//   //     .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
+//   // );
+//   return (
+//     num2words(amount || 0, { lang: "en-In" }).replace(/\b\w/g, (char) =>
+//       char.toUpperCase()
+//     ) + " Only"
+//   );
+// }
 function convertNumberToWords(amount) {
   return (
-    numberToWords
-      .toWords(amount || 0)
-      .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
+    numWords(amount || 0).replace(/\b\w/g, (char) => char.toUpperCase()) +
+    " Only"
   );
 }
 
