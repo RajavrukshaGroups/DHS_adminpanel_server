@@ -206,6 +206,7 @@ const updateStatus = async (req, res) => {
 };
 
 const getInactiveMembers = async (req, res) => {
+  
   try {
     console.log("Fetching inactive members...");
 
@@ -258,14 +259,14 @@ const getInactiveMembers = async (req, res) => {
 //   }
 // };
 
-const getConfirmation = async (req, res) => {
 
+const getConfirmation = async ( req, res) => {
   try {
     const memberId = req.params.id;
-
+    console.log(memberId,'member idd')
     const member = await Member.findById(memberId);
     if (!member) {
-      return res.status(404).json({ message: "Member not found" });
+      return res.status(404).json({ message: "Member not found"});
     }
 
     // Get project details
@@ -274,7 +275,6 @@ const getConfirmation = async (req, res) => {
     });
 
     const projectLocation = project?.location || "Location not found";
-
     // Get receipts for this member
     const receipt = await Receipt.findOne({ member: memberId });
 
@@ -287,16 +287,12 @@ const getConfirmation = async (req, res) => {
         }
       }
     }
-
-    console.log(siteDownPaymentAmount,);
-    
-
+    console.log(siteDownPaymentAmount,'site down payment amount');
     res.status(200).json({
       ...member.toObject(),
       projectLocation,
-      siteDownPaymentAmount, // ✅ Send this to frontend
+      siteDownPaymentAmount, 
     });
-
     // res.status(200).json({
     //   ...member.toObject(),
     //   projectLocation,
@@ -307,6 +303,7 @@ const getConfirmation = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 // const getConfirmation = async (req, res) => {
 //   try {
@@ -376,22 +373,23 @@ const addConfirmation = async (req, res) => {
     res.status(500).json({ error: "Failed to upload affidavit" });
   }
 };
-const getAllAffidavits = async (req, res) => {
+
+const getAllAffidavits = async ( req , res ) => {
   try {
     const data = await MemberAffidavit.find()
       .populate(
         "userId",
-        "refname name email mobileNumber SeniorityID ReceiptNo Amount"
-      ) // adjust fields as needed
+        "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo")
+       // adjust fields as needed
       .sort({ createdAt: -1 });
-    console.log(data, "ddddddddddddddddd");
-
+    console.log(data,"ddddddddddddddddd");
     res.status(200).json(data);
   } catch (error) {
     console.error("Error fetching affidavits:", error);
     res.status(500).json({ message: "Failed to fetch affidavits" });
   }
 };
+
 const sendMemberLoginDetails = async (req, res) => {
   try {
     const { name, email, SeniorityID, password } = req.body;
@@ -559,7 +557,7 @@ const updateMemberDetails = async (req, res) => {
     }
 
     res
-      .status(200)
+.status(200)
       .json({ message: "Member updated successfully!", updatedMember });
   } catch (error) {
     console.error("Update Member Error:", error);
