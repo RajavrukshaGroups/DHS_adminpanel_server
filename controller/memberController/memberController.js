@@ -259,7 +259,6 @@ const getInactiveMembers = async (req, res) => {
 // };
 
 const getConfirmation = async (req, res) => {
-
   try {
     const memberId = req.params.id;
 
@@ -279,7 +278,7 @@ const getConfirmation = async (req, res) => {
     const receipt = await Receipt.findOne({ member: memberId });
 
     // Calculate total amount from all payments
-     let siteDownPaymentAmount = 0;
+    let siteDownPaymentAmount = 0;
     if (receipt && Array.isArray(receipt.payments)) {
       for (const payment of receipt.payments) {
         if (payment.paymentType === "siteDownPayment") {
@@ -288,8 +287,7 @@ const getConfirmation = async (req, res) => {
       }
     }
 
-    console.log(siteDownPaymentAmount,);
-    
+    console.log(siteDownPaymentAmount);
 
     res.status(200).json({
       ...member.toObject(),
@@ -345,7 +343,6 @@ const getConfirmation = async (req, res) => {
 //   }
 // };
 
-
 const addConfirmation = async (req, res) => {
   try {
     console.log("Received file:", req.file);
@@ -362,7 +359,7 @@ const addConfirmation = async (req, res) => {
       duration: req.body.Duration,
       affidavitUrl: result.secure_url,
       cloudinaryId: result.public_id,
-      totalPaidAmount:req.body.Amount
+      totalPaidAmount: req.body.Amount,
     });
     await newAffidavit.save();
     // Example: save to database
@@ -570,9 +567,9 @@ const updateMemberDetails = async (req, res) => {
 const addReceiptToMember = async (req, res) => {
   try {
     const { memberId } = req.params;
-    console.log("memberId",memberId)
+    console.log("memberId", memberId);
     const data = req.body;
-    console.log("data receipt",data)
+    console.log("data receipt", data);
 
     // 1. Fetch the existing member
     const existingMember = await Member.findById(memberId);
@@ -598,6 +595,47 @@ const addReceiptToMember = async (req, res) => {
   }
 };
 
+const editReceiptToMember = async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    const data = req.body;
+    const { paymentId } = req.query;
+
+    console.log("Member ID:", memberId);
+    console.log("Updated data:", data);
+    console.log("Target paymentId:", paymentId);
+
+    // 1. Find the member
+    const member = await Member.findById(memberId);
+    if (!member) return res.status(404).json({ error: "Member not found" });
+
+    console.log("member receipt", member);
+
+    // 2. Get the single receiptId
+    const receipt = await Receipt.findById(member.receiptId);
+    if (!receipt) return res.status(404).json({ error: "Receipt not found" });
+
+    // 3. Find the matching payment
+    const payment = receipt.payments.id(paymentId);
+    if (!payment) return res.status(404).json({ error: "Payment not found" });
+
+    // 4. Update fields
+    Object.keys(data).forEach((key) => {
+      payment[key] = data[key];
+    });
+
+    await receipt.save();
+
+    return res.status(200).json({
+      message: "Receipt payment updated successfully",
+      updatedPayment: payment,
+    });
+  } catch (error) {
+    console.error("Error in editReceiptToMember:", error);
+    res.status(500).json({ error: "Failed to update receipt payment" });
+  }
+};
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -612,4 +650,5 @@ export default {
   getMemberById,
   updateMemberDetails,
   addReceiptToMember,
+  editReceiptToMember,
 };
