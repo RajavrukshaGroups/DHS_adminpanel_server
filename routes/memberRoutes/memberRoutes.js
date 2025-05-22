@@ -36,5 +36,6 @@ router.put(
 router.post("/add-receipt/:memberId", MemberController.addReceiptToMember);
 router.put("/edit-confirmation/:id", upload.single("affidivate"), MemberController.editConfirmationLetter);
 router.get("/get-affidavit/:id",memberController.getAffidavitById)
+router.put("/edit-receipt/:memberId", MemberController.editReceiptToMember);
 
 export default router;

@@ -4,7 +4,9 @@ import Member from "../../model/memberModel.js";
 import numberToWords from "number-to-words";
 import MemberAffidavit from "../../model/memberAffidavit.js";
 import mongoose from "mongoose";
-import numWords from 'num-words'; // Add this import at the top
+// import numWords from "num-words";
+// import num2words from "num2words";
+import numWords from "num-words";
 
 export const createReceipt = async (memberId, data) => {
   console.log("data new receipt", data);
@@ -14,7 +16,7 @@ export const createReceipt = async (memberId, data) => {
       date: new Date(data.date),
       paymentType: data.paymentType, // 'Membership Fee'
       installmentNumber: data.installment || undefined,
-      paymentMode: data.paymentMode,
+      paymentMode: data.paymentMode.toLowerCase(),
       bankName: data.bankName,
       branchName: data.branchName,
       amount: Number(data.amount),
@@ -23,6 +25,7 @@ export const createReceipt = async (memberId, data) => {
       transactionId: data.transactionId,
 
       // Membership Fee breakdown
+      numberOfShares: Number(data.numberOfShares) || undefined,
       applicationFee: Number(data.applicationFee) || undefined,
       admissionFee: Number(data.adminissionFee) || undefined,
       miscellaneousExpenses: Number(data.miscellaneousExpenses) || undefined,
@@ -222,8 +225,8 @@ const getReceiptDetailsById = async (req, res) => {
       name: receipt.member.name,
       address: receipt.member.permanentAddress || "-",
       amountInWords: convertNumberToWords(payment.amount),
-      // total: payment.amount,
-      total: totalAmount,
+      total: payment.amount,
+      // total: totalAmount,
       bankName: payment.bankName || "",
       branchName: payment.branchName || "",
       chequeNumber: payment.chequeNumber || "",
@@ -242,11 +245,22 @@ const getReceiptDetailsById = async (req, res) => {
 };
 
 // Converts number to capitalized words + "Only"
+// function convertNumberToWords(amount) {
+//   // return (
+//   //   numberToWords
+//   //     .toWords(amount || 0)
+//   //     .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
+//   // );
+//   return (
+//     num2words(amount || 0, { lang: "en-In" }).replace(/\b\w/g, (char) =>
+//       char.toUpperCase()
+//     ) + " Only"
+//   );
+// }
 function convertNumberToWords(amount) {
   return (
-    numberToWords
-      .toWords(amount || 0)
-      .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
+    numWords(amount || 0).replace(/\b\w/g, (char) => char.toUpperCase()) +
+    " Only"
   );
 }
 
@@ -269,10 +283,10 @@ const getViewReceiptHistory = async (req, res) => {
   }
 };
 
-const viewconfirmation =async(req,res)=>{
+const viewconfirmation = async (req, res) => {
   try {
     const { memberId } = req.params;
-    console.log(memberId,'memberiddddddddd');
+    console.log(memberId, "memberiddddddddd");
     const affidavit = await MemberAffidavit.findOne({
       userId: memberId,
     }).populate("userId");
@@ -283,32 +297,41 @@ const viewconfirmation =async(req,res)=>{
     if (!affidavit) {
       return res.status(404).send("Affidavit not found");
     }
-      // Convert amount to words
+    // Convert amount to words
     const amount = affidavit.totalPaidAmount || 0;
     const amountInWords = numWords(amount);
-    const formattedAmountInWords = amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
-   console.log(formattedAmountInWords,'ffffffffffffffffffffffffffffff');
-   
+    const formattedAmountInWords =
+      amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
+    console.log(formattedAmountInWords, "ffffffffffffffffffffffffffffff");
+
     res.render("viewsiteBookingConfirmation", {
       member: affidavit,
       amountInWords: formattedAmountInWords,
     });
 
     // res.render("viewsiteBookingConfirmation", { member: affidavit });
-} catch (error) {
+  } catch (error) {
     console.error("Error:", error);
     // Return here too
     return res.status(500).send("Server Error");
   }
-}
+};
 
+const EditAffidavit = async (req, res) => {
+  try {
+    console.log(req.body, "incoming datas");
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-
-const CheckMembershipFee =async(req,res)=>{
-const memberId = req.params.id;
+const CheckMembershipFee = async (req, res) => {
+  const memberId = req.params.id;
   try {
     if (!mongoose.Types.ObjectId.isValid(memberId)) {
-      return res.status(400).json({ feeAdded: false, message: "Invalid member ID" });
+      return res
+        .status(400)
+        .json({ feeAdded: false, message: "Invalid member ID" });
     }
 
     const receipt = await Receipt.findOne({ member: memberId }).lean();
@@ -334,19 +357,70 @@ const memberId = req.params.id;
       message:
         "Please add a receipt without membership fees to continue with the confirmation letter.",
     });
-
   } catch (err) {
     console.error("Error checking membership fee:", err);
     res.status(500).json({ feeAdded: false, message: "Server error." });
   }
-}
+};
+
+const FetchEditReceiptHistory = async (req, res) => {
+  try {
+    const { receiptId } = req.params;
+    const { paymentType, installmentNumber } = req.query;
+
+    console.log("receiptId", receiptId);
+    console.log("payment type", paymentType);
+
+    const receipt = await Receipt.findById(receiptId).populate({
+      path: "member",
+      select:
+        "name permanentAddress SeniorityID propertyDetails mobileNumber email",
+    });
+
+    if (!receipt) {
+      return res.status(404).json({
+        success: false,
+        message: "Receipt not found",
+      });
+    }
+
+    let payment;
+
+    if (paymentType === "installments" && installmentNumber) {
+      payment = receipt.payments.find(
+        (p) =>
+          p.paymentType === "installments" &&
+          p.installmentNumber === installmentNumber
+      );
+    } else {
+      payment = receipt.payments.find((p) => p.paymentType === paymentType);
+    }
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: `Payment of type "${paymentType}" not found for this receipt.`,
+      });
+    }
+
+    // res.status(200).json(payment);
+    res.status(200).json({
+      payment,
+      member: receipt.member,
+    });
+    console.log("Fetched payment:", payment);
+  } catch (err) {
+    console.error("Error fetching details:", err);
+    res.status(500).send("Failed to fetch receipt details.");
+  }
+};
 
 export default {
   fetchReceipts,
   getReceiptDetailsById,
   getViewReceiptHistory,
   viewconfirmation,
-  
+  EditAffidavit,
   CheckMembershipFee,
-  
+  FetchEditReceiptHistory,
 };
