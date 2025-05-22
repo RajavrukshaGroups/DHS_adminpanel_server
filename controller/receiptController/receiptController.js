@@ -14,7 +14,7 @@ export const createReceipt = async (memberId, data) => {
       date: new Date(data.date),
       paymentType: data.paymentType, // 'Membership Fee'
       installmentNumber: data.installment || undefined,
-      paymentMode: data.paymentMode,
+      paymentMode: data.paymentMode.toLowerCase(),
       bankName: data.bankName,
       branchName: data.branchName,
       amount: Number(data.amount),
@@ -23,6 +23,7 @@ export const createReceipt = async (memberId, data) => {
       transactionId: data.transactionId,
 
       // Membership Fee breakdown
+      numberOfShares: Number(data.numberOfShares) || undefined,
       applicationFee: Number(data.applicationFee) || undefined,
       admissionFee: Number(data.adminissionFee) || undefined,
       miscellaneousExpenses: Number(data.miscellaneousExpenses) || undefined,
@@ -222,8 +223,8 @@ const getReceiptDetailsById = async (req, res) => {
       name: receipt.member.name,
       address: receipt.member.permanentAddress || "-",
       amountInWords: convertNumberToWords(payment.amount),
-      // total: payment.amount,
-      total: totalAmount,
+      total: payment.amount,
+      // total: totalAmount,
       bankName: payment.bankName || "",
       branchName: payment.branchName || "",
       chequeNumber: payment.chequeNumber || "",
