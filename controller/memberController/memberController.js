@@ -636,6 +636,11 @@ const editReceiptToMember = async (req, res) => {
   }
 };
 
+const checkDuplicatesPaymentTypeToAddReceipt = async (req, res) => {
+  try {
+  } catch (err) {}
+};
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -651,4 +656,5 @@ export default {
   updateMemberDetails,
   addReceiptToMember,
   editReceiptToMember,
+  checkDuplicatesPaymentTypeToAddReceipt,
 };

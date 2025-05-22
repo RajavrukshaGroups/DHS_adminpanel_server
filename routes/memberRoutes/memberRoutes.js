@@ -35,5 +35,4 @@ router.put(
 );
 router.post("/add-receipt/:memberId", MemberController.addReceiptToMember);
 router.put("/edit-receipt/:memberId", MemberController.editReceiptToMember);
-
 export default router;
