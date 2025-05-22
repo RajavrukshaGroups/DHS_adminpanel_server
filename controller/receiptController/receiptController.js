@@ -415,6 +415,7 @@ const FetchEditReceiptHistory = async (req, res) => {
   }
 };
 
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,

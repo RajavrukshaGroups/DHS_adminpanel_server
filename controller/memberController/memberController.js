@@ -700,6 +700,11 @@ const editReceiptToMember = async (req, res) => {
   }
 };
 
+const checkDuplicatesPaymentTypeToAddReceipt = async (req, res) => {
+  try {
+  } catch (err) {}
+};
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -714,7 +719,8 @@ export default {
   getMemberById,
   updateMemberDetails,
   addReceiptToMember,
+  editReceiptToMember,
+  checkDuplicatesPaymentTypeToAddReceipt,
   editConfirmationLetter,
   getAffidavitById,
-  editReceiptToMember
 };
