@@ -290,6 +290,7 @@ const viewconfirmation = async (req, res) => {
     const affidavit = await MemberAffidavit.findOne({
       userId: memberId,
     }).populate("userId");
+    
 
     console.log("Affidavit data:", affidavit);
 
