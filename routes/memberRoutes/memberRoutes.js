@@ -45,9 +45,16 @@ router.get(
   "/check-payment-type-duplicates/:memberId",
   MemberController.checkDuplicatesPaymentTypeToAddReceipt
 );
+
 router.get("/get-all-member-details", MemberController.getMemberData);
 router.delete(
   "/delete-member-receipt-payment/:memberId",
   MemberController.deleteMemberReceiptPaymentEach
 );
+
+
+
+
+
+
 export default router;

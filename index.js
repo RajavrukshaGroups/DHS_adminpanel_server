@@ -10,6 +10,7 @@ import userRoutes from "./routes/userRoutes/userRoutes.js";
 import projectRoutes from "./routes/projectDetRoutes/projectDetRoutes.js";
 import connectDB from "./config/db.js";
 import memberRoutes from "./routes/memberRoutes/memberRoutes.js";
+import plotRoutes from "./routes/plotRoutes/plotRoutes.js";
 
 import recieptRoutes from "./routes/receiptRoutes/receiptRoutes.js";
 
@@ -51,6 +52,8 @@ app.use("/admin", userRoutes);
 app.use("/project", projectRoutes);
 app.use("/member", memberRoutes);
 app.use("/receipt", recieptRoutes);
+app.use("/plot", plotRoutes);
+
 
 // Start server
 const PORT = 3000;
