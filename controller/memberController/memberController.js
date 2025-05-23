@@ -754,6 +754,59 @@ const getMemberData = async (req, res) => {
   } catch (err) {}
 };
 
+const deleteMemberReceiptPaymentEach = async (req, res) => {
+  const { memberId } = req.params;
+  const { paymentType, installmentNumber } = req.body;
+
+  try {
+    // Step 1: Find the member
+    const member = await Member.findById(memberId);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    // Step 2: Get the receipt(s) linked to this member
+    const receipts = await Receipt.find({ _id: { $in: member.receiptId } });
+
+    let paymentDeleted = false;
+
+    // Step 3: Iterate through receipts and try to remove the matching payment
+    for (const receipt of receipts) {
+      const initialLength = receipt.payments.length;
+
+      receipt.payments = receipt.payments.filter((payment) => {
+        if (installmentNumber) {
+          return !(
+            payment.paymentType === paymentType &&
+            payment.installmentNumber === installmentNumber
+          );
+        } else {
+          return payment.paymentType !== paymentType;
+        }
+      });
+
+      if (receipt.payments.length < initialLength) {
+        await receipt.save();
+        paymentDeleted = true;
+        break; // stop after the first successful deletion
+      }
+    }
+
+    if (!paymentDeleted) {
+      return res.status(404).json({
+        message: "No matching payment found to delete",
+      });
+    }
+
+    res.status(200).json({
+      message: "Payment deleted successfully",
+    });
+  } catch (err) {
+    console.error("Error deleting receipt entry:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -773,4 +826,5 @@ export default {
   editConfirmationLetter,
   getAffidavitById,
   getMemberData,
+  deleteMemberReceiptPaymentEach,
 };

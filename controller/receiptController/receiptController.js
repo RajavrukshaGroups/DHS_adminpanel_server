@@ -225,7 +225,8 @@ const getReceiptDetailsById = async (req, res) => {
       name: receipt.member.name,
       address: receipt.member.permanentAddress || "-",
       amountInWords: convertNumberToWords(payment.amount),
-      total: payment.amount,
+      total: new Intl.NumberFormat("en-IN").format(payment.amount),
+      // total: payment.amount,
       // total: totalAmount,
       bankName: payment.bankName || "",
       branchName: payment.branchName || "",
@@ -290,7 +291,6 @@ const viewconfirmation = async (req, res) => {
     const affidavit = await MemberAffidavit.findOne({
       userId: memberId,
     }).populate("userId");
-    
 
     console.log("Affidavit data:", affidavit);
 
@@ -414,7 +414,6 @@ const FetchEditReceiptHistory = async (req, res) => {
     res.status(500).send("Failed to fetch receipt details.");
   }
 };
-
 
 export default {
   fetchReceipts,
