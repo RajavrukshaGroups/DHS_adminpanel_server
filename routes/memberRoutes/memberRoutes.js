@@ -45,4 +45,5 @@ router.get(
   "/check-payment-type-duplicates/:memberId",
   MemberController.checkDuplicatesPaymentTypeToAddReceipt
 );
+router.get("/get-all-member-details", MemberController.getMemberData);
 export default router;

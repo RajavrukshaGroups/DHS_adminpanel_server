@@ -711,6 +711,7 @@ const editReceiptToMember = async (req, res) => {
 const checkDuplicatesPaymentTypeToAddReceipt = async (req, res) => {
   try {
     const { memberId } = req.params;
+    console.log("memberid", memberId);
 
     if (!memberId) {
       return res.status(400).json({ error: "Member ID is required" });
@@ -748,6 +749,11 @@ const checkDuplicatesPaymentTypeToAddReceipt = async (req, res) => {
   }
 };
 
+const getMemberData = async (req, res) => {
+  try {
+  } catch (err) {}
+};
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -766,4 +772,5 @@ export default {
   checkDuplicatesPaymentTypeToAddReceipt,
   editConfirmationLetter,
   getAffidavitById,
+  getMemberData,
 };
