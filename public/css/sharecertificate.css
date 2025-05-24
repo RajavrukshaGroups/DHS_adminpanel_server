@@ -98,3 +98,7 @@ body {
   width: 120px;
   height: auto;
 }
+
+.nom-relationship {
+  text-transform: capitalize;
+}
