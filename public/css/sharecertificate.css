@@ -1,0 +1,100 @@
+body {
+  font-family: "Arial", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+}
+
+.certificate-border {
+  border: 2px solid black;
+  padding: 40px;
+  margin: 20px;
+}
+
+.certificate-container {
+  width: 100%;
+  text-align: center;
+}
+
+.logo {
+  width: 90px;
+  margin: 0 auto 10px;
+}
+
+.kannada-title {
+  font-weight: bold;
+  font-size: 20px;
+  margin: 5px 0;
+}
+
+.main-title {
+  font-weight: bold;
+  font-size: 20px;
+  margin: 5px 0;
+  text-transform: uppercase;
+}
+
+.reg-details {
+  font-size: 14px;
+  margin: 5px 0;
+  line-height: 1.5;
+}
+
+.certificate-title {
+  text-decoration: underline;
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.share-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.certificate-number {
+  color: red;
+}
+
+.share-count {
+  font-weight: bold;
+}
+
+.certificate-body {
+  padding: 20px 40px;
+  text-align: left;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.underline {
+  display: inline-block;
+  /* border-bottom: 1px dotted #000;
+  min-width: 300px;
+  padding-bottom: 2px; */
+  font-weight: bold;
+}
+
+.certificate-body strong {
+  font-weight: bold;
+}
+
+.certificate-footer {
+  margin-top: 50px;
+  padding-right: 60px;
+  text-align: right;
+}
+
+.signature-box {
+  display: inline-block;
+  text-align: center;
+}
+
+.signature-img {
+  width: 120px;
+  height: auto;
+}

@@ -6,9 +6,7 @@ import ReceiptController from "../../controller/receiptController/receiptControl
 router.get("/get-receipt-details", ReceiptController.fetchReceipts);
 router.get("/get-receipt-details/:id", ReceiptController.getReceiptDetailsById);
 router.get("/receipts/member/:id", ReceiptController.getViewReceiptHistory);
-router.get("/view-confirmation/:memberId",ReceiptController.viewconfirmation)
-
-
+router.get("/view-confirmation/:memberId", ReceiptController.viewconfirmation);
 
 router.get("/get-affidavit/:id", ReceiptController.EditAffidavit);
 router.get("/checkMembershipFee/:id", ReceiptController.CheckMembershipFee);
@@ -16,6 +14,9 @@ router.get(
   "/edit-receipt/payment-history/:receiptId",
   ReceiptController.FetchEditReceiptHistory
 );
-
+router.get(
+  "/get-share-certificate/:receiptId",
+  ReceiptController.renderShareCertificate
+);
 
 export default router;
