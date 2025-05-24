@@ -21,7 +21,6 @@ import Transfer from "../../model/plotTransfer.js"
 const CreateTransfer = async (req, res) => {
   try {
     console.log(req.body, 'incoming data in the req.body');
-
     const {
       fromMember,
       toMember,
@@ -55,10 +54,37 @@ const CreateTransfer = async (req, res) => {
   }
 };
 
+const plotTransferhistory = async (req, res) => {
+  try {
+    const plotTransferHistory = await Transfer.find();
+
+    if (plotTransferHistory && plotTransferHistory.length > 0) {
+      res.status(200).json({
+        success: true,
+        data: plotTransferHistory
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: "No transfer history found."
+      });
+    }
+
+  } catch (error) {
+    console.error("Error fetching plot transfer history:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching transfer history.",
+      error: error.message
+    });
+  }
+};
+
 
 
 export default {
     
     getMemberBySeniorityID,
-    CreateTransfer
+    CreateTransfer,
+    plotTransferhistory
 }
