@@ -53,8 +53,8 @@
             residing at <strong><%= member.permanentAddress %></strong>, is a
             member of the Defence Habitat Housing Co-operative Society Ltd. and
             holds <strong><%= numberOfSharesInWords %></strong> fully paid-up
-            shares of <strong><%= shareValueInWords %></strong> only subject to
-            the rules and regulations governed by the Society.
+            shares of rupees <strong><%= shareValueInWords %></strong> subject
+            to the rules and regulations governed by the Society.
           </p>
 
           <!-- <p>subject to the rules and regulations governed by the Society.</p> -->
@@ -68,8 +68,11 @@
 
           <p>
             Name of the Nominee:
-            <strong><%= member.nomineeName %></strong> &nbsp;&nbsp;
-            Relationship: <strong><%= member.nomineeRelation %></strong>
+            <strong class="nom-relationship"><%= member.nomineeName %></strong>
+            &nbsp;&nbsp; Relationship:
+            <strong class="nom-relationship"
+              ><%= member.nomineeRelation %></strong
+            >
           </p>
         </main>
 

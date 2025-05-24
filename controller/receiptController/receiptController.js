@@ -453,8 +453,9 @@ const renderShareCertificate = async (req, res) => {
       sharePayment,
       numberOfSharesInWords:
         toWords.toWords(sharePayment.numberOfShares) + " shares",
-      shareValueInWords:
-        toWords.toWords(sharePayment.shareFee) + " rupees",
+      // shareValueInWords:
+      //   toWords.toWords(sharePayment.shareFee) + " rupees",
+      shareValueInWords: convertNumberToWords(sharePayment.shareFee),
     });
   } catch (err) {
     console.error("Error rendering share certificate:", err);
