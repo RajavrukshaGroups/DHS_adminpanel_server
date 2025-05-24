@@ -94,6 +94,11 @@ const memberSchema = new mongoose.Schema({
   //     ref: "Receipt",
   //   },
   // ],
+   isTransferred: {
+  type: Boolean,
+  default: false,
+},
+
   receiptId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Receipt",
@@ -109,6 +114,7 @@ const memberSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+ 
   // chequeNo: {
   //   type: String,
   // },

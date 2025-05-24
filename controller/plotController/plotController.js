@@ -1,16 +1,7 @@
 import Member from "../../model/memberModel.js"; // adjust path as needed
+import Transfer from "../../model/plotTransfer.js"
 
 
- const getAllSeniorityIDs = async (req, res) => {
-  try {
-    console.log('funciton is called');
-    
-    const seniorityIds = await Member.find({}, { SeniorityID: 1, _id: 0 });
-    res.status(200).json(seniorityIds);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching Seniority IDs" });
-  }
-};
 
  const getMemberBySeniorityID = async (req, res) => {
   try {
@@ -26,7 +17,83 @@ import Member from "../../model/memberModel.js"; // adjust path as needed
   }
 };
 
+
+//  const CreateTransfer = async (req, res) => {
+//   try {
+//     console.log(req.body,'incoming data in the req.body ');
+//     console.log(req.body.fromMemberId)
+//     const fromMember =await Member.find({SeniorityID:fromMemberId.seniorityId})
+//     console.log(fromMember,'ffffffomrrrrrrrrrrrrrrrrrmmmmmmmmmmmmmmm')
+    
+//     if (!fromMember) {
+//       return res.status(404).json({ message: "From member not found with given SeniorityID." });
+//     }
+//     const {
+//       fromMemberId,
+//       name,
+//       mobileNumber,
+//       email,
+//       address,
+//       reason,
+//       transferDate,
+//     } = req.body;
+//     // Create transfer document
+//     const newTransfer = new Transfer({
+//       fromMember: fromMemberId,
+//       toMember: { name, mobileNumber, email, address },
+//       reason,
+//       transferDate,
+//     });
+//     await newTransfer.save();
+//     // Update the original member as transferred
+//     await Member.findByIdAndUpdate(fromMemberId, { transferred: true });
+
+//     res.status(201).json({ message: "Transfer recorded successfully." });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error creating transfer", error });
+//   }
+// };
+const CreateTransfer = async (req, res) => {
+  try {
+    console.log(req.body, 'incoming data in the req.body');
+
+    const {
+      fromMember,
+      toMember,
+      reason,
+      transferDate,
+    } = req.body;
+
+    const fromMemberRecord = await Member.findOne({ SeniorityID: fromMember.seniorityId });
+    console.log(fromMemberRecord, 'from member record');
+
+    if (!fromMemberRecord) {
+      return res.status(404).json({ message: "From member not found with given SeniorityID." });
+    }
+
+    const newTransfer = new Transfer({
+      fromMember: fromMemberRecord._id,
+      toMember,  // directly use the toMember object from frontend
+      reason,
+      transferDate,
+    });
+
+    await newTransfer.save();
+
+    await Member.findByIdAndUpdate(fromMemberRecord._id, { isTransferred: true });
+
+    res.status(201).json({ message: "Transfer recorded successfully." });
+
+  } catch (error) {
+    console.error("Transfer creation error:", error);
+    res.status(500).json({ message: "Error creating transfer", error });
+  }
+};
+
+
+
 export default {
-    getAllSeniorityIDs,
-    getMemberBySeniorityID
+    
+    getMemberBySeniorityID,
+    CreateTransfer
 }
