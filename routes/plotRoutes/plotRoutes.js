@@ -8,4 +8,5 @@ const router = express.Router();
 router.get("/getMemberBySeniorityID/:id", PlotController.getMemberBySeniorityID);
 
 router.post("/plot-transfer",PlotController.CreateTransfer)
+router.get('/plot-Transferhistory',PlotController.plotTransferhistory)
 export default router;
