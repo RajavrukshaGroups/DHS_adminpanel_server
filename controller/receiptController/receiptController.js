@@ -1,12 +1,12 @@
 // receiptController.js
 import Receipt from "../../model/receiptModel.js";
 import Member from "../../model/memberModel.js";
-import numberToWords from "number-to-words";
 import MemberAffidavit from "../../model/memberAffidavit.js";
 import mongoose from "mongoose";
 // import numWords from "num-words";
 // import num2words from "num2words";
 import numWords from "num-words";
+import toWords from "number-to-words";
 
 export const createReceipt = async (memberId, data) => {
   console.log("data new receipt", data);
@@ -415,6 +415,53 @@ const FetchEditReceiptHistory = async (req, res) => {
   }
 };
 
+const renderShareCertificate = async (req, res) => {
+  try {
+    const { receiptId } = req.params;
+    console.log("receiptId", receiptId);
+
+    const receipt = await Receipt.findById(receiptId).populate({
+      path: "member",
+      select:
+        "name permanentAddress nomineeName nomineeRelation date ShareCertificateNumber",
+    });
+
+    console.log("receipt", receipt);
+
+    if (!receipt || !receipt.member) {
+      return res.status(404).json({
+        success: false,
+        message: "Share certificate member details not found",
+      });
+    }
+
+    const member = receipt.member;
+
+    const sharePayment = receipt.payments.find(
+      (p) => p.paymentType.toLowerCase() === "membership fee"
+    );
+
+    if (!sharePayment) {
+      return res.status(400).json({
+        success: false,
+        message: "No share certificate related payments made",
+      });
+    }
+
+    res.render("shareCertificate", {
+      member,
+      sharePayment,
+      numberOfSharesInWords:
+        toWords.toWords(sharePayment.numberOfShares) + " shares",
+      shareValueInWords:
+        toWords.toWords(sharePayment.shareFee) + " rupees",
+    });
+  } catch (err) {
+    console.error("Error rendering share certificate:", err);
+    res.status(500).send("Failed to fetch share certificate details.");
+  }
+};
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
@@ -423,4 +470,5 @@ export default {
   EditAffidavit,
   CheckMembershipFee,
   FetchEditReceiptHistory,
+  renderShareCertificate,
 };

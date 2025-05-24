@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Share Certificate</title>
+    <link rel="stylesheet" href="/css/sharecertificate.css" />
+  </head>
+  <body>
+    <div class="certificate-border">
+      <div class="certificate-container">
+        <header class="certificate-header">
+          <img
+            src="https://res.cloudinary.com/dwmeclnky/image/upload/v1747305009/dhs-new-logo_kmxqfk.png"
+            alt="DHS Logo"
+            class="logo"
+          />
+          <h2 class="kannada-title">
+            ಡಿಫೆನ್ಸ್ ಹ್ಯಾಬಿಟಾಟ್ ಹೌಸಿಂಗ್ ಕೋ-ಆಪರೇಟಿವ್ ಸೊಸೈಟೀ ಲಿ..
+          </h2>
+          <h1 class="main-title">
+            DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD.
+          </h1>
+          <p class="reg-details">
+            Reg. No:- HSG-3/64/HHS/53744/2020-21 <br />
+            #2624, 7th Cross, 14th Main, E-Block, Sahakar Nagar, Bangalore -
+            560092, Ph: 080-29903931
+          </p>
+          <h2 class="certificate-title">SHARE CERTIFICATE</h2>
+        </header>
+
+        <div class="share-info">
+          <div class="left">
+            <p>
+              No.
+              <span class="certificate-number"
+                ><%= member.ShareCertificateNumber %></span
+              >
+            </p>
+          </div>
+          <div class="right">
+            <p>
+              No. of Shares:
+              <span class="share-count"
+                ><%= sharePayment.numberOfShares %></span
+              >
+            </p>
+          </div>
+        </div>
+
+        <main class="certificate-body">
+          <p>
+            This is to certify that <strong><%= member.name %></strong>,
+            residing at <strong><%= member.permanentAddress %></strong>, is a
+            member of the Defence Habitat Housing Co-operative Society Ltd. and
+            holds <strong><%= numberOfSharesInWords %></strong> fully paid-up
+            shares of <strong><%= shareValueInWords %></strong> only subject to
+            the rules and regulations governed by the Society.
+          </p>
+
+          <!-- <p>subject to the rules and regulations governed by the Society.</p> -->
+
+          <p>
+            This certificate is issued on
+            <strong
+              ><%= new Date(member.date).toLocaleDateString("en-IN") %></strong
+            >.
+          </p>
+
+          <p>
+            Name of the Nominee:
+            <strong><%= member.nomineeName %></strong> &nbsp;&nbsp;
+            Relationship: <strong><%= member.nomineeRelation %></strong>
+          </p>
+        </main>
+
+        <footer class="certificate-footer">
+          <div class="signature-box">
+            <img
+              src="https://res.cloudinary.com/dwmeclnky/image/upload/v1747303140/sign-sec_bzvsze.jpg"
+              alt="Signature"
+              class="signature-img"
+            />
+            <p>Secretary</p>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>
