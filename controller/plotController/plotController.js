@@ -5,7 +5,6 @@ import Transfer from "../../model/plotTransfer.js"
 
  const getMemberBySeniorityID = async (req, res) => {
   try {
-
     console.log(req.params.id,'paramssssssssssssssssssssssssssssssss');
     const  seniorityId  = req.params.id;
     const member = await Member.findOne({ SeniorityID: seniorityId });
@@ -18,41 +17,143 @@ import Transfer from "../../model/plotTransfer.js"
 };
 
 
+// const CreateTransfer = async (req, res) => {
+//   try {
+//     console.log(req.body, 'incoming data in the req.body');
+//     const {
+//       fromMember,
+//       toMember,
+//       reason,
+//       transferDate,
+//     } = req.body;
+
+//     const fromMemberRecord = await Member.findOne({ SeniorityID: fromMember.seniorityId });
+//     console.log(fromMemberRecord, 'from member record');
+
+//     if (!fromMemberRecord) {
+//       return res.status(404).json({ message: "From member not found with given SeniorityID." });
+//     }
+
+//     const newTransfer = new Transfer({
+//       fromMember: fromMemberRecord._id,
+//       toMember,  // directly use the toMember object from frontend
+//       reason,
+//       transferDate,
+//     });
+
+//     await newTransfer.save();
+
+//     await Member.findByIdAndUpdate(fromMemberRecord._id, { isTransferred: true });
+
+//     res.status(201).json({ message: "Transfer recorded successfully." });
+
+//   } catch (error) {
+//     console.error("Transfer creation error:", error);
+//     res.status(500).json({ message: "Error creating transfer", error });
+//   }
+// };
+
+// const CreateTransfer = async (req, res) => {
+//   try {
+//     console.log(req.body, 'incoming data in the req.body');
+//     const {
+//       fromMember,
+//       toMember, // New member details: name, email, mobileNumber
+//       reason,
+//       transferDate,
+//     } = req.body;
+
+//     const fromMemberRecord = await Member.findOne({ SeniorityID: fromMember.seniorityId });
+
+//     if (!fromMemberRecord) {
+//       return res.status(404).json({ message: "From member not found with given SeniorityID." });
+//     }
+
+//     // Save old data
+//     const previousDetails = {
+//       name: fromMemberRecord.name,
+//       email: fromMemberRecord.email,
+//       mobileNumber: fromMemberRecord.mobileNumber,
+//     };
+
+//     // Update member with new details and mark as transferred
+//     await Member.findByIdAndUpdate(fromMemberRecord._id, {
+//       name: toMember.name,
+//       email: toMember.email,
+//       mobileNumber: toMember.mobileNumber,
+//       isTransferred: true,
+//       previousMemberDetails: previousDetails,
+//       refname:toMember.name
+//     });
+
+//     // Record the transfer
+//     const newTransfer = new Transfer({
+//       fromMember: fromMemberRecord._id,
+//       toMember,
+//       reason,
+//       transferDate,
+//     });
+
+//     await newTransfer.save();
+
+//     res.status(201).json({ message: "Transfer recorded and member updated successfully." });
+
+//   } catch (error) {
+//     console.error("Transfer creation error:", error);
+//     res.status(500).json({ message: "Error creating transfer", error });
+//   }
+// };
 const CreateTransfer = async (req, res) => {
   try {
     console.log(req.body, 'incoming data in the req.body');
-    const {
-      fromMember,
-      toMember,
-      reason,
-      transferDate,
-    } = req.body;
 
+    // Parse JSON strings from req.body
+    const fromMember = JSON.parse(req.body.fromMember);
+    const toMember = JSON.parse(req.body.toMember);
+    const { reason, transferDate } = req.body;
+
+    // Find the original member by SeniorityID
     const fromMemberRecord = await Member.findOne({ SeniorityID: fromMember.seniorityId });
-    console.log(fromMemberRecord, 'from member record');
 
     if (!fromMemberRecord) {
       return res.status(404).json({ message: "From member not found with given SeniorityID." });
     }
 
+    // Save previous member details
+    const previousDetails = {
+      name: fromMemberRecord.name,
+      email: fromMemberRecord.email,
+      mobileNumber: fromMemberRecord.mobileNumber,
+    };
+
+    // Update member with new (toMember) details
+    await Member.findByIdAndUpdate(fromMemberRecord._id, {
+      name: toMember.name,
+      email: toMember.email,
+      mobileNumber: toMember.mobile,
+      isTransferred: true,
+      previousMemberDetails: previousDetails,
+      refname: toMember.name,
+    });
+
+    // Create new transfer record
     const newTransfer = new Transfer({
       fromMember: fromMemberRecord._id,
-      toMember,  // directly use the toMember object from frontend
+      toMember,
       reason,
       transferDate,
     });
 
     await newTransfer.save();
 
-    await Member.findByIdAndUpdate(fromMemberRecord._id, { isTransferred: true });
-
-    res.status(201).json({ message: "Transfer recorded successfully." });
+    res.status(201).json({ message: "Transfer recorded and member updated successfully." });
 
   } catch (error) {
     console.error("Transfer creation error:", error);
     res.status(500).json({ message: "Error creating transfer", error });
   }
 };
+
 
 const plotTransferhistory = async (req, res) => {
   console.log('function called');

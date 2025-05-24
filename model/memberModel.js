@@ -98,6 +98,14 @@ const memberSchema = new mongoose.Schema({
   type: Boolean,
   default: false,
 },
+previousMemberDetails: {
+  name: String,
+  email: String,
+  mobileNumber: Number,
+  MemberPhoto: String,
+  MemberSign: String,
+
+},
 
   receiptId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -115,15 +123,6 @@ const memberSchema = new mongoose.Schema({
     default: Date.now,
   },
  
-  // chequeNo: {
-  //   type: String,
-  // },
-  // transactionId: {
-  //   type: String,
-  // },
-  // DDNumber: {
-  //   type: String,
-  // },
 });
 
 const Member = mongoose.model("Member", memberSchema);
