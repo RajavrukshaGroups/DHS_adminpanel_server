@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Site Booking Confirmation</title>
     <style>
+        
+    @page {
+        size: A4;
+        margin: 10mm;
+    }
+
+
+
         body {
             font-family: 'Times New Roman', Times, serif;
             margin: 0;
@@ -121,33 +129,21 @@
         .footer-icon {
             margin-right: 5px;
             width: 20px;
-            height: 20px;
+            height: 10px;
         }
     </style>
 </head>
 <div class="container">
-  <!-- <div class="header"> -->
     <div class="logo-section ">
-      <!-- <div class="header-text"> -->
-        <!-- <div class="kannada-text">ಡಿಫೆನ್ಸ್ ಹ್ಯಾಬಿಟಾಟ್ ಹೌಸಿಂಗ್ ಕೋ-ಆಪರೇಟಿವ್ ಸೊಸೈಟಿ ಲಿ.</div>
-        <div class="english-title">DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD.</div>
-        <div class="reg-number">Reg. No.:- HSG-3/64/HHS/53744/2020-21</div> -->
-      <!-- </div> -->
       <body>
             </div>
-          <!-- </div> -->
           <img style="width: 800px;" src=" https://adminpanel.defencehousingsociety.com/img/letterheader.jpg " alt="Defence Habitat Housing Logo" class="logo___">
-        
         <div class="document-header">
             <div>DHS/DHD/0380/2024-2025</div>
             <div> <%= new Date(member.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div>
-
         </div>
-        
         <div class="title">SITE BOOKING CONFIRMATION</div>
         <div class="content">
-          <!-- <h5><%= member%></h5> -->
-           
           <div class="confirmation-text">
             This is to confirm that 
             <span class="bold"><%= member.userId.saluation %>. <%= member.userId.refname %></span> 
@@ -187,59 +183,9 @@
                 <li>As per rules & regulations of Karnataka Co-Operative Department, the paid amount will be refundable in case of project failure.</li>
             </ol>
         </div>
-            
-            <!-- <div class="signature-section">
-                <img src="<%= member.signatureUrl %>" alt="Signature" class="signature-img">
-                <div class="signature-name">Raj Kumar S</div>
-                <div class="signature-title">President</div>
-            </div> -->
-            
           </div>
           <img style="width: 800px;" src="https://adminpanel.defencehousingsociety.com/img/footerSign.jpg" alt="footer__">
-        
-        <!-- <div class="footer">
-            <div class="footer-item">
-                <img src="/location-icon.png" alt="Location" class="footer-icon">
-                <span>#524, 19th Main, 7th Cross, E Block, Sahakara Nagar, Bangalore-560092</span>
-            </div>
-            <div class="footer-item">
-                <img src="/web-icon.png" alt="Website" class="footer-icon">
-                <span>www.defencehabitat.com</span>
-            </div>
-            <div class="footer-item">
-                <img src="/email-icon.png" alt="Email" class="footer-icon">
-                <span>mail@defencehabitat.com</span>
-            </div>
-            <div class="footer-item">
-                <img src="/phone-icon.png" alt="Phone" class="footer-icon">
-                <span>7026147770</span>
-            </div>
-        </div> -->
-
     </div>
-
-    <script>
-        // You can populate these variables from your server-side data
-        var data = {
-            logoUrl: "/defence-habitat-logo.png",
-            signatureUrl: "/signature.png",
-            customerName: "Chaganti Sunitha",
-            customerAddress: "H No.442B, 11th Main, 14th Cross, BFML Layout, Thubarahalli, Bangalore - 560 065",
-            siteDimension: "30X50",
-            ratePerSqft: "1399",
-            bookingDate: "09/08/2024",
-            initialAmount: "2,00,000",
-            initialAmountInWords: "Two Lakh",
-            bankDetails: "Union Bank, Karamchedu Branch",
-            totalSqft: "1500",
-            receiptNumber: "3258",
-            membershipNumber: "1180",
-            seniorityNumber: "DHD-0473"
-        };
-        
-        // You could use this to populate the template dynamically
-        // This is just for demonstration - in a real EJS implementation, 
-        // these values would be passed from the server
-    </script>
+    
 </body>
 </html>
