@@ -4,150 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Site Booking Confirmation</title>
-    <style>
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            border: 1px solid #ccc;
-            margin-top: 30px;
-        }
-        .header {
-            background: linear-gradient(to bottom right, #1a5a9e 70%, white);
-            padding: 15px;
-            text-align: center;
-            color: white;
-            position: relative;
-        }
-        .logo-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-        .logo {
-            width: 80px;
-            height: 80px;
-            margin-right: 15px;
-        }
-        .header-text {
-            text-align: center;
-        }
-        .kannada-text {
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-        .english-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .reg-number {
-            font-size: 14px;
-        }
-        .document-header {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 20px;
-            border-bottom: 1px solid #ccc;
-        }
-        .title {
-            text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-            margin: 15px 0;
-            text-decoration: underline;
-        }
-        .content {
-            padding: 0 20px 20px;
-        }
-        .confirmation-text {
-            text-align: justify;
-            line-height: 1.5;
-        }
-        .bold {
-            font-weight: bold;
-        }
-        .conditions {
-            margin-top: 20px;
-        }
-        .conditions-title {
-            font-weight: bold;
-            text-align: center;
-            text-decoration: underline;
-            margin-bottom: 10px;
-        }
-        ol {
-            padding-left: 20px;
-        }
-        li {
-            margin-bottom: 10px;
-            text-align: justify;
-        }
-        .signature-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            margin-top: 40px;
-            margin-right: 50px;
-        }
-        .signature-img {
-            width: 150px;
-            height: 50px;
-            margin-bottom: 5px;
-        }
-        .signature-name {
-            font-weight: bold;
-        }
-        .signature-title {
-            font-weight: bold;
-        }
-        .footer {
-            background: linear-gradient(to top right, #1a5a9e 70%, white);
-            padding: 15px;
-            display: flex;
-            justify-content: space-around;
-            color: white;
-        }
-        .footer-item {
-            display: flex;
-            align-items: center;
-        }
-        .footer-icon {
-            margin-right: 5px;
-            width: 20px;
-            height: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/viewSiteConfirmation.css" />
+   
 </head>
 <div class="container">
-  <!-- <div class="header"> -->
     <div class="logo-section ">
-      <!-- <div class="header-text"> -->
-        <!-- <div class="kannada-text">ಡಿಫೆನ್ಸ್ ಹ್ಯಾಬಿಟಾಟ್ ಹೌಸಿಂಗ್ ಕೋ-ಆಪರೇಟಿವ್ ಸೊಸೈಟಿ ಲಿ.</div>
-        <div class="english-title">DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD.</div>
-        <div class="reg-number">Reg. No.:- HSG-3/64/HHS/53744/2020-21</div> -->
-      <!-- </div> -->
       <body>
             </div>
-          <!-- </div> -->
           <img style="width: 800px;" src=" https://adminpanel.defencehousingsociety.com/img/letterheader.jpg " alt="Defence Habitat Housing Logo" class="logo___">
-        
         <div class="document-header">
             <div>DHS/DHD/0380/2024-2025</div>
             <div> <%= new Date(member.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div>
-
         </div>
-        
         <div class="title">SITE BOOKING CONFIRMATION</div>
         <div class="content">
-          <!-- <h5><%= member%></h5> -->
-           
           <div class="confirmation-text">
             This is to confirm that 
             <span class="bold"><%= member.userId.saluation %>. <%= member.userId.refname %></span> 
@@ -187,59 +57,9 @@
                 <li>As per rules & regulations of Karnataka Co-Operative Department, the paid amount will be refundable in case of project failure.</li>
             </ol>
         </div>
-            
-            <!-- <div class="signature-section">
-                <img src="<%= member.signatureUrl %>" alt="Signature" class="signature-img">
-                <div class="signature-name">Raj Kumar S</div>
-                <div class="signature-title">President</div>
-            </div> -->
-            
           </div>
           <img style="width: 800px;" src="https://adminpanel.defencehousingsociety.com/img/footerSign.jpg" alt="footer__">
-        
-        <!-- <div class="footer">
-            <div class="footer-item">
-                <img src="/location-icon.png" alt="Location" class="footer-icon">
-                <span>#524, 19th Main, 7th Cross, E Block, Sahakara Nagar, Bangalore-560092</span>
-            </div>
-            <div class="footer-item">
-                <img src="/web-icon.png" alt="Website" class="footer-icon">
-                <span>www.defencehabitat.com</span>
-            </div>
-            <div class="footer-item">
-                <img src="/email-icon.png" alt="Email" class="footer-icon">
-                <span>mail@defencehabitat.com</span>
-            </div>
-            <div class="footer-item">
-                <img src="/phone-icon.png" alt="Phone" class="footer-icon">
-                <span>7026147770</span>
-            </div>
-        </div> -->
-
     </div>
-
-    <script>
-        // You can populate these variables from your server-side data
-        var data = {
-            logoUrl: "/defence-habitat-logo.png",
-            signatureUrl: "/signature.png",
-            customerName: "Chaganti Sunitha",
-            customerAddress: "H No.442B, 11th Main, 14th Cross, BFML Layout, Thubarahalli, Bangalore - 560 065",
-            siteDimension: "30X50",
-            ratePerSqft: "1399",
-            bookingDate: "09/08/2024",
-            initialAmount: "2,00,000",
-            initialAmountInWords: "Two Lakh",
-            bankDetails: "Union Bank, Karamchedu Branch",
-            totalSqft: "1500",
-            receiptNumber: "3258",
-            membershipNumber: "1180",
-            seniorityNumber: "DHD-0473"
-        };
-        
-        // You could use this to populate the template dynamically
-        // This is just for demonstration - in a real EJS implementation, 
-        // these values would be passed from the server
-    </script>
+    
 </body>
 </html>
