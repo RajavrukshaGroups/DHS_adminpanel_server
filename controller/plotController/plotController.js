@@ -18,41 +18,6 @@ import Transfer from "../../model/plotTransfer.js"
 };
 
 
-//  const CreateTransfer = async (req, res) => {
-//   try {
-//     console.log(req.body,'incoming data in the req.body ');
-//     console.log(req.body.fromMemberId)
-//     const fromMember =await Member.find({SeniorityID:fromMemberId.seniorityId})
-//     console.log(fromMember,'ffffffomrrrrrrrrrrrrrrrrrmmmmmmmmmmmmmmm')
-    
-//     if (!fromMember) {
-//       return res.status(404).json({ message: "From member not found with given SeniorityID." });
-//     }
-//     const {
-//       fromMemberId,
-//       name,
-//       mobileNumber,
-//       email,
-//       address,
-//       reason,
-//       transferDate,
-//     } = req.body;
-//     // Create transfer document
-//     const newTransfer = new Transfer({
-//       fromMember: fromMemberId,
-//       toMember: { name, mobileNumber, email, address },
-//       reason,
-//       transferDate,
-//     });
-//     await newTransfer.save();
-//     // Update the original member as transferred
-//     await Member.findByIdAndUpdate(fromMemberId, { transferred: true });
-
-//     res.status(201).json({ message: "Transfer recorded successfully." });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error creating transfer", error });
-//   }
-// };
 const CreateTransfer = async (req, res) => {
   try {
     console.log(req.body, 'incoming data in the req.body');
