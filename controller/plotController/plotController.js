@@ -55,21 +55,54 @@ const CreateTransfer = async (req, res) => {
 };
 
 const plotTransferhistory = async (req, res) => {
+  console.log('function called');
   try {
-    const plotTransferHistory = await Transfer.find();
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+    const searchRegex = new RegExp(search, "i");
+    // Build match query for filtering member names, emails, or Seniority IDs
+    const matchQuery = {
+      $or: [
+        { "fromMember.name": searchRegex },
+        { "fromMember.email": searchRegex },
+        { "fromMember.SeniorityID": searchRegex },
+        { "toMember.name": searchRegex },
+        { "toMember.email": searchRegex }
+      ]
+    };
+    // First count total matches for pagination
+    const totalCount = await Transfer.countDocuments({});
+    // Populate both fromMember and toMember
+    const transferData = await Transfer.find()
+      .populate("fromMember")
+      .populate("toMember")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    if (plotTransferHistory && plotTransferHistory.length > 0) {
-      res.status(200).json({
-        success: true,
-        data: plotTransferHistory
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: "No transfer history found."
-      });
-    }
+    // Apply filter after population (Mongo can't deep match on populated fields directly)
+    const filteredData = transferData.filter((item) => {
+      const from = item.fromMember || {};
+      const to = item.toMember || {};
+      return (
+        from.name?.match(searchRegex) ||
+        from.email?.match(searchRegex) ||
+        from.SeniorityID?.match(searchRegex) ||
+        to.name?.match(searchRegex) ||
+        to.email?.match(searchRegex)
+      );
+    });
 
+    const totalFilteredPages = Math.ceil(filteredData.length / limit);
+
+   console.log(filteredData,'filtered dataass')
+
+    res.status(200).json({
+      success: true,
+      data: filteredData,
+      totalPages: totalFilteredPages,
+      currentPage: Number(page)
+    });
   } catch (error) {
     console.error("Error fetching plot transfer history:", error);
     res.status(500).json({
@@ -79,6 +112,34 @@ const plotTransferhistory = async (req, res) => {
     });
   }
 };
+
+
+
+// const plotTransferhistory = async (req, res) => {
+//   try {
+//     const plotTransferHistory = await Transfer.find();
+
+//     if (plotTransferHistory && plotTransferHistory.length > 0) {
+//       res.status(200).json({
+//         success: true,
+//         data: plotTransferHistory
+//       });
+//     } else {
+//       res.status(404).json({
+//         success: false,
+//         message: "No transfer history found."
+//       });
+//     }
+
+//   } catch (error) {
+//     console.error("Error fetching plot transfer history:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error while fetching transfer history.",
+//       error: error.message
+//     });
+//   }
+// };
 
 
 
