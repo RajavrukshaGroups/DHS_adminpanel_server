@@ -395,13 +395,10 @@ const getViewReceiptHistory = async (req, res) => {
 const viewconfirmation = async (req, res) => {
   try {
     const { memberId } = req.params;
-    console.log(memberId, "memberiddddddddd");
     const affidavit = await MemberAffidavit.findOne({
       userId: memberId,
     }).populate("userId");
-
     console.log("Affidavit data:", affidavit);
-
     if (!affidavit) {
       return res.status(404).send("Affidavit not found");
     }
@@ -410,8 +407,6 @@ const viewconfirmation = async (req, res) => {
     const amountInWords = numWords(amount);
     const formattedAmountInWords =
       amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
-    console.log(formattedAmountInWords, "ffffffffffffffffffffffffffffff");
-
     res.render("viewsiteBookingConfirmation", {
       member: affidavit,
       amountInWords: formattedAmountInWords,
