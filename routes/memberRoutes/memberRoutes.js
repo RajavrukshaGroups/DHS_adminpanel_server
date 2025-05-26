@@ -51,10 +51,11 @@ router.delete(
   "/delete-member-receipt-payment/:memberId",
   MemberController.deleteMemberReceiptPaymentEach
 );
-
-
-
-
-
+router.get("/collect-seniorityIds", MemberController.collectSeniorityIds);
+router.get(
+  "/member-info-seniority-id",
+  MemberController.collectMemberInfoOnSeniorityIds
+);
+// router.post("/receipt-extra-charge-form/:memberId")
 
 export default router;

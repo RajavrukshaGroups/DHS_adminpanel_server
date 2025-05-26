@@ -13,6 +13,7 @@ const paymentEntrySchema = new mongoose.Schema({
   transactionId: String,
   ddNumber: String,
   paid: { type: Boolean, default: true },
+  otherCharges: String,
 
   // Membership-specific fields:
   applicationFee: {

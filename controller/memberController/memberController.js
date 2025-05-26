@@ -668,40 +668,91 @@ const getAffidavitById = async (req, res) => {
   }
 };
 
+// const editReceiptToMember = async (req, res) => {
+//   try {
+//     const { memberId } = req.params;
+//     const data = req.body;
+//     const { paymentId } = req.query;
+
+//     console.log("Member ID:", memberId);
+//     console.log("Updated data:", data);
+//     console.log("Target paymentId:", paymentId);
+
+//     // 1. Find the member
+//     const member = await Member.findById(memberId);
+//     if (!member) return res.status(404).json({ error: "Member not found" });
+
+//     console.log("member receipt", member);
+
+//     // 2. Get the single receiptId
+//     const receipt = await Receipt.findById(member.receiptId);
+//     if (!receipt) return res.status(404).json({ error: "Receipt not found" });
+
+//     // 3. Find the matching payment
+//     const payment = receipt.payments.id(paymentId);
+//     if (!payment) return res.status(404).json({ error: "Payment not found" });
+
+//     // 4. Update fields
+//     Object.keys(data).forEach((key) => {
+//       payment[key] = data[key];
+//     });
+
+//     await receipt.save();
+
+//     return res.status(200).json({
+//       message: "Receipt payment updated successfully",
+//       updatedPayment: payment,
+//     });
+//   } catch (error) {
+//     console.error("Error in editReceiptToMember:", error);
+//     res.status(500).json({ error: "Failed to update receipt payment" });
+//   }
+// };
+
+// In your routes
+// Controller
 const editReceiptToMember = async (req, res) => {
   try {
     const { memberId } = req.params;
     const data = req.body;
     const { paymentId } = req.query;
 
-    console.log("Member ID:", memberId);
-    console.log("Updated data:", data);
-    console.log("Target paymentId:", paymentId);
-
     // 1. Find the member
     const member = await Member.findById(memberId);
     if (!member) return res.status(404).json({ error: "Member not found" });
 
-    console.log("member receipt", member);
+    // 2. Get all receipts for the member
+    const receipts = await Receipt.find({ member: memberId });
 
-    // 2. Get the single receiptId
-    const receipt = await Receipt.findById(member.receiptId);
-    if (!receipt) return res.status(404).json({ error: "Receipt not found" });
+    // 3. Find the payment in any of the receipts
+    let paymentToUpdate = null;
+    let receiptContainingPayment = null;
 
-    // 3. Find the matching payment
-    const payment = receipt.payments.id(paymentId);
-    if (!payment) return res.status(404).json({ error: "Payment not found" });
+    for (const receipt of receipts) {
+      const payment = receipt.payments.id(paymentId);
+      if (payment) {
+        paymentToUpdate = payment;
+        receiptContainingPayment = receipt;
+        break;
+      }
+    }
+
+    if (!paymentToUpdate) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
 
     // 4. Update fields
     Object.keys(data).forEach((key) => {
-      payment[key] = data[key];
+      if (data[key] !== undefined) {
+        paymentToUpdate[key] = data[key];
+      }
     });
 
-    await receipt.save();
+    await receiptContainingPayment.save();
 
     return res.status(200).json({
       message: "Receipt payment updated successfully",
-      updatedPayment: payment,
+      updatedPayment: paymentToUpdate,
     });
   } catch (error) {
     console.error("Error in editReceiptToMember:", error);
@@ -807,6 +858,49 @@ const deleteMemberReceiptPaymentEach = async (req, res) => {
   }
 };
 
+const collectSeniorityIds = async (req, res) => {
+  try {
+    const members = await Member.find(
+      { SeniorityID: { $exists: true, $ne: null } },
+      { SeniorityID: 1, _id: 0 }
+    );
+
+    const SeniorityIds = members.map((member) => member.SeniorityID);
+
+    res.status(200).json({ success: true, SeniorityIds });
+  } catch (err) {
+    console.error("error fetching seniority ids:", err);
+    res.status(500).json({ success: false, message: "server error" });
+  }
+};
+
+const collectMemberInfoOnSeniorityIds = async (req, res) => {
+  try {
+    const { SeniorityID } = req.query;
+    console.log("seniority id", SeniorityID);
+
+    if (!SeniorityID) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Seniority ID is required" });
+    }
+
+    const member = await Member.findOne({ SeniorityID });
+    if (!member) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Member not found" });
+    }
+
+    console.log("member", member);
+
+    res.status(200).json({ success: true, member });
+  } catch (err) {
+    console.error("error fetching member info", err);
+    res.status(500).json({ success: false, message: "server error" });
+  }
+};
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -827,4 +921,6 @@ export default {
   getAffidavitById,
   getMemberData,
   deleteMemberReceiptPaymentEach,
+  collectSeniorityIds,
+  collectMemberInfoOnSeniorityIds,
 };

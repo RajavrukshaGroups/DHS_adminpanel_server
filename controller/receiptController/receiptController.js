@@ -120,11 +120,149 @@ const fetchReceipts = async (req, res) => {
   }
 };
 
+// const getReceiptDetailsById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     // const { paymentType } = req.query;
+//     const { paymentType, installmentNumber } = req.query;
+
+//     const receipt = await Receipt.findById(id).populate({
+//       path: "member",
+//       select:
+//         "name permanentAddress SeniorityID propertyDetails mobileNumber email",
+//     });
+
+//     if (!receipt) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Receipt not found",
+//       });
+//     }
+
+//     console.log("receipt-member", receipt);
+
+//     // const payment = receipt.payments.find((p) => p.paymentType === paymentType);
+//     let payment;
+
+//     if (paymentType === "installments" && installmentNumber) {
+//       payment = receipt.payments.find(
+//         (p) =>
+//           p.paymentType === "installments" &&
+//           p.installmentNumber === installmentNumber
+//       );
+//     } else {
+//       payment = receipt.payments.find((p) => p.paymentType === paymentType);
+//     }
+//     console.log("payment installment", payment);
+
+//     if (!payment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: `Payment of type "${paymentType}" not found for this receipt.`,
+//       });
+//     }
+//     const allItems = [
+//       { name: "Membership Fee", amount: payment.membershipFee || 0 },
+//       { name: "Admission Fee", amount: payment.admissionFee || 0 },
+//       { name: "Share Fee", amount: payment.shareFee || 0 },
+//       { name: "Application Fee", amount: payment.applicationFee || 0 },
+//       {
+//         name: "Site Down Payment",
+//         amount: payment.paymentType === "siteDownPayment" ? payment.amount : 0,
+//       },
+//       {
+//         name: "Site Advance",
+//         amount: payment.paymentType === "siteAdvance" ? payment.amount : 0,
+//       },
+//       {
+//         name: "1st Installment",
+//         amount:
+//           payment.installmentNumber === "firstInstallment" ? payment.amount : 0,
+//       },
+//       {
+//         name: "2nd Installment",
+//         amount:
+//           payment.installmentNumber === "secondInstallment"
+//             ? payment.amount
+//             : 0,
+//       },
+//       {
+//         name: "3rd Installment",
+//         amount:
+//           payment.installmentNumber === "thirdInstallment" ? payment.amount : 0,
+//       },
+//       {
+//         name: "Miscellaneous Expenses",
+//         amount: payment.miscellaneousExpenses || 0,
+//       },
+//       { name: "Other Charges", amount: payment.otherCharges || 0 },
+//     ];
+
+//     // const filteredItems = allItems.filter((item) => item.amount > 0);
+//     const filteredItems = allItems.map((item) => ({
+//       ...item,
+//       amount: item.amount || 0, // default to 0 if undefined/null
+//     }));
+
+//     console.log("filteredItems", filteredItems);
+//     const totalAmount = filteredItems.reduce(
+//       (sum, item) => sum + item.amount,
+//       0
+//     );
+
+//     const receiptData = {
+//       projectName:
+//         payment.paymentType.toLowerCase() === "membership fee"
+//           ? ""
+//           : receipt.member.propertyDetails.projectName,
+//       plotDimension:
+//         payment.paymentType.toLowerCase() === "membership fee"
+//           ? ""
+//           : `${receipt.member.propertyDetails.length} X ${receipt.member.propertyDetails.breadth}`,
+//       paymentMode: payment.paymentMode,
+//       receiptNumber: payment.receiptNo,
+//       date: new Date(payment.date).toLocaleDateString("en-GB"),
+//       name: receipt.member.name,
+//       address: receipt.member.permanentAddress || "-",
+//       amountInWords: convertNumberToWords(payment.amount),
+//       total: new Intl.NumberFormat("en-IN").format(payment.amount),
+//       // total: payment.amount,
+//       // total: totalAmount,
+//       bankName: payment.bankName || "",
+//       branchName: payment.branchName || "",
+//       chequeNumber: payment.chequeNumber || "",
+//       ddNumber: payment.ddNumber || "",
+//       transactionId: payment.transactionId || "",
+//       items: filteredItems,
+//     };
+
+//     console.log("receipt for installment", receiptData);
+
+//     res.render("receipt", { ...receiptData });
+//   } catch (err) {
+//     console.error("Error fetching single receipt:", err);
+//     res.status(500).send("Failed to fetch receipt details.");
+//   }
+// };
+
+// Converts number to capitalized words + "Only"
+// function convertNumberToWords(amount) {
+//   // return (
+//   //   numberToWords
+//   //     .toWords(amount || 0)
+//   //     .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
+//   // );
+//   return (
+//     num2words(amount || 0, { lang: "en-In" }).replace(/\b\w/g, (char) =>
+//       char.toUpperCase()
+//     ) + " Only"
+//   );
+// }
+
 const getReceiptDetailsById = async (req, res) => {
   try {
     const { id } = req.params;
-    // const { paymentType } = req.query;
-    const { paymentType, installmentNumber } = req.query;
+    const { paymentId } = req.query; // Now we'll use paymentId instead of paymentType/installmentNumber
 
     const receipt = await Receipt.findById(id).populate({
       path: "member",
@@ -139,28 +277,18 @@ const getReceiptDetailsById = async (req, res) => {
       });
     }
 
-    console.log("receipt-member", receipt);
-
-    // const payment = receipt.payments.find((p) => p.paymentType === paymentType);
-    let payment;
-
-    if (paymentType === "installments" && installmentNumber) {
-      payment = receipt.payments.find(
-        (p) =>
-          p.paymentType === "installments" &&
-          p.installmentNumber === installmentNumber
-      );
-    } else {
-      payment = receipt.payments.find((p) => p.paymentType === paymentType);
-    }
-    console.log("payment installment", payment);
+    // Find the specific payment by its _id
+    const payment = receipt.payments.find(
+      (p) => p._id.toString() === paymentId
+    );
 
     if (!payment) {
       return res.status(404).json({
         success: false,
-        message: `Payment of type "${paymentType}" not found for this receipt.`,
+        message: "Payment not found for this receipt.",
       });
     }
+
     const allItems = [
       { name: "Membership Fee", amount: payment.membershipFee || 0 },
       { name: "Admission Fee", amount: payment.admissionFee || 0 },
@@ -198,13 +326,11 @@ const getReceiptDetailsById = async (req, res) => {
       { name: "Other Charges", amount: payment.otherCharges || 0 },
     ];
 
-    // const filteredItems = allItems.filter((item) => item.amount > 0);
     const filteredItems = allItems.map((item) => ({
       ...item,
-      amount: item.amount || 0, // default to 0 if undefined/null
+      amount: item.amount || 0,
     }));
 
-    console.log("filteredItems", filteredItems);
     const totalAmount = filteredItems.reduce(
       (sum, item) => sum + item.amount,
       0
@@ -226,8 +352,6 @@ const getReceiptDetailsById = async (req, res) => {
       address: receipt.member.permanentAddress || "-",
       amountInWords: convertNumberToWords(payment.amount),
       total: new Intl.NumberFormat("en-IN").format(payment.amount),
-      // total: payment.amount,
-      // total: totalAmount,
       bankName: payment.bankName || "",
       branchName: payment.branchName || "",
       chequeNumber: payment.chequeNumber || "",
@@ -236,28 +360,12 @@ const getReceiptDetailsById = async (req, res) => {
       items: filteredItems,
     };
 
-    console.log("receipt for installment", receiptData);
-
     res.render("receipt", { ...receiptData });
   } catch (err) {
     console.error("Error fetching single receipt:", err);
     res.status(500).send("Failed to fetch receipt details.");
   }
 };
-
-// Converts number to capitalized words + "Only"
-// function convertNumberToWords(amount) {
-//   // return (
-//   //   numberToWords
-//   //     .toWords(amount || 0)
-//   //     .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
-//   // );
-//   return (
-//     num2words(amount || 0, { lang: "en-In" }).replace(/\b\w/g, (char) =>
-//       char.toUpperCase()
-//     ) + " Only"
-//   );
-// }
 function convertNumberToWords(amount) {
   return (
     numWords(amount || 0).replace(/\b\w/g, (char) => char.toUpperCase()) +
@@ -363,55 +471,85 @@ const CheckMembershipFee = async (req, res) => {
   }
 };
 
+// const FetchEditReceiptHistory = async (req, res) => {
+//   try {
+//     const { receiptId } = req.params;
+//     const { paymentType, installmentNumber } = req.query;
+
+//     console.log("receiptId", receiptId);
+//     console.log("payment type", paymentType);
+
+//     const receipt = await Receipt.findById(receiptId).populate({
+//       path: "member",
+//       select:
+//         "name permanentAddress SeniorityID propertyDetails mobileNumber email",
+//     });
+
+//     if (!receipt) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Receipt not found",
+//       });
+//     }
+
+//     let payment;
+
+//     if (paymentType === "installments" && installmentNumber) {
+//       payment = receipt.payments.find(
+//         (p) =>
+//           p.paymentType === "installments" &&
+//           p.installmentNumber === installmentNumber
+//       );
+//     } else {
+//       payment = receipt.payments.find((p) => p.paymentType === paymentType);
+//     }
+
+//     if (!payment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: `Payment of type "${paymentType}" not found for this receipt.`,
+//       });
+//     }
+
+//     // res.status(200).json(payment);
+//     res.status(200).json({
+//       payment,
+//       member: receipt.member,
+//     });
+//     console.log("Fetched payment:", payment);
+//   } catch (err) {
+//     console.error("Error fetching details:", err);
+//     res.status(500).send("Failed to fetch receipt details.");
+//   }
+// };
+
+// In your backend routes
+
+// Controller
 const FetchEditReceiptHistory = async (req, res) => {
   try {
     const { receiptId } = req.params;
-    const { paymentType, installmentNumber } = req.query;
+    const { paymentId } = req.query;
 
-    console.log("receiptId", receiptId);
-    console.log("payment type", paymentType);
-
-    const receipt = await Receipt.findById(receiptId).populate({
-      path: "member",
-      select:
-        "name permanentAddress SeniorityID propertyDetails mobileNumber email",
-    });
-
+    const receipt = await Receipt.findById(receiptId);
     if (!receipt) {
-      return res.status(404).json({
-        success: false,
-        message: "Receipt not found",
-      });
+      return res.status(404).json({ error: "Receipt not found" });
     }
 
-    let payment;
-
-    if (paymentType === "installments" && installmentNumber) {
-      payment = receipt.payments.find(
-        (p) =>
-          p.paymentType === "installments" &&
-          p.installmentNumber === installmentNumber
-      );
-    } else {
-      payment = receipt.payments.find((p) => p.paymentType === paymentType);
-    }
-
+    const payment = receipt.payments.id(paymentId);
     if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: `Payment of type "${paymentType}" not found for this receipt.`,
-      });
+      return res.status(404).json({ error: "Payment not found" });
     }
 
-    // res.status(200).json(payment);
-    res.status(200).json({
-      payment,
-      member: receipt.member,
-    });
-    console.log("Fetched payment:", payment);
-  } catch (err) {
-    console.error("Error fetching details:", err);
-    res.status(500).send("Failed to fetch receipt details.");
+    const member = await Member.findById(receipt.member);
+    if (!member) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    res.status(200).json({ payment, member });
+  } catch (error) {
+    console.error("Error fetching payment for edit:", error);
+    res.status(500).json({ error: "Failed to fetch payment details" });
   }
 };
 
@@ -463,6 +601,14 @@ const renderShareCertificate = async (req, res) => {
   }
 };
 
+const createExtraChargeReceipt = async (req, res) => {
+  try {
+  } catch (err) {
+    console.error("error fetching details", err);
+    res.status(500).send("server error");
+  }
+};
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
@@ -472,4 +618,5 @@ export default {
   CheckMembershipFee,
   FetchEditReceiptHistory,
   renderShareCertificate,
+  createExtraChargeReceipt,
 };
