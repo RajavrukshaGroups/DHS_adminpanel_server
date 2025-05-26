@@ -18,5 +18,9 @@ router.get(
   "/get-share-certificate/:receiptId",
   ReceiptController.renderShareCertificate
 );
+router.post(
+  "/create-extra-charge-receipt/:memberId",
+  ReceiptController.createExtraChargeReceipt
+);
 
 export default router;
