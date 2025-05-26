@@ -7,7 +7,6 @@ const router = express.Router();
 
 router.get("/getMemberBySeniorityID/:id", PlotController.getMemberBySeniorityID);
 
-// router.post("/plot-transfer",PlotController.CreateTransfer)
 router.post(
   "/create-transfer",
   upload.fields([

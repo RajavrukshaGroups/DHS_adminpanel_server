@@ -29,7 +29,7 @@ const memberSchema = new mongoose.Schema({
   },
   propertyDetails: {
     type: propertyDetailsSchema,
-    required: true,
+    // required: true,
   },
   name: {
     type: String,
@@ -88,6 +88,7 @@ const memberSchema = new mongoose.Schema({
   ShareCertificateNumber: {
     type: String,
   },
+  
   // receiptIds: [
   //   {
   //     type: mongoose.Schema.Types.ObjectId,
@@ -98,13 +99,16 @@ const memberSchema = new mongoose.Schema({
   type: Boolean,
   default: false,
 },
+
+transferReason: {
+  type: String,
+},
 previousMemberDetails: {
   name: String,
   email: String,
   mobileNumber: Number,
   MemberPhoto: String,
   MemberSign: String,
-
 },
 
   receiptId: {
