@@ -291,11 +291,13 @@ const getConfirmation = async (req, res) => {
       projectLocation,
       siteDownPaymentAmount,
     });
+
     // res.status(200).json({
     //   ...member.toObject(),
     //   projectLocation,
     //   totalPaidAmount: totalAmount,
     // });
+    
   } catch (error) {
     console.error("Error in getConfirmation:", error);
     res.status(500).json({ message: "Server error", error });
