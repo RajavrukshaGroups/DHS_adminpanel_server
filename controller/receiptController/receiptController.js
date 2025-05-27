@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 // import num2words from "num2words";
 import numWords from "num-words";
 import toWords from "number-to-words";
+import Project from "../../model/projectModel.js";
 
 export const createReceipt = async (memberId, data) => {
   console.log("data new receipt", data);
@@ -23,7 +24,6 @@ export const createReceipt = async (memberId, data) => {
       chequeNumber: data.chequeNumber,
       ddNumber: data.ddNumber,
       transactionId: data.transactionId,
-      otherCharges: data.otherCharges,
 
       // Membership Fee breakdown
       numberOfShares: Number(data.numberOfShares) || undefined,
@@ -32,7 +32,6 @@ export const createReceipt = async (memberId, data) => {
       miscellaneousExpenses: Number(data.miscellaneousExpenses) || undefined,
       membershipFee: Number(data.memberShipFee) || undefined,
       shareFee: Number(data.shareFee) || undefined,
-      // otherCharges:data.otherCharges|| undefined,
     };
     console.log("payment entry installment", paymentEntry);
     let receipt = await Receipt.findOne({ member: memberId });
@@ -326,18 +325,8 @@ const getReceiptDetailsById = async (req, res) => {
         name: "Miscellaneous Expenses",
         amount: payment.miscellaneousExpenses || 0,
       },
-      // {
-      //   name: payment.otherCharges,
-      //   amount: payment.otherCharges ? payment.amount : 0,
-      // },
+      { name: "Other Charges", amount: payment.otherCharges || 0 },
     ];
-
-    if (payment.otherCharges) {
-      allItems.push({
-        name: payment.otherCharges,
-        amount: payment.amount || 0,
-      });
-    }
 
     const filteredItems = allItems.map((item) => ({
       ...item,
@@ -386,6 +375,7 @@ function convertNumberToWords(amount) {
   );
 }
 
+
 //for receipt history at View User Details
 const getViewReceiptHistory = async (req, res) => {
   try {
@@ -405,33 +395,84 @@ const getViewReceiptHistory = async (req, res) => {
   }
 };
 
+// const viewconfirmation = async (req, res) => {
+//   try {
+//     console.log("view confirmation called")
+//     const { memberId } = req.params;
+//     console.log("Member ID:", memberId);
+//     // const reciptData = await Receipt.findOne({})
+//      const receipt = await Receipt.findOne({ member: memberId }).populate("member");
+//      console.log("receipt data",receipt);
+//      const affidavit = await MemberAffidavit.findOne({
+//       userId: memberId,
+//     }).populate("userId");
+//     // console.log("Affidavit data:", affidavit);
+//     if (!affidavit) {
+//       return res.status(404).send("Affidavit not found");
+//       }
+//     // Convert amount to words
+//     const amount = affidavit.totalPaidAmount || 0;
+//     const amountInWords = numWords(amount);
+//     const formattedAmountInWords =
+//     amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
+//     res.render("viewsiteBookingConfirmation", {
+//       member: affidavit,
+//       amountInWords: formattedAmountInWords,
+//       receipt
+//     });
+//     // res.render("viewsiteBookingConfirmation", { member: affidavit });
+//   } catch (error) {
+//     console.error("Error:", error);
+//     // Return here too
+//     return res.status(500).send("Server Error");
+//   }
+// };
+
 const viewconfirmation = async (req, res) => {
   try {
     const { memberId } = req.params;
+    // console.log("Member ID:", memberId);
+    const receipt = await Receipt.findOne({ member: memberId }).populate("member");
+    // console.log("Receipt data:", receipt.payments[1].paymentMode);
+
+    const member = await Member.findById(memberId);
+    if (!member) {
+      return res.status(404).send("Member not found");
+    }
+    // Extract the siteDownPayment entry from the receipt
+    const siteDownPayment = receipt?.payments?.find(
+      (payment) => payment.paymentType === "siteDownPayment"
+    );
+    const project = await Project.findOne({
+      projectName: member.propertyDetails.projectName,
+    });
+    const projectLocation = project?.location || "Location not found";
     const affidavit = await MemberAffidavit.findOne({
       userId: memberId,
     }).populate("userId");
-    console.log("Affidavit data:", affidavit);
+    // console.log("Affidavit data:", affidavit);
     if (!affidavit) {
       return res.status(404).send("Affidavit not found");
     }
-    // Convert amount to words
     const amount = affidavit.totalPaidAmount || 0;
     const amountInWords = numWords(amount);
     const formattedAmountInWords =
       amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
+      console.log(siteDownPayment, "project siteDownPayment");
     res.render("viewsiteBookingConfirmation", {
       member: affidavit,
       amountInWords: formattedAmountInWords,
+      receipt,
+      projectLocation, 
+      siteDownPayment
     });
-
-    // res.render("viewsiteBookingConfirmation", { member: affidavit });
   } catch (error) {
     console.error("Error:", error);
-    // Return here too
     return res.status(500).send("Server Error");
   }
 };
+
+
 
 const EditAffidavit = async (req, res) => {
   try {

@@ -25,18 +25,23 @@
             <span class="bold"><%= member.userId.contactAddress %></span>, 
             booked a site of measuring 
            <span class="bold"><%= member.userId.propertyDetails.length %>X<%= member.userId.propertyDetails.breadth %> </span> 
-            (Rate per SQFT Rs. <span class="bold"></span> /-) on this day of 
+            (Rate per SQFT Rs. <span class="bold"><%=receipt.member.propertyDetails.pricePerSqft %></span> /-) on this day of 
             <span class="bold"><%= new Date(member.userId.date).toLocaleDateString('en-IN') %></span> in the proposed 
             "<span class="bold"><%= member.userId.propertyDetails.projectName %></span>" 
-            located at <%= member.projectAddress || "Doddatumkur Village (Near Marasandra), Doddaballapura Taluk" %>. 
+            located at <span class="bold"><%=projectLocation %></span>. 
             
             You have booked your site by paying an initial amount of 
             <span class="bold">Rs. <%= member.totalPaidAmount %></span> /- 
-            (<span class="bold">Rupees <%= amountInWords || "_______" %> Only</span>) 
-            by way of netbanking drawn at 
-            <%= member.bankDetails || member.userId.BankName || "_______" %>. 
-            
+          (<span class="bold">Rupees <%= amountInWords || "_______" %> Only</span>) 
+            by way of <%= siteDownPayment?.paymentMode || "________" %>
+            <% if (siteDownPayment?.paymentMode === "netbanking") { %>
+              drawn at <%= siteDownPayment?.bankName || "_______" %>.
+            <% } else { %>
+              drawn at _______.
+            <% } %>
             The booked site dimension is 
+            <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT.
+
            <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT. 
             Receipt number is <%= member.userId.ReceiptNo %>. 
             Membership No. <span class="bold"><%= member.userId.MembershipNo %></span>, 
