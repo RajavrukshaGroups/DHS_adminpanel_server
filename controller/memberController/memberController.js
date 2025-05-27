@@ -262,12 +262,15 @@ const getConfirmation = async (req, res) => {
   try {
     const memberId = req.params.id;
     console.log(memberId, "member idd");
+
     const member = await Member.findById(memberId);
+    
     if (!member) {
       return res.status(404).json({ message: "Member not found" });
     }
 
     // Get project details
+
     const project = await Project.findOne({
       projectName: member.propertyDetails.projectName,
     });
@@ -285,18 +288,13 @@ const getConfirmation = async (req, res) => {
         }
       }
     }
+
     console.log(siteDownPaymentAmount, "site down payment amount");
     res.status(200).json({
       ...member.toObject(),
       projectLocation,
       siteDownPaymentAmount,
     });
-
-    // res.status(200).json({
-    //   ...member.toObject(),
-    //   projectLocation,
-    //   totalPaidAmount: totalAmount,
-    // });
     
   } catch (error) {
     console.error("Error in getConfirmation:", error);
@@ -569,7 +567,7 @@ const addReceiptToMember = async (req, res) => {
     const { memberId } = req.params;
     console.log("memberId", memberId);
     const data = req.body;
-    console.log("data receipt1233", data);
+    console.log("data receipt", data);
 
     // 1. Fetch the existing member
     const existingMember = await Member.findById(memberId);

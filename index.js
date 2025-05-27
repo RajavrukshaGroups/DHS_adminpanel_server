@@ -11,7 +11,6 @@ import projectRoutes from "./routes/projectDetRoutes/projectDetRoutes.js";
 import connectDB from "./config/db.js";
 import memberRoutes from "./routes/memberRoutes/memberRoutes.js";
 import plotRoutes from "./routes/plotRoutes/plotRoutes.js";
-
 import recieptRoutes from "./routes/receiptRoutes/receiptRoutes.js";
 
 const app = express();
@@ -30,7 +29,6 @@ connectDB();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(express.static(path.join(__dirname,"public")));
 
 const allowedOrigins = ["http://localhost:5173"];
