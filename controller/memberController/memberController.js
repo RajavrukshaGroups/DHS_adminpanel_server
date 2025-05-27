@@ -569,7 +569,7 @@ const addReceiptToMember = async (req, res) => {
     const { memberId } = req.params;
     console.log("memberId", memberId);
     const data = req.body;
-    console.log("data receipt", data);
+    console.log("data receipt1233", data);
 
     // 1. Fetch the existing member
     const existingMember = await Member.findById(memberId);
