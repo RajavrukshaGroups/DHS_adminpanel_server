@@ -22,5 +22,9 @@ router.post(
   "/create-extra-charge-receipt/:memberId",
   ReceiptController.createExtraChargeReceipt
 );
+router.get(
+  "/collect-all-extrachargehistory",
+  ReceiptController.collectAllExtraChargeHistory
+);
 
 export default router;
