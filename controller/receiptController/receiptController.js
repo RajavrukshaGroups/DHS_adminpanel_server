@@ -23,6 +23,7 @@ export const createReceipt = async (memberId, data) => {
       chequeNumber: data.chequeNumber,
       ddNumber: data.ddNumber,
       transactionId: data.transactionId,
+      otherCharges: data.otherCharges,
 
       // Membership Fee breakdown
       numberOfShares: Number(data.numberOfShares) || undefined,
@@ -31,6 +32,7 @@ export const createReceipt = async (memberId, data) => {
       miscellaneousExpenses: Number(data.miscellaneousExpenses) || undefined,
       membershipFee: Number(data.memberShipFee) || undefined,
       shareFee: Number(data.shareFee) || undefined,
+      // otherCharges:data.otherCharges|| undefined,
     };
     console.log("payment entry installment", paymentEntry);
     let receipt = await Receipt.findOne({ member: memberId });
@@ -323,8 +325,18 @@ const getReceiptDetailsById = async (req, res) => {
         name: "Miscellaneous Expenses",
         amount: payment.miscellaneousExpenses || 0,
       },
-      { name: "Other Charges", amount: payment.otherCharges || 0 },
+      // {
+      //   name: payment.otherCharges,
+      //   amount: payment.otherCharges ? payment.amount : 0,
+      // },
     ];
+
+    if (payment.otherCharges) {
+      allItems.push({
+        name: payment.otherCharges,
+        amount: payment.amount || 0,
+      });
+    }
 
     const filteredItems = allItems.map((item) => ({
       ...item,
