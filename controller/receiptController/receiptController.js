@@ -296,13 +296,14 @@ const getReceiptDetailsById = async (req, res) => {
       { name: "Share Fee", amount: payment.shareFee || 0 },
       { name: "Application Fee", amount: payment.applicationFee || 0 },
       {
-        name: "Site Down Payment",
-        amount: payment.paymentType === "siteDownPayment" ? payment.amount : 0,
-      },
-      {
         name: "Site Advance",
         amount: payment.paymentType === "siteAdvance" ? payment.amount : 0,
       },
+      {
+        name: "Site Down Payment",
+        amount: payment.paymentType === "siteDownPayment" ? payment.amount : 0,
+      },
+
       {
         name: "1st Installment",
         amount:
@@ -657,6 +658,62 @@ const createExtraChargeReceipt = async (req, res) => {
   }
 };
 
+const collectAllExtraChargeHistory = async (req, res) => {
+  try {
+    // 1. Find all receipts where at least one payment is an Extra Charge
+    const receipts = await Receipt.find({
+      "payments.paymentType": "Extra Charge",
+    }).lean();
+
+    // 2. Prepare response list
+    const result = [];
+
+    for (const receipt of receipts) {
+      // Find extra charge payments only
+      const extraChargePayments = receipt.payments.filter(
+        (p) => p.paymentType === "Extra Charge"
+      );
+
+      if (extraChargePayments.length > 0) {
+        // 3. Get the member details
+        const member = await Member.findById(receipt.member).lean();
+        if (!member) continue;
+
+        // 4. Format each extra charge payment with member info
+        extraChargePayments.forEach((payment) => {
+          result.push({
+            receiptId: receipt._id,
+            receiptNo: payment.receiptNo,
+            date: payment.date,
+            amount: payment.amount,
+            paymentMode: payment.paymentMode,
+            bankName: payment.bankName,
+            branchName: payment.branchName,
+            transactionId: payment.transactionId,
+            chequeNumber: payment.chequeNumber,
+            ddNumber: payment.ddNumber,
+            otherCharges: payment.otherCharges,
+
+            // Member details
+            memberName: member.name,
+            email: member.email,
+            SeniorityID: member.SeniorityID,
+            projectName: member.propertyDetails?.projectName || "",
+            plotDimension: member.propertyDetails
+              ? `${member.propertyDetails.length} x ${member.propertyDetails.breadth}`
+              : "",
+          });
+        });
+      }
+    }
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Error fetching extra charge history:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
@@ -667,4 +724,5 @@ export default {
   FetchEditReceiptHistory,
   renderShareCertificate,
   createExtraChargeReceipt,
+  collectAllExtraChargeHistory,
 };
