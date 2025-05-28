@@ -24,6 +24,7 @@ export const createReceipt = async (memberId, data) => {
       chequeNumber: data.chequeNumber,
       ddNumber: data.ddNumber,
       transactionId: data.transactionId,
+      otherCharges: data.otherCharges,
 
       // Membership Fee breakdown
       numberOfShares: Number(data.numberOfShares) || undefined,
@@ -325,8 +326,15 @@ const getReceiptDetailsById = async (req, res) => {
         name: "Miscellaneous Expenses",
         amount: payment.miscellaneousExpenses || 0,
       },
-      { name: "Other Charges", amount: payment.otherCharges || 0 },
+      // { name: "Other Charges", amount: payment.otherCharges || 0 },
     ];
+
+    if (payment.otherCharges) {
+      allItems.push({
+        name: payment.otherCharges,
+        amount: payment.amount || 0,
+      });
+    }
 
     const filteredItems = allItems.map((item) => ({
       ...item,
@@ -374,7 +382,6 @@ function convertNumberToWords(amount) {
     " Only"
   );
 }
-
 
 //for receipt history at View User Details
 const getViewReceiptHistory = async (req, res) => {
@@ -432,7 +439,9 @@ const viewconfirmation = async (req, res) => {
   try {
     const { memberId } = req.params;
     // console.log("Member ID:", memberId);
-    const receipt = await Receipt.findOne({ member: memberId }).populate("member");
+    const receipt = await Receipt.findOne({ member: memberId }).populate(
+      "member"
+    );
     // console.log("Receipt data:", receipt.payments[1].paymentMode);
 
     const member = await Member.findById(memberId);
@@ -458,21 +467,19 @@ const viewconfirmation = async (req, res) => {
     const amountInWords = numWords(amount);
     const formattedAmountInWords =
       amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
-      console.log(siteDownPayment, "project siteDownPayment");
+    console.log(siteDownPayment, "project siteDownPayment");
     res.render("viewsiteBookingConfirmation", {
       member: affidavit,
       amountInWords: formattedAmountInWords,
       receipt,
-      projectLocation, 
-      siteDownPayment
+      projectLocation,
+      siteDownPayment,
     });
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).send("Server Error");
   }
 };
-
-
 
 const EditAffidavit = async (req, res) => {
   try {
@@ -682,6 +689,7 @@ const collectAllExtraChargeHistory = async (req, res) => {
         // 4. Format each extra charge payment with member info
         extraChargePayments.forEach((payment) => {
           result.push({
+            paymentId: payment._id,
             receiptId: receipt._id,
             receiptNo: payment.receiptNo,
             date: payment.date,
