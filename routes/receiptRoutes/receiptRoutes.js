@@ -26,5 +26,9 @@ router.get(
   "/collect-all-extrachargehistory",
   ReceiptController.collectAllExtraChargeHistory
 );
+router.get(
+  "/get-extra-charge-by-paymentid/:paymentId",
+  ReceiptController.fetchExtraChargeOnPaymentID
+);
 
 export default router;

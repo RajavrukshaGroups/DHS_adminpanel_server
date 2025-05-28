@@ -737,6 +737,53 @@ const collectAllExtraChargeHistory = async (req, res) => {
   }
 };
 
+const fetchExtraChargeOnPaymentID = async (req, res) => {
+  try {
+    const paymentId = req.params.paymentId;
+
+    if (!mongoose.Types.ObjectId.isValid(paymentId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid paymentId" });
+    }
+
+    // Find the receipt document which has a payment with this paymentId
+    const receipt = await Receipt.findOne({ "payments._id": paymentId }).lean();
+
+    if (!receipt) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Payment not found" });
+    }
+
+    // Find the payment inside the payments array by _id
+    const payment = receipt.payments.find(
+      (p) => p._id.toString() === paymentId
+    );
+
+    if (!payment) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Payment not found inside receipt" });
+    }
+
+    // Fetch the member info linked to this receipt
+    const member = await Member.findById(receipt.member).lean();
+
+    // Return the combined data
+    return res.json({
+      success: true,
+      data: {
+        payment,
+        member: member || null,
+      },
+    });
+  } catch (err) {
+    console.error("Error in fetchExtraChargeOnPaymentID:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
@@ -748,4 +795,5 @@ export default {
   renderShareCertificate,
   createExtraChargeReceipt,
   collectAllExtraChargeHistory,
+  fetchExtraChargeOnPaymentID,
 };
