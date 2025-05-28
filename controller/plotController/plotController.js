@@ -105,7 +105,7 @@ const plotTransferhistory = async (req, res) => {
   }
 };
 
-export const cancelMemberPlot = async (req, res) => {
+ const cancelMemberPlot = async (req, res) => {
   try {
     console.log('Function is called', req.body);
 
@@ -151,11 +151,25 @@ export const cancelMemberPlot = async (req, res) => {
   }
 };
 
+// GET /api/members/cancelled
+export const getCancelledMembers = async (req, res) => {
+  try {
+    const cancelledMembers = await Member.find({ cancellationDetails: { $ne: null } });
+    console.log(cancelledMembers,'total cancelled members')
+    res.status(200).json({ data: cancelledMembers });
+  } catch (error) {
+    console.error("Error fetching cancelled members:", error);
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
+
+
 
 
 export default {
     getMemberBySeniorityID,
     CreateTransfer,
     plotTransferhistory,
-    cancelMemberPlot
+    cancelMemberPlot,
+    getCancelledMembers
 }

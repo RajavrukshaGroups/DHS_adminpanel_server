@@ -18,6 +18,7 @@ router.post(
 router.get('/plot-Transferhistory',PlotController.plotTransferhistory)
 // router.post('/plot-cancel',PlotController.cancelMemberPlot)
 router.post("/plot-cancel", upload.single("cancelLetter"),PlotController.cancelMemberPlot);
+router.get("/plot-cancelled-list",PlotController.getCancelledMembers)
 
 
 export default router;
