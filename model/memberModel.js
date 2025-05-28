@@ -11,6 +11,23 @@ const propertyDetailsSchema = new mongoose.Schema({
   breadth: { type: Number },
 });
 
+const cancellationSchema = new mongoose.Schema({
+  reason: {
+    type: String,
+    required: true,
+  },
+  cancellationDate: {
+    type: Date,
+    default: Date.now,
+  },
+  remarks: {
+    type: String,
+  },
+  cancellationLetter: {
+    type: String, // Store URL or base64 string
+  },
+});
+
 const memberSchema = new mongoose.Schema({
   refname: {
     type: String,
@@ -99,6 +116,11 @@ const memberSchema = new mongoose.Schema({
   type: Boolean,
   default: false,
 },
+
+  cancellationDetails: {
+    type: cancellationSchema,
+    default: null, // If not cancelled, this remains null
+  },
 
 transferReason: {
   type: String,

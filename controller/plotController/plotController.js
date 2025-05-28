@@ -16,120 +16,6 @@ import { uploadToCloudinary } from "../../utils/cloudinary.js";
   }
 };
 
-// const CreateTransfer = async (req, res) => {
-//   try {
-//     console.log("Body Data:", req.body);
-//     console.log("Uploaded Files:", req.files);
-//     // Parse JSON strings
-//     const fromMember = JSON.parse(req.body.fromMember);
-//     const toMember = JSON.parse(req.body.toMember);
-//     const { reason, transferDate } = req.body;
-//     // Find the existing member by SeniorityID
-//     const fromMemberRecord = await Member.findOne({ SeniorityID: fromMember.seniorityId });
-//     if (!fromMemberRecord) {
-//       return res.status(404).json({ message: "From member not found with given SeniorityID." });
-//     }
-//     // Save previous member details
-//     const previousDetails = {
-//       name: fromMemberRecord.name,
-//       email: fromMemberRecord.email,
-//       mobileNumber: fromMemberRecord.mobileNumber,
-//       MemberPhoto: fromMemberRecord.MemberPhoto,
-//       MemberSign: fromMemberRecord.MemberSign,
-//     };
-//     // Upload new images if available
-//     let memberPhotoUrl = fromMemberRecord.MemberPhoto;
-//     let memberSignUrl = fromMemberRecord.MemberSign;
-//     if (req.files?.memberPhoto?.[0]) {
-//       const uploadedPhoto = await uploadToCloudinary(req.files.memberPhoto[0].buffer);
-//       memberPhotoUrl = uploadedPhoto.secure_url;
-//     }
-//     if (req.files?.memberSign?.[0]) {
-//       const uploadedSign = await uploadToCloudinary(req.files.memberSign[0].buffer);
-//       memberSignUrl = uploadedSign.secure_url;
-//     }
-//     // Update member details
-//     await Member.findByIdAndUpdate(fromMemberRecord._id, {
-//       name: toMember.name,
-//       email: toMember.email,
-//       mobileNumber: toMember.mobile,
-//       contactAddress: toMember.address,
-//       isTransferred: true,
-//       previousMemberDetails: previousDetails,
-//       refname: toMember.name,
-//       MemberPhoto: memberPhotoUrl,
-//       MemberSign: memberSignUrl,
-
-//     });
-//     // Create new transfer record
-//     const newTransfer = new Member({
-//       fromMember: fromMemberRecord._id,
-//       toMember,
-//       transferDate,
-//     });
-//     await newTransfer.save();
-//     res.status(201).json({ message: "Transfer recorded and member updated successfully." });
-//   } catch (error) {
-//     console.error("Transfer creation error:", error);
-//     res.status(500).json({ message: "Error creating transfer", error });
-//   }
-// };
-
-// const plotTransferhistory = async (req, res) => {
-//   console.log('function called');
-//   try {
-//     const { page = 1, limit = 10, search = "" } = req.query;
-//     const skip = (page - 1) * limit;
-//     const searchRegex = new RegExp(search, "i");
-//     // Build match query for filtering member names, emails, or Seniority IDs
-//     const matchQuery = {
-//       $or: [
-//         { "fromMember.name": searchRegex },
-//         { "fromMember.email": searchRegex },
-//         { "fromMember.SeniorityID": searchRegex },
-//         { "toMember.name": searchRegex },
-//         { "toMember.email": searchRegex }
-//       ]
-//     };
-//     // First count total matches for pagination
-//     const totalCount = await Transfer.countDocuments({});
-//     // Populate both fromMember and toMember
-//     const transferData = await Transfer.find()
-//       .populate("fromMember")
-//       .populate("toMember")
-//       .sort({ createdAt: -1 })
-//       .skip(skip)
-//       .limit(parseInt(limit));
-
-//     // Apply filter after population (Mongo can't deep match on populated fields directly)
-//     const filteredData = transferData.filter((item) => {
-//       const from = item.fromMember || {};
-//       const to = item.toMember || {};
-//       return (
-//         from.name?.match(searchRegex) ||
-//         from.email?.match(searchRegex) ||
-//         from.SeniorityID?.match(searchRegex) ||
-//         to.name?.match(searchRegex) ||
-//         to.email?.match(searchRegex)
-//       );
-//     });
-//     const totalFilteredPages = Math.ceil(filteredData.length / limit);
-//    console.log(filteredData,'filtered dataass')
-//     res.status(200).json({
-//       success: true,
-//       data: filteredData,
-//       totalPages: totalFilteredPages,
-//       currentPage: Number(page)
-//     });
-//   } catch (error) {
-//     console.error("Error fetching plot transfer history:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Server error while fetching transfer history.",
-//       error: error.message
-//     });
-//   }
-// };
 
 const CreateTransfer = async (req, res) => {
   try {
@@ -219,9 +105,57 @@ const plotTransferhistory = async (req, res) => {
   }
 };
 
+export const cancelMemberPlot = async (req, res) => {
+  try {
+    console.log('Function is called', req.body);
+
+    const { reason, remarks, cancellationDate, member } = req.body;
+
+    // Parse the member JSON string
+    const parsedMember = JSON.parse(member);
+    const seniorityId = parsedMember.seniorityId;
+
+    if (!seniorityId) {
+      return res.status(400).json({ message: "Seniority ID is required" });
+    }
+
+    // Find the member by SeniorityID
+    const memberDoc = await Member.findOne({ SeniorityID: seniorityId });
+
+    if (!memberDoc) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    // Upload cancellation letter to Cloudinary if file exists
+    let cancellationLetterUrl = null;
+    if (req.file && req.file.buffer) {
+      const result = await uploadToCloudinary(req.file.buffer, "dhs-project-status/member-uploads");
+      cancellationLetterUrl = result.secure_url;
+    }
+
+    // Update the cancellation details
+    memberDoc.cancellationDetails = {
+      reason,
+      remarks,
+      cancellationDate: cancellationDate ? new Date(cancellationDate) : new Date(),
+      cancellationLetter: cancellationLetterUrl,
+    };
+
+    await memberDoc.save();
+
+    res.status(200).json({ message: "Plot cancellation updated", data: memberDoc });
+
+  } catch (error) {
+    console.error("Cancel plot error:", error);
+    res.status(500).json({ message: "Failed to cancel plot", error });
+  }
+};
+
+
+
 export default {
-    
     getMemberBySeniorityID,
     CreateTransfer,
-    plotTransferhistory
+    plotTransferhistory,
+    cancelMemberPlot
 }

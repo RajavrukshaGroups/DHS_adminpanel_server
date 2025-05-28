@@ -13,8 +13,11 @@ router.post(
     { name: "memberPhoto", maxCount: 1 },
     { name: "memberSign", maxCount: 1 },
   ]),
-  PlotController.CreateTransfer
-);
+  PlotController.CreateTransfer);
 
 router.get('/plot-Transferhistory',PlotController.plotTransferhistory)
+// router.post('/plot-cancel',PlotController.cancelMemberPlot)
+router.post("/plot-cancel", upload.single("cancelLetter"),PlotController.cancelMemberPlot);
+
+
 export default router;
