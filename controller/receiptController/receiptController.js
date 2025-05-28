@@ -667,28 +667,28 @@ const createExtraChargeReceipt = async (req, res) => {
 
 const collectAllExtraChargeHistory = async (req, res) => {
   try {
-    // 1. Find all receipts where at least one payment is an Extra Charge
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search?.toLowerCase() || "";
+
     const receipts = await Receipt.find({
       "payments.paymentType": "Extra Charge",
     }).lean();
 
-    // 2. Prepare response list
     const result = [];
 
     for (const receipt of receipts) {
-      // Find extra charge payments only
       const extraChargePayments = receipt.payments.filter(
         (p) => p.paymentType === "Extra Charge"
       );
 
       if (extraChargePayments.length > 0) {
-        // 3. Get the member details
         const member = await Member.findById(receipt.member).lean();
         if (!member) continue;
 
-        // 4. Format each extra charge payment with member info
         extraChargePayments.forEach((payment) => {
-          result.push({
+          const data = {
             paymentId: payment._id,
             receiptId: receipt._id,
             receiptNo: payment.receiptNo,
@@ -701,8 +701,6 @@ const collectAllExtraChargeHistory = async (req, res) => {
             chequeNumber: payment.chequeNumber,
             ddNumber: payment.ddNumber,
             otherCharges: payment.otherCharges,
-
-            // Member details
             memberName: member.name,
             email: member.email,
             SeniorityID: member.SeniorityID,
@@ -710,12 +708,29 @@ const collectAllExtraChargeHistory = async (req, res) => {
             plotDimension: member.propertyDetails
               ? `${member.propertyDetails.length} x ${member.propertyDetails.breadth}`
               : "",
-          });
+          };
+
+          // Apply search filter
+          if (
+            !search ||
+            data.memberName?.toLowerCase().includes(search) ||
+            data.projectName?.toLowerCase().includes(search) ||
+            data.SeniorityID?.toLowerCase().includes(search)
+          ) {
+            result.push(data);
+          }
         });
       }
     }
 
-    return res.status(200).json(result);
+    const paginatedResult = result.slice(skip, skip + limit);
+
+    return res.status(200).json({
+      data: paginatedResult,
+      total: result.length,
+      page,
+      totalPages: Math.ceil(result.length / limit),
+    });
   } catch (err) {
     console.error("Error fetching extra charge history:", err);
     return res.status(500).json({ error: "Internal server error" });

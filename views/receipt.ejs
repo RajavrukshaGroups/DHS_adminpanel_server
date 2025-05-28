@@ -32,18 +32,37 @@
       </section>
 
       <section class="details">
-        <p>Received from Smt./Sri : <strong><%= name %></strong></p>
-        <p>Address : <strong><%= address %></strong></p>
+        <p>
+          Received from Smt./Sri :
+          <strong style="text-transform: capitalize"><%= name %></strong>
+        </p>
+        <p>
+          Address :
+          <strong style="text-transform: capitalize"><%= address %></strong>
+        </p>
         <p>Rupees : <strong><%= amountInWords %></strong></p>
-        <p>Payment Mode : <strong><%= paymentMode%></strong></p>
+        <p>
+          Payment Mode :
+          <strong style="text-transform: capitalize"><%= paymentMode%></strong>
+        </p>
         <p>
           RTGS/CHEQUES/DD No :
           <strong
             ><%= chequeNumber || ddNumber || transactionId || "-" %></strong
           >
         </p>
-        <p>Bank : <strong><%= bankName || "-" %></strong></p>
-        <p>Branch : <strong><%= branchName || "-" %></strong></p>
+        <p>
+          Bank :
+          <strong style="text-transform: capitalize"
+            ><%= bankName || "-" %></strong
+          >
+        </p>
+        <p>
+          Branch :
+          <strong style="text-transform: capitalize"
+            ><%= branchName || "-" %></strong
+          >
+        </p>
         <% if (projectName) { %>
         <p>
           Project Name: <strong class="capitalize"><%= projectName %></strong>
