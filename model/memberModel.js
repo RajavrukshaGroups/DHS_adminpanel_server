@@ -9,6 +9,7 @@ const propertyDetailsSchema = new mongoose.Schema({
   percentageCost: { type: Number },
   length: { type: Number },
   breadth: { type: Number },
+  paidAmount: { type: Number, default: 0 },
 });
 
 const cancellationSchema = new mongoose.Schema({
