@@ -264,7 +264,7 @@ const getConfirmation = async (req, res) => {
     console.log(memberId, "member idd");
 
     const member = await Member.findById(memberId);
-    
+
     if (!member) {
       return res.status(404).json({ message: "Member not found" });
     }
@@ -295,7 +295,6 @@ const getConfirmation = async (req, res) => {
       projectLocation,
       siteDownPaymentAmount,
     });
-    
   } catch (error) {
     console.error("Error in getConfirmation:", error);
     res.status(500).json({ message: "Server error", error });
@@ -562,24 +561,74 @@ const updateMemberDetails = async (req, res) => {
   }
 };
 
+// const addReceiptToMember = async (req, res) => {
+//   try {
+//     const { memberId } = req.params;
+//     console.log("memberId", memberId);
+//     const data = req.body;
+//     console.log("data receipt", data);
+
+//     // 1. Fetch the existing member
+//     const existingMember = await Member.findById(memberId);
+
+//     if (!existingMember) {
+//       return res.status(404).json({ error: "Member not found" });
+//     }
+
+//     // 2. Call the same createReceipt logic used in addMemberDetails
+//     const receiptResponse = await createReceipt(memberId, data);
+
+//     if (receiptResponse.status === 200) {
+//       res.status(200).json({
+//         message: "Receipt added successfully",
+//         receipt: receiptResponse.data,
+//       });
+//     } else {
+//       res.status(500).json({ error: receiptResponse.error });
+//     }
+//   } catch (error) {
+//     console.error("Error in addReceiptToMember:", error);
+//     res.status(500).json({ error: "Failed to add receipt to member" });
+//   }
+// };
+
 const addReceiptToMember = async (req, res) => {
   try {
     const { memberId } = req.params;
-    console.log("memberId", memberId);
     const data = req.body;
-    console.log("data receipt", data);
 
-    // 1. Fetch the existing member
+    console.log("paid amount data", data);
+
     const existingMember = await Member.findById(memberId);
 
     if (!existingMember) {
       return res.status(404).json({ error: "Member not found" });
     }
 
-    // 2. Call the same createReceipt logic used in addMemberDetails
+    // Create the receipt
     const receiptResponse = await createReceipt(memberId, data);
 
     if (receiptResponse.status === 200) {
+      const receiptAmount = Number(data.amount) || 0;
+      const paymentType = (data.paymentType || "").toLowerCase();
+
+      console.log("receipt paid amount", receiptAmount);
+      console.log("payment type", paymentType);
+
+      // Only update paidAmount for specific payment types
+      const eligiblePaymentTypes = [
+        "siteadvance",
+        "sitedownpayment",
+        "installments",
+      ];
+
+      if (eligiblePaymentTypes.includes(paymentType)) {
+        existingMember.propertyDetails.paidAmount =
+          (existingMember.propertyDetails.paidAmount || 0) + receiptAmount;
+
+        await existingMember.save();
+      }
+
       res.status(200).json({
         message: "Receipt added successfully",
         receipt: receiptResponse.data,
@@ -711,6 +760,56 @@ const getAffidavitById = async (req, res) => {
 
 // In your routes
 // Controller
+
+// const editReceiptToMember = async (req, res) => {
+//   try {
+//     const { memberId } = req.params;
+//     const data = req.body;
+//     const { paymentId } = req.query;
+
+//     // 1. Find the member
+//     const member = await Member.findById(memberId);
+//     if (!member) return res.status(404).json({ error: "Member not found" });
+
+//     // 2. Get all receipts for the member
+//     const receipts = await Receipt.find({ member: memberId });
+
+//     // 3. Find the payment in any of the receipts
+//     let paymentToUpdate = null;
+//     let receiptContainingPayment = null;
+
+//     for (const receipt of receipts) {
+//       const payment = receipt.payments.id(paymentId);
+//       if (payment) {
+//         paymentToUpdate = payment;
+//         receiptContainingPayment = receipt;
+//         break;
+//       }
+//     }
+
+//     if (!paymentToUpdate) {
+//       return res.status(404).json({ error: "Payment not found" });
+//     }
+
+//     // 4. Update fields
+//     Object.keys(data).forEach((key) => {
+//       if (data[key] !== undefined) {
+//         paymentToUpdate[key] = data[key];
+//       }
+//     });
+
+//     await receiptContainingPayment.save();
+
+//     return res.status(200).json({
+//       message: "Receipt payment updated successfully",
+//       updatedPayment: paymentToUpdate,
+//     });
+//   } catch (error) {
+//     console.error("Error in editReceiptToMember:", error);
+//     res.status(500).json({ error: "Failed to update receipt payment" });
+//   }
+// };
+
 const editReceiptToMember = async (req, res) => {
   try {
     const { memberId } = req.params;
@@ -741,6 +840,25 @@ const editReceiptToMember = async (req, res) => {
       return res.status(404).json({ error: "Payment not found" });
     }
 
+    // Prepare for paidAmount adjustment
+    const eligibleTypes = ["siteadvance", "sitedownpayment", "installments"];
+    const oldPaymentType = (paymentToUpdate.paymentType || "").toLowerCase();
+    const oldAmount = Number(paymentToUpdate.amount || 0);
+    const newPaymentType = (
+      data.paymentType ||
+      paymentToUpdate.paymentType ||
+      ""
+    ).toLowerCase();
+    const newAmount =
+      data.amount !== undefined ? Number(data.amount) : oldAmount;
+
+    if (isNaN(oldAmount) || isNaN(newAmount)) {
+      return res.status(400).json({ error: "Invalid amount format" });
+    }
+
+    const wasEligible = eligibleTypes.includes(oldPaymentType);
+    const isEligible = eligibleTypes.includes(newPaymentType);
+
     // 4. Update fields
     Object.keys(data).forEach((key) => {
       if (data[key] !== undefined) {
@@ -749,6 +867,18 @@ const editReceiptToMember = async (req, res) => {
     });
 
     await receiptContainingPayment.save();
+
+    // 5. Update member.paidAmount if needed
+    if (wasEligible || isEligible) {
+      let adjustment = 0;
+      if (wasEligible) adjustment -= oldAmount;
+      if (isEligible) adjustment += newAmount;
+
+      member.propertyDetails.paidAmount =
+        Number(member.propertyDetails.paidAmount || 0) + adjustment;
+
+      await member.save();
+    }
 
     return res.status(200).json({
       message: "Receipt payment updated successfully",
@@ -759,6 +889,7 @@ const editReceiptToMember = async (req, res) => {
     res.status(500).json({ error: "Failed to update receipt payment" });
   }
 };
+
 const checkDuplicatesPaymentTypeToAddReceipt = async (req, res) => {
   try {
     const { memberId } = req.params;
@@ -805,6 +936,59 @@ const getMemberData = async (req, res) => {
   } catch (err) {}
 };
 
+// const deleteMemberReceiptPaymentEach = async (req, res) => {
+//   const { memberId } = req.params;
+//   const { paymentType, installmentNumber } = req.body;
+
+//   try {
+//     // Step 1: Find the member
+//     const member = await Member.findById(memberId);
+//     if (!member) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+
+//     // Step 2: Get the receipt(s) linked to this member
+//     const receipts = await Receipt.find({ _id: { $in: member.receiptId } });
+
+//     let paymentDeleted = false;
+
+//     // Step 3: Iterate through receipts and try to remove the matching payment
+//     for (const receipt of receipts) {
+//       const initialLength = receipt.payments.length;
+
+//       receipt.payments = receipt.payments.filter((payment) => {
+//         if (installmentNumber) {
+//           return !(
+//             payment.paymentType === paymentType &&
+//             payment.installmentNumber === installmentNumber
+//           );
+//         } else {
+//           return payment.paymentType !== paymentType;
+//         }
+//       });
+
+//       if (receipt.payments.length < initialLength) {
+//         await receipt.save();
+//         paymentDeleted = true;
+//         break; // stop after the first successful deletion
+//       }
+//     }
+
+//     if (!paymentDeleted) {
+//       return res.status(404).json({
+//         message: "No matching payment found to delete",
+//       });
+//     }
+
+//     res.status(200).json({
+//       message: "Payment deleted successfully",
+//     });
+//   } catch (err) {
+//     console.error("Error deleting receipt entry:", err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 const deleteMemberReceiptPaymentEach = async (req, res) => {
   const { memberId } = req.params;
   const { paymentType, installmentNumber } = req.body;
@@ -819,27 +1003,35 @@ const deleteMemberReceiptPaymentEach = async (req, res) => {
     // Step 2: Get the receipt(s) linked to this member
     const receipts = await Receipt.find({ _id: { $in: member.receiptId } });
 
+    const eligibleTypes = ["siteadvance", "sitedownpayment", "installments"];
     let paymentDeleted = false;
+    let deletedAmount = 0;
 
     // Step 3: Iterate through receipts and try to remove the matching payment
     for (const receipt of receipts) {
-      const initialLength = receipt.payments.length;
+      const originalPayments = [...receipt.payments];
 
+      // Filter payments and identify any deleted payment
       receipt.payments = receipt.payments.filter((payment) => {
-        if (installmentNumber) {
-          return !(
-            payment.paymentType === paymentType &&
+        const isMatch = installmentNumber
+          ? payment.paymentType === paymentType &&
             payment.installmentNumber === installmentNumber
-          );
-        } else {
-          return payment.paymentType !== paymentType;
+          : payment.paymentType === paymentType;
+
+        if (
+          isMatch &&
+          eligibleTypes.includes(payment.paymentType.toLowerCase())
+        ) {
+          deletedAmount += Number(payment.amount || 0);
         }
+
+        return !isMatch;
       });
 
-      if (receipt.payments.length < initialLength) {
+      if (receipt.payments.length < originalPayments.length) {
         await receipt.save();
         paymentDeleted = true;
-        break; // stop after the first successful deletion
+        break; // Stop after deleting from first matching receipt
       }
     }
 
@@ -847,6 +1039,13 @@ const deleteMemberReceiptPaymentEach = async (req, res) => {
       return res.status(404).json({
         message: "No matching payment found to delete",
       });
+    }
+
+    // Step 4: Adjust member's paidAmount if applicable
+    if (deletedAmount > 0) {
+      member.propertyDetails.paidAmount =
+        Number(member.propertyDetails.paidAmount || 0) - deletedAmount;
+      await member.save();
     }
 
     res.status(200).json({
