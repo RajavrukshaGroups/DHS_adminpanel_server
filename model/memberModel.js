@@ -105,33 +105,33 @@ const memberSchema = new mongoose.Schema({
   ShareCertificateNumber: {
     type: String,
   },
-  
+
   // receiptIds: [
   //   {
   //     type: mongoose.Schema.Types.ObjectId,
   //     ref: "Receipt",
   //   },
   // ],
-   isTransferred: {
-  type: Boolean,
-  default: false,
-},
+  isTransferred: {
+    type: Boolean,
+    default: false,
+  },
 
   cancellationDetails: {
     type: cancellationSchema,
     default: null, // If not cancelled, this remains null
   },
 
-transferReason: {
-  type: String,
-},
-previousMemberDetails: {
-  name: String,
-  email: String,
-  mobileNumber: Number,
-  MemberPhoto: String,
-  MemberSign: String,
-},
+  transferReason: {
+    type: String,
+  },
+  previousMemberDetails: {
+    name: String,
+    email: String,
+    mobileNumber: Number,
+    MemberPhoto: String,
+    MemberSign: String,
+  },
 
   receiptId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -148,7 +148,6 @@ previousMemberDetails: {
     type: Date,
     default: Date.now,
   },
- 
 });
 
 const Member = mongoose.model("Member", memberSchema);
