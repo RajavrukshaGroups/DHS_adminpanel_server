@@ -784,6 +784,48 @@ const fetchExtraChargeOnPaymentID = async (req, res) => {
   }
 };
 
+const updateExtraChargeReceipt = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const updateData = req.body;
+
+    console.log("payment id", paymentId);
+    console.log("updated data", updateData);
+
+    const updatedReceipt = await Receipt.findOneAndUpdate(
+      { "payments._id": paymentId }, // find the Receipt containing this payment
+      {
+        $set: {
+          "payments.$.receiptNo": updateData.recieptNo,
+          "payments.$.date": updateData.date,
+          "payments.$.paymentMode": updateData.paymentMode,
+          "payments.$.paymentType": updateData.paymentType,
+          "payments.$.chequeNumber": updateData.chequeNumber,
+          "payments.$.bankName": updateData.bankName,
+          "payments.$.branchName": updateData.branchName,
+          "payments.$.transactionId": updateData.transactionId,
+          "payments.$.ddNumber": updateData.ddNumber,
+          "payments.$.otherCharges": updateData.otherCharges,
+          "payments.$.amount": updateData.amount,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedReceipt) {
+      return res.status(404).json({ message: "Receipt not found" });
+    }
+
+    res.status(200).json({
+      message: "Receipt updated successfully",
+      data: updatedReceipt,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
@@ -796,4 +838,5 @@ export default {
   createExtraChargeReceipt,
   collectAllExtraChargeHistory,
   fetchExtraChargeOnPaymentID,
+  updateExtraChargeReceipt,
 };

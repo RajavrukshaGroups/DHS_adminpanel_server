@@ -30,5 +30,9 @@ router.get(
   "/get-extra-charge-by-paymentid/:paymentId",
   ReceiptController.fetchExtraChargeOnPaymentID
 );
+router.put(
+  "/update-extra-charge-receipt/:paymentId",
+  ReceiptController.updateExtraChargeReceipt
+);
 
 export default router;
