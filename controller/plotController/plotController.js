@@ -152,7 +152,8 @@ const plotTransferhistory = async (req, res) => {
 };
 
 // GET /api/members/cancelled
-export const getCancelledMembers = async (req, res) => {
+
+ const getCancelledMembers = async (req, res) => {
   try {
     const cancelledMembers = await Member.find({ cancellationDetails: { $ne: null } });
     console.log(cancelledMembers,'total cancelled members')
@@ -163,7 +164,26 @@ export const getCancelledMembers = async (req, res) => {
   }
 };
 
-
+const DeletePlotCancelation =async (req,res)=>{
+try {
+    const { memberId } = req.body;
+    console.log(memberId,'incomign member id')
+    if (!memberId) {
+      return res.status(400).json({ message: "Member ID is required" });
+    }
+    const member = await Member.findById(memberId);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+    // Clear the cancellationDetails field
+    member.cancellationDetails = null;
+    await member.save();
+    res.status(200).json({ message: "Plot cancellation details deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting cancellation details:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
 
 
 export default {
@@ -171,5 +191,6 @@ export default {
     CreateTransfer,
     plotTransferhistory,
     cancelMemberPlot,
-    getCancelledMembers
+    getCancelledMembers,
+    DeletePlotCancelation
 }
