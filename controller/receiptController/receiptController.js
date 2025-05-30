@@ -826,6 +826,25 @@ const updateExtraChargeReceipt = async (req, res) => {
   }
 };
 
+const getAllReceiptIds = async (req, res) => {
+  try {
+    // Fetch only the payments field to reduce data load
+    const receipts = await Receipt.find({}, { payments: 1 });
+
+    // Extract all receiptNo values from nested payments arrays
+    const receiptIds = receipts.flatMap((receipt) =>
+      receipt.payments
+        .filter((payment) => payment.receiptNo) // ensure receiptNo exists
+        .map((payment) => payment.receiptNo)
+    );
+
+    res.status(200).json({ receiptIds });
+  } catch (err) {
+    console.error("Error fetching receipt IDs:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
@@ -839,4 +858,5 @@ export default {
   collectAllExtraChargeHistory,
   fetchExtraChargeOnPaymentID,
   updateExtraChargeReceipt,
+  getAllReceiptIds,
 };
