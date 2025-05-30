@@ -35,4 +35,9 @@ router.put(
   ReceiptController.updateExtraChargeReceipt
 );
 
+router.get(
+  "/get-all-receipt-ids",
+  ReceiptController.getAllReceiptIds
+);
+
 export default router;
