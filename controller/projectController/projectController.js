@@ -8,12 +8,20 @@ import { sendProjectStatusEmails } from "../../utils/sendProjectStatusMail.js";
 
 const addProjectDetails = async (req, res) => {
   try {
-    const { projectName, shortCode, status, dimensions, location } = req.body;
+    const {
+      projectName,
+      shortCode,
+      status,
+      dimensions,
+      description,
+      location,
+    } = req.body;
 
     if (
       !projectName ||
       !shortCode ||
       !status ||
+      !description ||
       !location ||
       !Array.isArray(dimensions)
     ) {
@@ -45,6 +53,7 @@ const addProjectDetails = async (req, res) => {
 
     const projectNameLower = projectName.trim().toLowerCase();
     const shortCodeLower = shortCode.trim().toLowerCase();
+    const descriptionTrim = description.trim();
 
     const existingShortCode = await Project.findOne({
       shortCode: shortCodeLower,
@@ -68,6 +77,7 @@ const addProjectDetails = async (req, res) => {
     const newProject = new Project({
       projectName: projectNameLower,
       shortCode: shortCodeLower,
+      description: descriptionTrim,
       status,
       dimensions,
       location,
@@ -100,6 +110,7 @@ const getProjectDetails = async (req, res) => {
         status: 1,
         shortCode: 1,
         location: 1,
+        description: 1,
         _id: 0,
       }
     );
@@ -118,8 +129,14 @@ const getProjectDetails = async (req, res) => {
 };
 
 const updateLandDetails = async (req, res) => {
-  const { projectName, dimensionId, pricePerSqft, propertyCost, location } =
-    req.body;
+  const {
+    projectName,
+    dimensionId,
+    pricePerSqft,
+    propertyCost,
+    location,
+    description,
+  } = req.body;
 
   try {
     const project = await Project.findOne({ projectName });
@@ -133,6 +150,12 @@ const updateLandDetails = async (req, res) => {
         message: "Location not found.",
       });
     }
+
+    if (!description) {
+      return res.status(400).json({
+        message: "Description not found.",
+      });
+    }
     const dimension = project.dimensions.id(dimensionId);
     if (!dimension) {
       return res.status(404).json({ message: "Dimension not found" });
@@ -141,6 +164,7 @@ const updateLandDetails = async (req, res) => {
     dimension.pricePerSqft = pricePerSqft;
     dimension.propertyCost = propertyCost;
     project.location = location;
+    project.description = description;
 
     await project.save();
 
