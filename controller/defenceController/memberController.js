@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Member from "../../model/memberModel.js";
+import Project from "../../model/projectModel.js";
 
 // import Member from "../../models/memberModels/memberModel.js";
 
@@ -111,10 +112,53 @@ const fetchReceipts = async (req, res) => {
 
 const fetchProjectStatus = async (req, res) => {
   const seniorityId = req.query.seniority_id;
+
+  try {
+    if (!seniorityId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Seniority ID is required" });
+    }
+
+    // Step 1: Find the member using the seniorityId
+    const member = await Member.findOne({ SeniorityID: seniorityId });
+
+    if (!member) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Member not found" });
+    }
+
+    const projectName = member.propertyDetails?.projectName;
+
+    if (!projectName) {
+      return res.status(404).json({
+        success: false,
+        message: "Project name not found in member data",
+      });
+    }
+
+    // Step 2: Find the project using the extracted project name
+    const project = await Project.findOne({ projectName: projectName });
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    res.json([project]); // Send as an array so frontend map works
+  } catch (error) {
+    console.error("Error fetching project status:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+const extraChargeReceipts = async (req, res) => {
+  const seniorityId = req.query.seniority_id;
   try {
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "server error" });
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
@@ -124,4 +168,5 @@ export default {
   fetchUserData,
   fetchReceipts,
   fetchProjectStatus,
+  extraChargeReceipts,
 };
