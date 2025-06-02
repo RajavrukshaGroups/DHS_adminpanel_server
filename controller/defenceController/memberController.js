@@ -31,9 +31,8 @@ const memberLogin = async (req, res) => {
       success: true,
       seniority_id: memberData.SeniorityID,
       message: "Login successful",
-    // Adjust according to your frontend route
+      // Adjust according to your frontend route
     });
-
   } catch (error) {
     console.error("Error during login:", error.message);
     return res
@@ -46,9 +45,11 @@ const dashboardDatas = async (req, res) => {
   const seniorityId = req.params.id;
   try {
     const memberData = await Member.findOne({ SeniorityID: seniorityId });
-    console.log(memberData,'incoming member datas')
+    console.log(memberData, "incoming member datas");
     if (!memberData) {
-      return res.status(404).json({ success: false, message: "Member not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Member not found" });
     }
 
     res.status(200).json({ success: true, data: memberData });
@@ -59,8 +60,68 @@ const dashboardDatas = async (req, res) => {
 };
 // export default memberLogin;
 
+const fetchUserData = async (req, res) => {
+  // const seniorityId = req.params.seniorityId;
+  const seniorityId = req.query.seniority_id; // not req.params
+  try {
+    const member = await Member.findOne({ SeniorityID: seniorityId });
+
+    if (!member) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Member not found" });
+    }
+
+    res.status(200).json([member]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "server error" });
+  }
+};
+
+const fetchReceipts = async (req, res) => {
+  const seniorityId = req.query.seniority_id;
+
+  try {
+    if (!seniorityId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "seniority id is required" });
+    }
+
+    const member = await Member.findOne({ SeniorityID: seniorityId }).populate(
+      "receiptId"
+    );
+    if (!member) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Member not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Receipts fetched successfully",
+      data: member.receiptId,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "server error" });
+  }
+};
+
+const fetchProjectStatus = async (req, res) => {
+  const seniorityId = req.query.seniority_id;
+  try {
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "server error" });
+  }
+};
 
 export default {
-    memberLogin,
-    dashboardDatas
-}
+  memberLogin,
+  dashboardDatas,
+  fetchUserData,
+  fetchReceipts,
+  fetchProjectStatus,
+};
