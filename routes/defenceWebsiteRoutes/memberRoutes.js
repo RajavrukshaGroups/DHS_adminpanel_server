@@ -8,5 +8,6 @@ router.get("/fetchUserData", defenceController.fetchUserData);
 router.get("/fetchReceipts", defenceController.fetchReceipts);
 router.get("/projectstatus", defenceController.fetchProjectStatus);
 router.get("/extracharges", defenceController.extraChargeReceipts);
+router.post("/contactus", defenceController.contactUs);
 
 export default router;

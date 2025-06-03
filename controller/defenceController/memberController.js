@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Member from "../../model/memberModel.js";
 import Project from "../../model/projectModel.js";
 import Receipt from "../../model/receiptModel.js";
+import MemberContact from "../../model/memberContactModel.js";
+import { transporter } from "../../utils/emailTransporter.js";
 // import { Transaction } from "mongodb";
 
 // import Member from "../../models/memberModels/memberModel.js";
@@ -205,6 +207,65 @@ const extraChargeReceipts = async (req, res) => {
   }
 };
 
+const contactUs = async (req, res) => {
+  try {
+    const { name, phone, email, subject, message, location } = req.body;
+
+    if (!name || !phone || !email || !subject) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Save to database
+    const newContact = new MemberContact({
+      name,
+      phone,
+      email,
+      subject,
+      message,
+      location,
+    });
+    await newContact.save();
+
+    // Send email
+    const mailOptions = {
+      from: `"${name}" <${email}>`,
+      to: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
+      subject: `Contact Form: ${subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2 style="color: #1f4892;">New Contact Us Submission</h2>
+          <p style="font-size: 16px;">You have received a new message from the website contact form.</p>
+          <hr style="margin: 20px 0;">
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+        ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
+          ${
+            message
+              ? `<p><strong>Message:</strong><br>${message.replace(
+                  /\n/g,
+                  "<br>"
+                )}</p>`
+              : ""
+          }
+          <hr style="margin: 20px 0;">
+          <p style="color: gray; font-size: 12px;">This message was submitted through the Defence Housing Society contact form.</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      message: "Message sent successfully.",
+    });
+  } catch (err) {
+    console.error("Error sending email:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 export default {
   memberLogin,
   dashboardDatas,
@@ -212,4 +273,5 @@ export default {
   fetchReceipts,
   fetchProjectStatus,
   extraChargeReceipts,
+  contactUs,
 };
