@@ -7,5 +7,6 @@ router.get("/dashboard/:id", defenceController.dashboardDatas);
 router.get("/fetchUserData", defenceController.fetchUserData);
 router.get("/fetchReceipts", defenceController.fetchReceipts);
 router.get("/projectstatus", defenceController.fetchProjectStatus);
+router.get("/extracharges", defenceController.extraChargeReceipts);
 
 export default router;

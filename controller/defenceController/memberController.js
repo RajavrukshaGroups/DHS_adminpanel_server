@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import Member from "../../model/memberModel.js";
 import Project from "../../model/projectModel.js";
+import Receipt from "../../model/receiptModel.js";
+// import { Transaction } from "mongodb";
 
 // import Member from "../../models/memberModels/memberModel.js";
 
@@ -156,8 +158,49 @@ const fetchProjectStatus = async (req, res) => {
 
 const extraChargeReceipts = async (req, res) => {
   const seniorityId = req.query.seniority_id;
+
   try {
+    if (!seniorityId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Seniority id is required" });
+    }
+
+    const member = await Member.findOne({ SeniorityID: seniorityId });
+
+    if (!member || !member.receiptId || member.receiptId.length === 0) {
+      return res.status(404).json([]);
+    }
+
+    const receiptIds = member.receiptId;
+    const receipts = await Receipt.find({ _id: { $in: receiptIds } });
+
+    const extraCharges = [];
+
+    receipts.forEach((receipt) => {
+      receipt.payments.forEach((payment) => {
+        if (payment.paymentType.toLowerCase() === "extra charge") {
+          extraCharges.push({
+            paymentId: payment._id,
+            receiptId: receipt._id,
+            receiptNo: payment.receiptNo,
+            date: payment.date,
+            paymentMode: payment.paymentMode,
+            bankName: payment.bankName,
+            branchName: payment.branchName,
+            amount: payment.amount,
+            otherCharges: payment.otherCharges || "",
+            chequeNumber: payment.chequeNumber || "",
+            ddNumber: payment.ddNumber || "",
+            transactionId: payment.transactionId || "",
+          });
+        }
+      });
+    });
+
+    res.status(200).json({ success: true, data: extraCharges });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
