@@ -12,7 +12,7 @@ import connectDB from "./config/db.js";
 import memberRoutes from "./routes/memberRoutes/memberRoutes.js";
 import plotRoutes from "./routes/plotRoutes/plotRoutes.js";
 import recieptRoutes from "./routes/receiptRoutes/receiptRoutes.js";
-import defenceWebsiteRoutes from "./routes/defenceWebsiteRoutes/memberRoutes.js"
+import defenceWebsiteRoutes from "./routes/defenceWebsiteRoutes/memberRoutes.js";
 
 const app = express();
 
@@ -30,7 +30,7 @@ connectDB();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname,"public")));
+app.use(express.static(path.join(__dirname, "public")));
 
 const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
 app.use(
@@ -52,10 +52,12 @@ app.use("/project", projectRoutes);
 app.use("/member", memberRoutes);
 app.use("/receipt", recieptRoutes);
 app.use("/plot", plotRoutes);
-app.use("/defenceWebsiteRoutes",defenceWebsiteRoutes)
+app.use("/defenceWebsiteRoutes", defenceWebsiteRoutes);
 
 // Start server
 const PORT = 4000;
+// const PORT = 3000;
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

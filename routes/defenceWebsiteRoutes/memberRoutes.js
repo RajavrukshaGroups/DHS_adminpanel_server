@@ -13,13 +13,15 @@ router.post(
   formidable({ multiples: true }),
   defenceController.AddOnlineApplication
 );
-
-router.post("/get-online-applications",defenceController.getOnlineApplications)
+router.get("/fetchUserData", defenceController.fetchUserData);
+router.get("/fetchReceipts", defenceController.fetchReceipts);
+router.get("/projectstatus", defenceController.fetchProjectStatus);
+router.get("/extracharges", defenceController.extraChargeReceipts);
+router.post("/contactus", defenceController.contactUs);
 router.post("/send-otp",defenceController.sendOtpToEmail);
+router.post("/get-online-applications",defenceController.getOnlineApplications)
 router.post('/verify-otp',defenceController.verifyOtp);
-// router.get('/getmemberdatas',defenceController.get)
 router.get("/get-application/:id", defenceController.getOnlineApplicationById);
 router.post("/resend-otp", defenceController.sendOtpToEmail);
-
 
 export default router;
