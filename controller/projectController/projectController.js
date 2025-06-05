@@ -261,6 +261,7 @@ export const postProjectStatus = async (req, res) => {
     if (sendEmail) {
       const members = await Member.find({
         "propertyDetails.projectName": projectName,
+        isActive: true, // it sends mails to members whose active status is true
       });
 
       if (!members || members.length === 0) {
@@ -397,6 +398,7 @@ const updateIndProjectStatus = async (req, res) => {
     if (sendEmail) {
       const members = await Member.find({
         "propertyDetails.projectName": projectName,
+        isActive: true,
       });
 
       if (!members || members.length === 0) {
