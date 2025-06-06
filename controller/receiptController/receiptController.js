@@ -202,6 +202,8 @@ const fetchReceipts = async (req, res) => {
       totalPages,
       currentPage: page,
     });
+
+    console.log("receipts-members", receipts);
   } catch (err) {
     console.error("error fetching receipts", err);
     res.status(500).json({ error: "Failed to fetch receipts." });
@@ -556,6 +558,99 @@ const FetchEditReceiptHistory = async (req, res) => {
   }
 };
 
+const collectShareCertificate = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Step 1: Fetch all receipts with at least one payment having shareFee > 0 and numberOfShares > 0
+    const matchCondition = {
+      payments: {
+        $elemMatch: {
+          shareFee: { $gt: 0 },
+          numberOfShares: { $gt: 0 },
+        },
+      },
+    };
+
+    const searchRegex = new RegExp(search, "i");
+
+    // Step 2: Aggregate with member details
+    const aggregateQuery = [
+      { $match: matchCondition },
+
+      // Lookup the member details
+      {
+        $lookup: {
+          from: "members",
+          localField: "member",
+          foreignField: "_id",
+          as: "member",
+        },
+      },
+      { $unwind: "$member" },
+
+      // Optional search on member name or email
+      {
+        $match: {
+          $or: [
+            { "member.name": { $regex: searchRegex } },
+            { "member.email": { $regex: searchRegex } },
+          ],
+        },
+      },
+
+      // Sort by newest
+      { $sort: { "payments.date": -1 } },
+
+      // Pagination
+      { $skip: parseInt(skip) },
+      { $limit: parseInt(limit) },
+    ];
+
+    const results = await Receipt.aggregate(aggregateQuery);
+
+    // Step 3: Get total count for pagination
+    const totalCountAggregation = await Receipt.aggregate([
+      { $match: matchCondition },
+      {
+        $lookup: {
+          from: "members",
+          localField: "member",
+          foreignField: "_id",
+          as: "member",
+        },
+      },
+      { $unwind: "$member" },
+      {
+        $match: {
+          $or: [
+            { "member.name": { $regex: searchRegex } },
+            { "member.email": { $regex: searchRegex } },
+          ],
+        },
+      },
+      { $count: "total" },
+    ]);
+
+    const totalCount = totalCountAggregation[0]?.total || 0;
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return res.status(200).json({
+      success: true,
+      data: results,
+      currentPage: parseInt(page),
+      totalPages,
+    });
+  } catch (error) {
+    console.error("Error fetching share certificate receipts:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch share certificates",
+    });
+  }
+};
+
 const renderShareCertificate = async (req, res) => {
   try {
     const { receiptId } = req.params;
@@ -806,4 +901,5 @@ export default {
   fetchExtraChargeOnPaymentID,
   updateExtraChargeReceipt,
   getAllReceiptIds,
+  collectShareCertificate,
 };
