@@ -67,6 +67,61 @@ export const createReceipt = async (memberId, data) => {
   }
 };
 
+// const fetchReceipts = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const search = req.query.search?.trim() || "";
+//     const skip = (page - 1) * limit;
+
+//     let query = {};
+
+//     if (search) {
+//       // Find matching members based on name, SeniorityID, or project name
+//       const matchingMembers = await Member.find({
+//         $or: [
+//           { name: new RegExp(search, "i") },
+//           { SeniorityID: new RegExp(search, "i") },
+//           { "propertyDetails.projectName": new RegExp(search, "i") },
+//         ],
+//       }).select("_id");
+//       console.log("matching members", matchingMembers);
+
+//       const matchingMemberIds = matchingMembers.map((m) => m._id);
+
+//       query = {
+//         $or: [
+//           { receiptNo: new RegExp(search, "i") },
+//           { member: { $in: matchingMemberIds } },
+//         ],
+//       };
+//     }
+
+//     const totalCount = await Receipt.countDocuments(query);
+
+//     const receipts = await Receipt.find(query)
+//       .populate({
+//         path: "member",
+//         select:
+//           "name mobileNumber email SeniorityID isActive date propertyDetails",
+//       })
+//       .sort({ date: -1 })
+//       .skip(skip)
+//       .limit(limit);
+
+//     const totalPages = Math.ceil(totalCount / limit);
+
+//     res.status(200).json({
+//       data: receipts,
+//       totalPages,
+//       currentPage: page,
+//     });
+//   } catch (err) {
+//     console.error("error fetching receipts", err);
+//     res.status(500).json({ error: "Failed to fetch receipts." });
+//   }
+// };
+
 const fetchReceipts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -85,29 +140,60 @@ const fetchReceipts = async (req, res) => {
           { "propertyDetails.projectName": new RegExp(search, "i") },
         ],
       }).select("_id");
-      console.log("matching members", matchingMembers);
 
       const matchingMemberIds = matchingMembers.map((m) => m._id);
 
       query = {
         $or: [
-          { receiptNo: new RegExp(search, "i") },
+          { "payments.receiptNo": new RegExp(search, "i") },
           { member: { $in: matchingMemberIds } },
         ],
       };
     }
 
-    const totalCount = await Receipt.countDocuments(query);
+    // First get the total count of payments across all receipts
+    const aggregationForCount = [
+      { $match: query },
+      { $unwind: "$payments" },
+      { $count: "totalPayments" },
+    ];
 
-    const receipts = await Receipt.find(query)
-      .populate({
-        path: "member",
-        select:
-          "name mobileNumber email SeniorityID isActive date propertyDetails",
-      })
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(limit);
+    const countResult = await Receipt.aggregate(aggregationForCount);
+    const totalCount = countResult[0]?.totalPayments || 0;
+
+    // Then get the paginated results
+    const receipts = await Receipt.aggregate([
+      { $match: query },
+      { $unwind: "$payments" },
+      { $sort: { "payments.date": -1 } },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "members",
+          localField: "member",
+          foreignField: "_id",
+          as: "member",
+        },
+      },
+      { $unwind: "$member" },
+      {
+        $project: {
+          _id: 1,
+          member: {
+            _id: "$member._id",
+            name: "$member.name",
+            mobileNumber: "$member.mobileNumber",
+            email: "$member.email",
+            SeniorityID: "$member.SeniorityID",
+            isActive: "$member.isActive",
+            date: "$member.date",
+            propertyDetails: "$member.propertyDetails",
+          },
+          payment: "$payments",
+        },
+      },
+    ]);
 
     const totalPages = Math.ceil(totalCount / limit);
 
@@ -116,150 +202,13 @@ const fetchReceipts = async (req, res) => {
       totalPages,
       currentPage: page,
     });
+
+    console.log("receipts-members", receipts);
   } catch (err) {
     console.error("error fetching receipts", err);
     res.status(500).json({ error: "Failed to fetch receipts." });
   }
 };
-
-// const getReceiptDetailsById = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     // const { paymentType } = req.query;
-//     const { paymentType, installmentNumber } = req.query;
-
-//     const receipt = await Receipt.findById(id).populate({
-//       path: "member",
-//       select:
-//         "name permanentAddress SeniorityID propertyDetails mobileNumber email",
-//     });
-
-//     if (!receipt) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Receipt not found",
-//       });
-//     }
-
-//     console.log("receipt-member", receipt);
-
-//     // const payment = receipt.payments.find((p) => p.paymentType === paymentType);
-//     let payment;
-
-//     if (paymentType === "installments" && installmentNumber) {
-//       payment = receipt.payments.find(
-//         (p) =>
-//           p.paymentType === "installments" &&
-//           p.installmentNumber === installmentNumber
-//       );
-//     } else {
-//       payment = receipt.payments.find((p) => p.paymentType === paymentType);
-//     }
-//     console.log("payment installment", payment);
-
-//     if (!payment) {
-//       return res.status(404).json({
-//         success: false,
-//         message: `Payment of type "${paymentType}" not found for this receipt.`,
-//       });
-//     }
-//     const allItems = [
-//       { name: "Membership Fee", amount: payment.membershipFee || 0 },
-//       { name: "Admission Fee", amount: payment.admissionFee || 0 },
-//       { name: "Share Fee", amount: payment.shareFee || 0 },
-//       { name: "Application Fee", amount: payment.applicationFee || 0 },
-//       {
-//         name: "Site Down Payment",
-//         amount: payment.paymentType === "siteDownPayment" ? payment.amount : 0,
-//       },
-//       {
-//         name: "Site Advance",
-//         amount: payment.paymentType === "siteAdvance" ? payment.amount : 0,
-//       },
-//       {
-//         name: "1st Installment",
-//         amount:
-//           payment.installmentNumber === "firstInstallment" ? payment.amount : 0,
-//       },
-//       {
-//         name: "2nd Installment",
-//         amount:
-//           payment.installmentNumber === "secondInstallment"
-//             ? payment.amount
-//             : 0,
-//       },
-//       {
-//         name: "3rd Installment",
-//         amount:
-//           payment.installmentNumber === "thirdInstallment" ? payment.amount : 0,
-//       },
-//       {
-//         name: "Miscellaneous Expenses",
-//         amount: payment.miscellaneousExpenses || 0,
-//       },
-//       { name: "Other Charges", amount: payment.otherCharges || 0 },
-//     ];
-
-//     // const filteredItems = allItems.filter((item) => item.amount > 0);
-//     const filteredItems = allItems.map((item) => ({
-//       ...item,
-//       amount: item.amount || 0, // default to 0 if undefined/null
-//     }));
-
-//     console.log("filteredItems", filteredItems);
-//     const totalAmount = filteredItems.reduce(
-//       (sum, item) => sum + item.amount,
-//       0
-//     );
-
-//     const receiptData = {
-//       projectName:
-//         payment.paymentType.toLowerCase() === "membership fee"
-//           ? ""
-//           : receipt.member.propertyDetails.projectName,
-//       plotDimension:
-//         payment.paymentType.toLowerCase() === "membership fee"
-//           ? ""
-//           : `${receipt.member.propertyDetails.length} X ${receipt.member.propertyDetails.breadth}`,
-//       paymentMode: payment.paymentMode,
-//       receiptNumber: payment.receiptNo,
-//       date: new Date(payment.date).toLocaleDateString("en-GB"),
-//       name: receipt.member.name,
-//       address: receipt.member.permanentAddress || "-",
-//       amountInWords: convertNumberToWords(payment.amount),
-//       total: new Intl.NumberFormat("en-IN").format(payment.amount),
-//       // total: payment.amount,
-//       // total: totalAmount,
-//       bankName: payment.bankName || "",
-//       branchName: payment.branchName || "",
-//       chequeNumber: payment.chequeNumber || "",
-//       ddNumber: payment.ddNumber || "",
-//       transactionId: payment.transactionId || "",
-//       items: filteredItems,
-//     };
-
-//     console.log("receipt for installment", receiptData);
-
-//     res.render("receipt", { ...receiptData });
-//   } catch (err) {
-//     console.error("Error fetching single receipt:", err);
-//     res.status(500).send("Failed to fetch receipt details.");
-//   }
-// };
-
-// Converts number to capitalized words + "Only"
-// function convertNumberToWords(amount) {
-//   // return (
-//   //   numberToWords
-//   //     .toWords(amount || 0)
-//   //     .replace(/\b\w/g, (char) => char.toUpperCase()) + " Only"
-//   // );
-//   return (
-//     num2words(amount || 0, { lang: "en-In" }).replace(/\b\w/g, (char) =>
-//       char.toUpperCase()
-//     ) + " Only"
-//   );
-// }
 
 const getReceiptDetailsById = async (req, res) => {
   try {
@@ -609,6 +558,99 @@ const FetchEditReceiptHistory = async (req, res) => {
   }
 };
 
+const collectShareCertificate = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Step 1: Fetch all receipts with at least one payment having shareFee > 0 and numberOfShares > 0
+    const matchCondition = {
+      payments: {
+        $elemMatch: {
+          shareFee: { $gt: 0 },
+          numberOfShares: { $gt: 0 },
+        },
+      },
+    };
+
+    const searchRegex = new RegExp(search, "i");
+
+    // Step 2: Aggregate with member details
+    const aggregateQuery = [
+      { $match: matchCondition },
+
+      // Lookup the member details
+      {
+        $lookup: {
+          from: "members",
+          localField: "member",
+          foreignField: "_id",
+          as: "member",
+        },
+      },
+      { $unwind: "$member" },
+
+      // Optional search on member name or email
+      {
+        $match: {
+          $or: [
+            { "member.name": { $regex: searchRegex } },
+            { "member.email": { $regex: searchRegex } },
+          ],
+        },
+      },
+
+      // Sort by newest
+      { $sort: { "payments.date": -1 } },
+
+      // Pagination
+      { $skip: parseInt(skip) },
+      { $limit: parseInt(limit) },
+    ];
+
+    const results = await Receipt.aggregate(aggregateQuery);
+
+    // Step 3: Get total count for pagination
+    const totalCountAggregation = await Receipt.aggregate([
+      { $match: matchCondition },
+      {
+        $lookup: {
+          from: "members",
+          localField: "member",
+          foreignField: "_id",
+          as: "member",
+        },
+      },
+      { $unwind: "$member" },
+      {
+        $match: {
+          $or: [
+            { "member.name": { $regex: searchRegex } },
+            { "member.email": { $regex: searchRegex } },
+          ],
+        },
+      },
+      { $count: "total" },
+    ]);
+
+    const totalCount = totalCountAggregation[0]?.total || 0;
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return res.status(200).json({
+      success: true,
+      data: results,
+      currentPage: parseInt(page),
+      totalPages,
+    });
+  } catch (error) {
+    console.error("Error fetching share certificate receipts:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch share certificates",
+    });
+  }
+};
+
 const renderShareCertificate = async (req, res) => {
   try {
     const { receiptId } = req.params;
@@ -859,4 +901,5 @@ export default {
   fetchExtraChargeOnPaymentID,
   updateExtraChargeReceipt,
   getAllReceiptIds,
+  collectShareCertificate,
 };

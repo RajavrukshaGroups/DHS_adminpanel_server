@@ -35,9 +35,11 @@ router.put(
   ReceiptController.updateExtraChargeReceipt
 );
 
+router.get("/get-all-receipt-ids", ReceiptController.getAllReceiptIds);
+
 router.get(
-  "/get-all-receipt-ids",
-  ReceiptController.getAllReceiptIds
+  "/collect-share-certificates",
+  ReceiptController.collectShareCertificate
 );
 
 export default router;

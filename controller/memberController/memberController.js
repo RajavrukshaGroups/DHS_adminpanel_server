@@ -8,6 +8,7 @@ import { transporter } from "../../utils/emailTransporter.js";
 import { createReceipt } from "../receiptController/receiptController.js";
 import Project from "../../model/projectModel.js"; // make sure the path is correct
 import mongoose from "mongoose";
+
 const addMemberDetails = async (req, res) => {
   try {
     const data = req.fields;
@@ -17,7 +18,6 @@ const addMemberDetails = async (req, res) => {
 
     let memberPhotoUrl = "";
     let memberSignUrl = "";
-
     if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
       const result = await uploadToCloudinary(
@@ -116,10 +116,8 @@ const getMemberDetails = async (req, res) => {
           ],
         }
       : {};
-
     const totalMembers = await Member.countDocuments(query);
     const members = await Member.find(query).skip(skip).limit(limit);
-
     if (search && members.length === 0) {
       return res.status(404).json({
         success: false,
