@@ -576,6 +576,35 @@ const CheckMembershipFee = async (req, res) => {
     res.status(500).json({ feeAdded: false, message: "Server error." });
   }
 };
+
+//check memberaffidavit model if member id exist to navigate to edit confirmation letter details
+const CheckMemberAffidavitModel = async (req, res) => {
+  try {
+    const { memberId } = req.params;
+
+    if (!memberId) {
+      return res
+        .status(400)
+        .json({ isExist: false, message: "Member ID is required" });
+    }
+
+    const affidavit = await MemberAffidavit.findOne({ userId: memberId });
+
+    if (affidavit) {
+      return res
+        .status(200)
+        .json({ isExist: true, message: "Affidavit exists", affidavit });
+    } else {
+      return res
+        .status(200)
+        .json({ isExist: false, message: "Affidavit does not exist" });
+    }
+  } catch (error) {
+    console.error("Error checking affidavit:", error);
+    res.status(500).json({ isExist: false, message: "Server error" });
+  }
+};
+
 const FetchEditReceiptHistory = async (req, res) => {
   try {
     const { receiptId } = req.params;
@@ -939,6 +968,7 @@ export default {
   viewconfirmation,
   EditAffidavit,
   CheckMembershipFee,
+  CheckMemberAffidavitModel,
   FetchEditReceiptHistory,
   renderShareCertificate,
   createExtraChargeReceipt,

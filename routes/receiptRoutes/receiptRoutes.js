@@ -11,6 +11,10 @@ router.get("/view-confirmation/:memberId", ReceiptController.viewconfirmation);
 router.get("/get-affidavit/:id", ReceiptController.EditAffidavit);
 router.get("/checkMembershipFee/:id", ReceiptController.CheckMembershipFee);
 router.get(
+  "/check-affidavit-model/:memberId",
+  ReceiptController.CheckMemberAffidavitModel
+);
+router.get(
   "/edit-receipt/payment-history/:receiptId",
   ReceiptController.FetchEditReceiptHistory
 );
