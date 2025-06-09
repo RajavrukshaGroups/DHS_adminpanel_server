@@ -14,38 +14,48 @@
           <img style="width: 800px;" src=" https://adminpanel.defencehousingsociety.com/img/letterheader.jpg " alt="Defence Habitat Housing Logo" class="logo___">
         <div class="document-header">
             <div>DHS/DHD/0380/2024-2025</div>
-            <div> <%= new Date(member.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div>
+            <!-- <div> <%= new Date(member.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div> -->
+            <div> <%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div>
         </div>
         <div class="title">SITE BOOKING CONFIRMATION</div>
         <div class="content">
           <div class="confirmation-text">
             This is to confirm that 
-            <span class="bold"><%= member.userId.saluation %>. <%= member.userId.refname %></span> 
+            <span class="bold"><%= member.userId.saluation %>. <%= member.userId.name %></span> 
             residing at 
-            <span class="bold"><%= member.userId.contactAddress %></span>, 
+            <span class="bold"><%= member.userId.permanentAddress %></span>, 
             booked a site of measuring 
            <span class="bold"><%= member.userId.propertyDetails.length %>X<%= member.userId.propertyDetails.breadth %> </span> 
             (Rate per SQFT Rs. <span class="bold"><%=receipt.member.propertyDetails.pricePerSqft %></span> /-) on this day of 
-            <span class="bold"><%= new Date(member.userId.date).toLocaleDateString('en-IN') %></span> in the proposed 
-            "<span class="bold"><%= member.userId.propertyDetails.projectName %></span>" 
+            <!-- <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN') %></span> in the proposed  -->
+            <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></span> in the proposed 
+            <span class="bold project-name"><%= member.userId.propertyDetails.projectName %></span>
             located at <span class="bold"><%=projectLocation %></span>. 
             
-            You have booked your site by paying an initial amount of 
-            <span class="bold">Rs. <%= member.totalPaidAmount %></span> /- 
-          (<span class="bold">Rupees <%= amountInWords || "_______" %> Only</span>) 
-            by way of <%= siteDownPayment?.paymentMode || "________" %>
-            <% if (siteDownPayment?.paymentMode === "netbanking") { %>
-              drawn at <%= siteDownPayment?.bankName || "_______" %>.
-            <% } else { %>
-              drawn at _______.
-            <% } %>
-            The booked site dimension is 
-            <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT.
+            You have booked your site by paying an initial amount of <span class="bold">Rs. <%= siteDownPayment?.amount %>/-</span> 
 
-           <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT. 
-            Receipt number is <%= member.userId.ReceiptNo %>. 
+          <!-- <span class="bold">Rupees <%= amountInWords %> Only</span> -->
+            by mode of <span class="bold"><%= siteDownPayment?.paymentMode %></span>.
+<% if (siteDownPayment?.paymentMode?.toLowerCase() !== 'cash') { %>
+  Ref.No
+  <span class="bold">
+    <% if (siteDownPayment?.paymentMode?.toLowerCase() === 'dd') { %>
+      <%= siteDownPayment?.ddNumber %>
+    <% } else if (siteDownPayment?.paymentMode?.toLowerCase() === 'netbanking') { %>
+      <%= siteDownPayment?.transactionId %>
+    <% } else if (siteDownPayment?.paymentMode?.toLowerCase() === 'cheque') { %>
+      <%= siteDownPayment?.chequeNumber %>
+    <% } else { %>
+      N/A
+    <% } %>
+  </span>
+<% } %>
+
+</span>.The booked site dimension is 
+            <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT.
+            Receipt number is <span class="bold"><%= siteDownPayment?.receiptNo %></span>,
             Membership No. <span class="bold"><%= member.userId.MembershipNo %></span>, 
-            Seniority Number <span class="bold"><%= member.userId.SeniorityID %>.</span> 
+            Seniority Number <span class="bold"><%= member.userId.SeniorityID %></span>.
         </div>
         
         <div class="conditions">
