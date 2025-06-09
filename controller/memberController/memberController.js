@@ -456,21 +456,89 @@ const deleteMember = async (req, res) => {
   }
 };
 
+// const getMemberById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const member = await Member.findById(id);
+//     if (!member) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+
+//     res.status(200).json(member);
+//   } catch (error) {
+//     console.error("Fetch error:", error);
+//     res.status(500).json({ message: "Server error while fetching member" });
+//   }
+// };
+
+
 const getMemberById = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const member = await Member.findById(id);
-    if (!member) {
-      return res.status(404).json({ message: "Member not found" });
+    // Find all receipts for the given member
+      const member = await Member.findById(id);
+//     if (!member) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+    const receipts = await Receipt.find({ member: id });
+    let result = null;
+    for (const receipt of receipts) {
+      const payment = receipt.payments.find(
+        (p) => p.paymentType === "Membership Fee"
+      );
+      
+      if (payment) {
+        console.log("Membership Fee payment found:", payment);
+        result = {
+          receiptId: receipt._id,
+          receiptNo: payment.receiptNo,
+          amount:payment.amount,
+          paymentInfo: payment,
+        };
+        break; // Stop at first match
+      }
+    }
+      console.log("Membership Fee Receipt ID:", result);
+    if (result) {
+      res.status(200).json({result:result,member:member});
+    } else {
+      res.status(404).json({ message: "Membership Fee receipt not found." });
     }
 
-    res.status(200).json(member);
   } catch (error) {
-    console.error("Fetch error:", error);
-    res.status(500).json({ message: "Server error while fetching member" });
+    console.error("Error fetching membership receipt:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+// const getMemberById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     console.log(id, 'member iddddddddddd');
+//     const member = await Member.findById(id);
+//     if (!member) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+//     const receipts = await Receipt.find({ member: id });
+//     console.log(receipts, "receipts for member");
+//     let membershipReceiptId = null;
+//     for (const receipt of receipts) {
+//       const hasMembershipFee = receipt.payments.some(
+//         (payment) => payment.paymentType === "Membership Fee"
+//       );
+//       if (hasMembershipFee) {
+//         membershipReceiptId = receipt._id;
+//         break; // Stop at first match
+//       }
+//     }
+//     // console.log("Membership fee receipt fount",membershipReceiptId)
+//     console.log("Membership Fee Receipt ID:", membershipReceiptId);
+//     res.status(200).json({ member, membershipReceiptId });
+//   } catch (error) {
+//     console.error("Fetch error:", error);
+//     res.status(500).json({ message: "Server error while fetching member" });
+//   }
+// };
 
 const updateMemberDetails = async (req, res) => {
   try {
