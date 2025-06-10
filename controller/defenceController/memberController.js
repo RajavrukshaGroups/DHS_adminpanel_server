@@ -271,6 +271,8 @@ const extraChargeReceipts = async (req, res) => {
       return res.status(404).json([]);
     }
 
+    // console.log(member.receiptId)
+
     const receiptIds = member.receiptId;
     const receipts = await Receipt.find({ _id: { $in: receiptIds } });
 
