@@ -367,17 +367,54 @@ const addConfirmation = async (req, res) => {
   }
 };
 
+// const getAllAffidavits = async (req, res) => {
+//   try {
+//     const data = await MemberAffidavit.find()
+//       .populate(
+//         "userId",
+//         "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo"
+//       )
+//       // adjust fields as needed
+//       .sort({ createdAt: -1 });
+//     console.log(data, "ddddddddddddddddd");
+//     res.status(200).json(data);
+//   } catch (error) {
+//     console.error("Error fetching affidavits:", error);
+//     res.status(500).json({ message: "Failed to fetch affidavits" });
+//   }
+// };
+
 const getAllAffidavits = async (req, res) => {
   try {
-    const data = await MemberAffidavit.find()
+    const affidavits = await MemberAffidavit.find()
       .populate(
         "userId",
         "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo"
       )
-      // adjust fields as needed
       .sort({ createdAt: -1 });
-    console.log(data, "ddddddddddddddddd");
-    res.status(200).json(data);
+
+    const enrichedAffidavits = await Promise.all(
+      affidavits.map(async (affidavit) => {
+        const memberId = affidavit.userId?._id;
+
+        if (!memberId) return affidavit;
+
+        const receipt = await Receipt.findOne({ member: memberId }).lean();
+
+        const siteDownPayments =
+          receipt?.payments?.filter(
+            (payment) =>
+              (payment.paymentType || "").toLowerCase() === "sitedownpayment"
+          ) || [];
+
+        return {
+          ...affidavit.toObject(),
+          siteDownPayments, // attach matching payments
+        };
+      })
+    );
+
+    res.status(200).json(enrichedAffidavits);
   } catch (error) {
     console.error("Error fetching affidavits:", error);
     res.status(500).json({ message: "Failed to fetch affidavits" });
