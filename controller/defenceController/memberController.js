@@ -42,8 +42,8 @@ const memberLogin = async (req, res) => {
   } catch (error) {
     console.error("Error during login:", error.message);
     return res
-    .status(500)
-    .json({ success: false, message: "Internal server error" });
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -67,9 +67,8 @@ const dashboardDatas = async (req, res) => {
 // Outside the function (global in-memory store)
 const otpStore = {}; // email: otp
 
-
 const sendOtpToEmail = async (req, res) => {
-  console.log(req.body,'incoming email')
+  console.log(req.body, "incoming email");
   const { email } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
   otpStore[email] = otp;
@@ -78,25 +77,23 @@ const sendOtpToEmail = async (req, res) => {
   await transporter.sendMail({
     from: `"Defence Housing Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
     to: email,
-    subject: 'Your OTP Verification Code',
+    subject: "Your OTP Verification Code",
     text: `Your OTP is: ${otp}`,
   });
 
-  res.json({ message: 'OTP sent to email.' });
+  res.json({ message: "OTP sent to email." });
 };
-
-
 
 const AddOnlineApplication = async (req, res) => {
   try {
-    const data =req.fields
+    const data = req.fields;
     const files = req.files;
-    console.log(files,'incoming files')
+    console.log(files, "incoming files");
     let memberPhotoUrl = "";
     let memberSignUrl = "";
-    
+
     // ✅ Handle memberPhoto
-   if (files?.memberPhoto) {
+    if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
       const result = await uploadToCloudinary(
         photoFile.buffer || photoFile.path
@@ -104,16 +101,15 @@ const AddOnlineApplication = async (req, res) => {
       memberPhotoUrl = result.secure_url;
     }
 
-    // ✅ Handle memberSign 
-      if (files?.memberSign) {
+    // ✅ Handle memberSign
+    if (files?.memberSign) {
       const signFile = files.memberSign;
       const result = await uploadToCloudinary(signFile.buffer || signFile.path);
       memberSignUrl = result.secure_url;
     }
-    
 
-    console.log(memberPhotoUrl,'imagesssssss')
-    console.log(memberSignUrl,'imagesphoto')
+    console.log(memberPhotoUrl, "imagesssssss");
+    console.log(memberSignUrl, "imagesphoto");
     // Generate password
     // const plainPassword = await generateUniquePassword();
     const mappedData = {
@@ -154,7 +150,9 @@ const AddOnlineApplication = async (req, res) => {
     await newOnlineApplication.save();
     // You can optionally save payment details in a separate model if needed:
     // await savePaymentDetails(data, newOnlineApplication._id);
-    res.status(201).json({ message: "Online application submitted successfully." });
+    res
+      .status(201)
+      .json({ message: "Online application submitted successfully." });
   } catch (error) {
     console.error("Add Online Application Error:", error);
     res.status(500).json({ error: "Failed to submit online application." });
@@ -363,7 +361,6 @@ const contactUs = async (req, res) => {
   }
 };
 
-
 const getOnlineApplications = async (req, res) => {
   try {
     const { search = "", page = 1, limit = 10 } = req.query;
@@ -380,7 +377,7 @@ const getOnlineApplications = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
-      console.log(applications,'online data application')
+    console.log(applications, "online data application");
 
     res.json({
       success: true,
@@ -394,26 +391,29 @@ const getOnlineApplications = async (req, res) => {
   }
 };
 
-const verifyOtp =async(req,res)=>{
-  console.log('funciton is calling ',req.body);
-  
+const verifyOtp = async (req, res) => {
+  console.log("funciton is calling ", req.body);
+
   const { email, otp } = req.body;
-console.log(otpStore,'otp storeeee')
-  
+  console.log(otpStore, "otp storeeee");
+
   if (otpStore[email] && otpStore[email] == otp) {
     delete otpStore[email]; // ✅ Remove after success
     return res.json({ success: true });
   } else {
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
-}
+};
 
 const getOnlineApplicationById = async (req, res) => {
-  console.log(req.params,'incomign information')
+  console.log(req.params, "incomign information");
   try {
     const application = await Online.findById(req.params.id);
-    console.log(application,'application')
-    if (!application) return res.status(404).json({ success: false, message: "Application not found" });
+    console.log(application, "application");
+    if (!application)
+      return res
+        .status(404)
+        .json({ success: false, message: "Application not found" });
     res.json(application);
   } catch (err) {
     console.error(err);
@@ -421,7 +421,53 @@ const getOnlineApplicationById = async (req, res) => {
   }
 };
 
+const memberDashBoardContactAdmin = async (req, res) => {
+  try {
+    const { seniorityId, subject, message } = req.body;
 
+    if (!seniorityId) {
+      return res.status(400).json({ error: "Seniority ID is required" });
+    }
+
+    // Find member details based on seniorityId
+    const member = await Member.findOne({ SeniorityID: seniorityId })
+      .select("name email mobileNumber")
+      .lean();
+
+    if (!member) {
+      return res.status(404).json({ error: "Member not found" });
+    }
+
+    // Create email content
+    const mailOptions = {
+      from: `"Member Panel Contact Form" <${member.name}>`,
+      to: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
+      subject: `Contact Admin: ${subject}`,
+      html: `
+        <h2>New Contact Form Submission From Member Panel</h2>
+        <p><strong>From:</strong> ${member.name} (Seniority ID: ${seniorityId})</p>
+        <p><strong>Member Email:</strong> ${member.email}</p>
+        <p><strong>Member Mobile:</strong> ${member.mobileNumber}</p>
+        <hr>
+        <h3>Message:</h3>
+        <p>${message}</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      success: true,
+      message: "Your message has been sent successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Server error occurred while processing your request",
+    });
+  }
+};
 
 export default {
   memberLogin,
@@ -435,6 +481,6 @@ export default {
   verifyOtp,
   getOnlineApplicationById,
   AddOnlineApplication,
-  sendOtpToEmail
+  sendOtpToEmail,
+  memberDashBoardContactAdmin,
 };
-
