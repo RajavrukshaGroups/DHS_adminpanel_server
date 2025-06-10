@@ -64,18 +64,7 @@ const addMemberDetails = async (req, res) => {
       ShareCertificateNumber: data.shareCertificateNo,
       // ReceiptNo: data.recieptNo,
       date: new Date(data.date),
-      // NoofShares: Number(data.numberOfShares),
-      // ShareFee: Number(data.shareFee),
-      // MembershipFee: Number(data.memberShipFee),
-      // ApplicationFee: Number(data.applicationFee),
-      // AdmissionFee: Number(data.adminissionFee),
-      // MiscellaneousExpenses: Number(data.miscellaneousExpenses),
-      // PaymentType: data.paymentType,
-      // PaymentMode: data.paymentMode,
-      // BankName: data.bankName,
-      // BranchName: data.branchName,
-      // Amount: Number(data.amount),
-      // DDNumber: "",
+   
       propertyDetails: {
         projectName: data.projectName || "",
         propertySize: Number(data.PropertySize) || 0,
@@ -587,19 +576,15 @@ const updateMemberDetails = async (req, res) => {
     const files = req.files;
     const memberId = req.params.id; // ID should come from URL
     console.log("Updating Member ID:", memberId);
-
     let memberPhotoUrl = "";
     let memberSignUrl = "";
-
     // Upload new member photo if provided
     if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
       const result = await uploadToCloudinary(
-        photoFile.buffer || photoFile.path
-      );
+        photoFile.buffer || photoFile.path);
       memberPhotoUrl = result.secure_url;
     }
-
     // Upload new member sign if provided
     if (files?.memberSign) {
       const signFile = files.memberSign;
@@ -651,10 +636,11 @@ const updateMemberDetails = async (req, res) => {
       new: true,
     });
 
+    const updateReciept =await Receipt.findByIdAndUpdate()
+
     if (!updatedMember) {
       return res.status(404).json({ error: "Member not found." });
     }
-
     res
       .status(200)
       .json({ message: "Member updated successfully!", updatedMember });
