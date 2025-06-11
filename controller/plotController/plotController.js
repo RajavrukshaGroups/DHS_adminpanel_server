@@ -77,7 +77,7 @@ const CreateTransfer = async (req, res) => {
   }
 };
 
-const plotTransferhistory = async (req, res) => {
+const plotTransferhistory = async (req, res) => {  
   try {
     // Fetch members where isTransferred is true
     const transferredMembers = await Member.find({ isTransferred: true })

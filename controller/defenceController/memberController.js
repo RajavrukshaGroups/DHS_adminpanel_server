@@ -269,6 +269,8 @@ const extraChargeReceipts = async (req, res) => {
       return res.status(404).json([]);
     }
 
+    // console.log(member.receiptId)
+
     const receiptIds = member.receiptId;
     const receipts = await Receipt.find({ _id: { $in: receiptIds } });
 
@@ -468,6 +470,29 @@ const memberDashBoardContactAdmin = async (req, res) => {
     });
   }
 };
+const GetTrnasferedhistory = async (req, res) => {
+  try {
+    const seniorityId = req.params.id;
+
+    console.log("Received seniorityId:", seniorityId);
+
+    const member = await Member.findOne({
+      SeniorityID: seniorityId,
+      transfered: true,
+    });
+    console.log(member,'member dataassssssss');
+    
+
+    if (!member) {
+      return res.status(404).json({ message: "No transfer history found for this member." });
+    }
+
+    res.status(200).json(member.transferDetails);
+  } catch (error) {
+    console.error("Get Transfer History Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 
 export default {
   memberLogin,
@@ -483,4 +508,5 @@ export default {
   AddOnlineApplication,
   sendOtpToEmail,
   memberDashBoardContactAdmin,
+  GetTrnasferedhistory
 };

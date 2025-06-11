@@ -22,6 +22,7 @@ router.post(
   "/get-online-applications",
   defenceController.getOnlineApplications
 );
+
 router.post("/verify-otp", defenceController.verifyOtp);
 router.get("/get-application/:id", defenceController.getOnlineApplicationById);
 router.post("/resend-otp", defenceController.sendOtpToEmail);
@@ -29,5 +30,6 @@ router.post(
   "/dashboard-contact-admin",
   defenceController.memberDashBoardContactAdmin
 );
+router.get("/get-transferred-history/:id",defenceController.GetTrnasferedhistory);
 
 export default router;

@@ -57,10 +57,13 @@ router.get(
   MemberController.collectMemberInfoOnSeniorityIds
 );
 
+router.get(
+  "/get-member-receipt/:memberId",
+  MemberController.getMemberReceipt
+);
+
 
 // router.post("/receipt-extra-charge-form/:memberId")
-
-
 
 
 export default router;
