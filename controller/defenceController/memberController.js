@@ -470,29 +470,66 @@ const memberDashBoardContactAdmin = async (req, res) => {
     });
   }
 };
+
+
 const GetTrnasferedhistory = async (req, res) => {
   try {
     const seniorityId = req.params.id;
 
     console.log("Received seniorityId:", seniorityId);
 
-    const member = await Member.findOne({
+    // Find all records with the same SeniorityID and isTransferred set to true
+    const transferredMembers = await Member.find({
       SeniorityID: seniorityId,
-      transfered: true,
+      isTransferred: true,
     });
-    console.log(member,'member dataassssssss');
-    
 
-    if (!member) {
-      return res.status(404).json({ message: "No transfer history found for this member." });
+    console.log("Transferred Members:", transferredMembers);
+
+    if (!transferredMembers || transferredMembers.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No transfer history found for this member." });
     }
 
-    res.status(200).json(member.transferDetails);
+    res.status(200).json(transferredMembers);
   } catch (error) {
     console.error("Get Transfer History Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+
+export const sendApplicationDownloadEmail = async ({ name, email, mobile, address }) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // or any email provider
+      auth: {
+        user: process.env.DHS_NODEMAILER_MAIL,
+        pass: process.env.DHS_NODEMAILER_KEY, // use App Password if 2FA is enabled
+      },
+    });
+
+    const mailOptions = {
+      from: '"DHS Admin" <yourcompanyemail@gmail.com>',
+      to: "mail@defencehousingsociety.com", // your company email
+      subject: "New Application Downloaded",
+      html: `
+        <h3>New Application Downloaded</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Mobile:</strong> ${mobile}</p>
+        <p><strong>Address:</strong> ${address}</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("📨 Email notification sent successfully.");
+  } catch (error) {
+    console.error("❌ Failed to send email:", error);
+  }
+};
+
 
 export default {
   memberLogin,
@@ -508,5 +545,6 @@ export default {
   AddOnlineApplication,
   sendOtpToEmail,
   memberDashBoardContactAdmin,
-  GetTrnasferedhistory
+  GetTrnasferedhistory,
+  
 };
