@@ -318,6 +318,7 @@ const getReceiptDetailsById = async (req, res) => {
       transactionId: payment.transactionId || "",
       items: filteredItems,
     };
+    console.log("receipts data", receiptData);
 
     res.render("receipt", { ...receiptData });
   } catch (err) {
