@@ -423,6 +423,15 @@ const getOnlineApplicationById = async (req, res) => {
   }
 };
 
+const GetTrnasferedhistory = async (req, res) => {
+  try {
+
+    console.log('get all plot transfer function is calling')
+  } catch (error) {
+    console.error("Get All Plot Transfer Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+}
 
 
 export default {
@@ -437,6 +446,7 @@ export default {
   verifyOtp,
   getOnlineApplicationById,
   AddOnlineApplication,
-  sendOtpToEmail
+  sendOtpToEmail,
+  GetTrnasferedhistory
 };
 

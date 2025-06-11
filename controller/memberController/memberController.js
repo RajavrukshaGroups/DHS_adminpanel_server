@@ -635,8 +635,47 @@ const updateMemberDetails = async (req, res) => {
     const updatedMember = await Member.findByIdAndUpdate(memberId, updateData, {
       new: true,
     });
+// 1. Find the receipt with "Membership Fee" in its payments array
+const receipt = await Receipt.findOne({ member: memberId });
 
-    const updateReciept =await Receipt.findByIdAndUpdate()
+if (!receipt) {
+  return res.status(404).json({ error: "Receipt not found for the member." });
+}
+
+// 2. Find the specific payment to update
+const paymentToUpdate = receipt.payments.find(
+  (p) => p.paymentType === "Membership Fee"
+);
+
+if (!paymentToUpdate) {
+  return res.status(404).json({ error: "Membership Fee payment not found." });
+}
+
+// 3. Update fields on the found payment
+paymentToUpdate.paymentMode = data.paymentMode;
+paymentToUpdate.bankName = data.bankName;
+paymentToUpdate.branchName = data.branchName;
+paymentToUpdate.amount = Number(data.amount);
+paymentToUpdate.chequeNumber = data.chequeNumber || "";
+paymentToUpdate.transactionId = data.transactionId || "";
+paymentToUpdate.ddNumber = data.ddNumber || "";
+paymentToUpdate.applicationFee = Number(data.applicationFee) || 0;
+paymentToUpdate.admissionFee = Number(data.admissionFee || data.adminissionFee) || 0;
+paymentToUpdate.miscellaneousExpenses = Number(data.miscellaneousExpenses) || 0;
+paymentToUpdate.membershipFee = Number(data.membershipFee || data.memberShipFee) || 0;
+paymentToUpdate.shareFee = Number(data.shareFee) || 0;
+paymentToUpdate.numberOfShares = Number(data.numberOfShares) || 0;
+paymentToUpdate.date = new Date(data.date);
+
+// 4. Save the updated receipt
+const updatedReceipt = await receipt.save();
+
+// 5. Return success
+res.status(200).json({
+  message: "Member and Membership Fee receipt updated successfully!",
+  updatedMember,
+  updatedReceipt,
+});
 
     if (!updatedMember) {
       return res.status(404).json({ error: "Member not found." });
@@ -1187,6 +1226,46 @@ const collectMemberInfoOnSeniorityIds = async (req, res) => {
     console.error("error fetching member info", err);
     res.status(500).json({ success: false, message: "server error" });
   }
+}; 
+
+// controllers/receiptController.js
+
+const getMemberReceipt = async (req, res) => {
+  try {
+    console.log("Received request to get member receipt...", req.params);
+    const { memberId } = req.params;
+
+    // Find the member by ID
+    const member = await Member.findById(memberId);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    // Find all receipts for the member
+    const receipts = await Receipt.find({ member: memberId });
+
+    // Filter for "Membership Fee" payment
+    let membershipPayment = null;
+    for (const receipt of receipts) {
+      const payment = receipt.payments.find(
+        (p) => p.paymentType === "Membership Fee"
+      );
+      if (payment) {
+        membershipPayment = payment;
+        break;
+      }
+    }
+
+    if (!membershipPayment) {
+      return res.status(404).json({ message: "Membership Fee payment not found" });
+    }
+
+    // Send the payment info as response
+    return res.status(200).json(membershipPayment);
+  } catch (error) {
+    console.error("Error fetching membership receipt:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export default {
@@ -1211,4 +1290,5 @@ export default {
   deleteMemberReceiptPaymentEach,
   collectSeniorityIds,
   collectMemberInfoOnSeniorityIds,
+  getMemberReceipt
 };
