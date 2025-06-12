@@ -500,22 +500,28 @@ const GetTrnasferedhistory = async (req, res) => {
 };
 
 
-export const sendApplicationDownloadEmail = async ({ name, email, mobile, address }) => {
+export const sendDownloadNotificationEmail = async ({
+  name,
+  email,
+  mobile,
+  address,
+  type = "Application", // default to Application
+}) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail", // or any email provider
+      service: "gmail",
       auth: {
         user: process.env.DHS_NODEMAILER_MAIL,
-        pass: process.env.DHS_NODEMAILER_KEY, // use App Password if 2FA is enabled
+        pass: process.env.DHS_NODEMAILER_KEY,
       },
     });
 
     const mailOptions = {
       from: '"DHS Admin" <yourcompanyemail@gmail.com>',
-      to: "mail@defencehousingsociety.com", // your company email
-      subject: "New Application Downloaded",
+      to: "mail@defencehousingsociety.com",
+      subject: `New ${type} Downloaded`,
       html: `
-        <h3>New Application Downloaded</h3>
+        <h3>New ${type} Downloaded</h3>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Mobile:</strong> ${mobile}</p>
@@ -524,12 +530,11 @@ export const sendApplicationDownloadEmail = async ({ name, email, mobile, addres
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("📨 Email notification sent successfully.");
+    console.log(`📨 Email notification sent for ${type} download.`);
   } catch (error) {
-    console.error("❌ Failed to send email:", error);
+    console.error(`❌ Failed to send ${type} email:`, error);
   }
 };
-
 
 export default {
   memberLogin,

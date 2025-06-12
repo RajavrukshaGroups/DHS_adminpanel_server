@@ -5,7 +5,12 @@ import puppeteer from "puppeteer";
 import upload from "../../middleware/multer.js";
 import nodemailer from "nodemailer";
 // import  sendApplicationDownloadEmail  from "../../controller/defenceController/memberController.js";
-import { sendApplicationDownloadEmail } from "../../controller/defenceController/memberController.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+import { sendDownloadNotificationEmail } from "../../controller/defenceController/memberController.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
@@ -89,6 +94,7 @@ router.post("/download", async (req, res) => {
       email: formData.email,
       mobile: formData.mobile,
       address: formData.address,
+       type: "Application",
     }).toString();
 
     await page.goto(`http://localhost:4000/defenceWebsiteRoutes/render?${queryString}`, {
@@ -103,7 +109,7 @@ router.post("/download", async (req, res) => {
     await browser.close();
 
     // Send Email Notification
-    await sendApplicationDownloadEmail(formData);
+    await sendDownloadNotificationEmail(formData);
 
     res.set({
       "Content-Type": "application/pdf",
@@ -122,6 +128,24 @@ router.post("/download", async (req, res) => {
 router.get("/render", (req, res) => {
   const { name, email, mobile, address } = req.query;
   res.render("application", { name, email, mobile, address });
+});
+
+
+router.post("/brochure", async (req, res) => {
+  const formData = req.body;
+console.log("Brochure download request received:", formData);
+
+  try {
+    // Send email to company
+    await sendDownloadNotificationEmail({formData,type: "Application",});
+
+    // Serve static PDF file
+    const filePath = path.join(__dirname, "../../public/brochure/brochure.pdf");
+    res.download(filePath, "DHS_Brochure.pdf"); // Force download
+  } catch (err) {
+    console.error("❌ Brochure download error:", err);
+    res.status(500).send("Brochure download failed");
+  }
 });
 
 
