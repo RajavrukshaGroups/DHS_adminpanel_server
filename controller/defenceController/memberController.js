@@ -88,7 +88,8 @@ const AddOnlineApplication = async (req, res) => {
   try {
     const data = req.fields;
     const files = req.files;
-    console.log(files, "incoming files");
+    // console.log(files, "incoming files");
+    console.log(data, "incoming data");
     let memberPhotoUrl = "";
     let memberSignUrl = "";
 
@@ -134,6 +135,14 @@ const AddOnlineApplication = async (req, res) => {
       nomineeRelation: data.nomineeRelationship,
       nomineeAddress: data.nomineeAddress,
       date: data.date ? new Date(data.date) : new Date(),
+      paymentType:data.paymentType,
+      paymentMode:data.paymentMode,
+      bankName:data.bankName,
+      branchName:data.branchName,
+      chequeNumber:data.chequeNumber,
+      ddNumber:data.ddNumber,
+      transactionId:data.transactionId,
+      amount: Number(data.amount?.replace(/,/g, "")) || 0,
       propertyDetails: {
         projectName: data.projectName || "",
         propertySize: Number(data.PropertySize) || 0,
@@ -403,15 +412,17 @@ const verifyOtp = async (req, res) => {
     delete otpStore[email]; // ✅ Remove after success
     return res.json({ success: true });
   } else {
+    console.log('else block is calling');
+    
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
 };
 
 const getOnlineApplicationById = async (req, res) => {
-  console.log(req.params, "incomign information");
+  // console.log(req.params, "incomign information");
   try {
     const application = await Online.findById(req.params.id);
-    console.log(application, "application");
+    // console.log(application, "application");
     if (!application)
       return res
         .status(404)
@@ -426,20 +437,16 @@ const getOnlineApplicationById = async (req, res) => {
 const memberDashBoardContactAdmin = async (req, res) => {
   try {
     const { seniorityId, subject, message } = req.body;
-
     if (!seniorityId) {
       return res.status(400).json({ error: "Seniority ID is required" });
     }
-
     // Find member details based on seniorityId
     const member = await Member.findOne({ SeniorityID: seniorityId })
       .select("name email mobileNumber")
       .lean();
-
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
     }
-
     // Create email content
     const mailOptions = {
       from: `"Member Panel Contact Form" <${member.name}>`,
@@ -528,7 +535,6 @@ export const sendDownloadNotificationEmail = async ({
         <p><strong>Address:</strong> ${address}</p>
       `,
     };
-
     await transporter.sendMail(mailOptions);
     console.log(`📨 Email notification sent for ${type} download.`);
   } catch (error) {

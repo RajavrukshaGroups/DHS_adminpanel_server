@@ -62,6 +62,7 @@ router.get(
   MemberController.getMemberReceipt
 );
 
+router.get('/get-member-onlineApplication/:id',MemberController.getMemberOnlineApplication);
 
 // router.post("/receipt-extra-charge-form/:memberId")
 

@@ -110,6 +110,30 @@ const onlineSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  paymentType:{
+    type:String,
+  },
+  paymentMode:{
+    type: String,
+  },
+  bankName:{
+    type: String,
+  },
+  branchName:{
+    type:String
+  },
+  amount:{
+    type:Number
+  },
+   chequeNumber:{
+    type:String
+   },
+   ddNumber:{
+    type:String
+   },
+   transactionId:{
+    type:String
+   }
 });
 
 const Online = mongoose.model("Onlineapplication", onlineSchema);
