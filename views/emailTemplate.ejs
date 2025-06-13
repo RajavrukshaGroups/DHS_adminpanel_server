@@ -1,0 +1,663 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Defence Habitat Housing Co-operative Society Ltd.</title>
+ <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #000;
+      line-height: 1.4;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      border: 1px solid #000;
+      padding: 12px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    
+    .logo {
+      width: 110px;
+      height: 110px;
+      position: absolute;
+      left: 10px;
+      top: 0;
+    }
+    
+    .header-text {
+      margin-left: 120px;
+    }
+    
+    .header-text h1 {
+      margin: 0;
+      font-size: 18px;
+      color: #000080;
+      font-weight: bold;
+    }
+    
+    .header-text h2 {
+      margin: 5px 0;
+      font-size: 16px;
+      color: #000080;
+    }
+    
+    .header-text p {
+      margin: 5px 0;
+      font-size: 12px;
+    }
+    
+    .title {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 20px;
+      color: #040453;
+      text-align: center;
+      text-decoration: underline;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    
+    .form-row {
+      margin-bottom: 10px;
+      display: flex;
+    }
+    
+    .form-label {
+      font-weight: bold;
+      width: 200px;
+    }
+    
+    .form-input {
+      flex: 1;
+      border-bottom: 1px solid #000;
+    }
+    
+    .site-image {
+      width: 100px;
+      height: 100px;
+      border: 1px solid #000;
+      float: right;
+      margin-left: 10px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    
+    table, th, td {
+      border: 1px solid #000;
+    }
+    
+    th, td {
+      padding: 5px;
+      text-align: left;
+      font-size: 12px;
+    }
+    
+    th {
+      background-color: #f2f2f2;
+    }
+    
+    .address-table {
+      display: flex;
+    }
+    
+    .address-column {
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #000;
+    }
+    
+    .address-header {
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 5px;
+    }
+    
+    .payment-section {
+      margin-top: 15px;
+    }
+    
+    .payment-table th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    
+    .terms {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    
+    .kannada-text {
+      font-family: Arial, sans-serif;
+    }
+
+        
+        .document {
+            background: white;
+            padding: 0;
+        }
+        
+        .terms-list {
+            margin: 0;
+            padding-left: 0;
+            list-style: none;
+            counter-reset: term-counter;
+        }
+        
+        .terms-list li {
+            counter-increment: term-counter;
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 25px;
+            text-align: justify;
+            font-size: 14px;
+        }
+        
+        .terms-list li::before {
+            content: counter(term-counter) ".";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
+        .highlight {
+            font-weight: bold;
+        }
+        
+        .declaration-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .declaration-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        
+        .declaration-text {
+            text-align: justify;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .signature-left {
+            text-align: left;
+        }
+        
+        .signature-right {
+            text-align: right;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid black;
+            width: 200px;
+            height: 20px;
+            margin-bottom: 1px;
+            margin-right: 4px;
+        }
+        
+        .office-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .office-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        
+        .office-fields {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        
+        .office-field {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .field-line {
+            display: inline-block;
+            border-bottom: 1px solid black;
+            width: 200px;
+            height: 20px;
+            margin-left: 10px;
+            margin-right: 20px;
+        }
+        
+        .office-signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .board-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .board-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        
+        .board-text {
+            text-align: justify;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .board-signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+        
+        .signature-block {
+            text-align: center;
+        }
+        
+        .signature-block .signature-line {
+            width: 150px;
+            margin: 0 auto 5px auto;
+        }
+        
+        .page-number {
+            text-align: left;
+            font-size: 12px;
+            margin-top: 40px;
+        }
+
+        .responsive-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .details-column {
+    flex: 1 1 60%;
+    min-width: 250px;
+  }
+
+  .photo-column {
+    flex: 1 1 30%;
+    min-width: 170px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+
+  .form-label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+
+  .form-input {
+    margin-right: 10px;
+  }
+
+  .site-image img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  @media (max-width: 768px) {
+    .responsive-section {
+      flex-direction: column;
+    }
+    .photo-column {
+      justify-content: center;
+      margin-top: 10px;
+    }
+  }
+        
+     </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header">
+      <img style="width: 135px ;height: 135px;" src="https://defencehousingsociety.com/static/media/smalllog.2c22148270a989b3360a1055a4feacf7.svg" alt="Defence Habitat Logo" class="logo">
+      <div class="header-text">
+        <h1><span class="kannada-text">ಡಿಫೆನ್ಸ್ ಹ್ಯಾಬಿಟಾಟ್ ಹೌಸಿಂಗ್ ಕೋ-ಆಪರೇಟಿವ್ ಸೊಸೈಟಿ ಲಿ.</span></h1>
+        <h2 style="font-weight: bold; font-size: large;">DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD.</h2>
+        <p style="color: rgb(208, 0, 0); font-style: normal; font-size: large; font-weight: bold;">Reg. No.: REG-3/64/DHS/53744</p>
+        <p style="font-weight: bold;">Behind Swathi Garden Hotel, Sakharanagar E Block, Bangalore, Karnataka - 560092.</p>
+        <p style="font-weight: bold;">Web: www.defencehabitsociety.com Mail: mail@defencehabitsociety.com Tel: +91 702 614 7770</p>
+      </div>
+
+    </div>
+
+          <div style=" background-color: rgb(2, 2, 124); height: 4px;"  class="form-input"></div>
+
+    <!-- Title -->
+    <div class="title">APPLICATION FOR MEMBERSHIP AND PURCHASE OF SITE</div>
+    <!-- Form Content -->
+    <div class="responsive-section">
+  <div class="details-column">
+    <div class="form-row">
+      <div class="form-label">SI.NO :</div>
+      <div class="form-input"></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">NAME (Full name in Block Letters):</div>
+      <div class="form-input"><%= refname %></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">RANK/DESIGNATION:</div>
+      <div class="form-input"><%= rankDesignation %></div>
+      <div class="form-label">SERVICE / ID NO.:</div>
+      <div class="form-input"><%= serviceId %></div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-label">RELATIONSHIP WITH APPLICANT:</div>
+      <div class="form-input"><%= relationship %></div>
+    </div>
+  </div>
+
+   <div style="padding: 10px; padding-left: 45px; font-weight: bold;">
+                   <!-- Affix your<br> -->
+    <!-- PP/SS<br>
+    Photograph<br>
+    along with<br>
+    Signature<br>
+    (4 Copies) -->
+    <img style="width: 150px; height: 150px;"  src="<%= MemberPhoto %>" alt="virat kohli">
+            </div>
+</div>
+
+<!-- Project Info Row -->
+<div class="form-row">
+  <div>Booked a site of measuring</div>
+  <div class="form-input" style="width: auto;"><%= propertyDetails.length %> X <%= propertyDetails.breadth %></div>
+  <div class="form-label">in the Project</div>
+  <div class="form-input"><%= propertyDetails.projectName %></div>
+</div>
+    
+    <div class="">
+      <div class="form-input" style="width: 200px;"></div>
+      <div class="" style="font-weight: bold; margin-left: 10px; text-align: center; flex: 1;">in "DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD"</div>
+    </div>
+    
+    <!-- Applicant Details Table -->
+    <table>
+      <tr>
+        <td width="30%"><strong>Applicant Name :</strong></td>
+        <td><%= name %></td>
+      </tr>
+      <tr>
+        <td><strong>Date of Birth :</strong></td>
+        <td><%= dateofbirth.toDateString() %></td>
+        <td width="15%"><strong>Age :</strong></td>
+        <td width="15%"><%= nomineeAge %></td>
+      </tr>
+      <tr>
+        <td><strong>Father's/Spouse Name :</strong></td>
+        <td colspan="3"><%= fatherName %></td>
+      </tr>
+    </table>
+    
+    <!-- Address Table -->
+    <table>
+      <tr>
+        <td width="33%">
+          <div class="address-header">Correspondence Address</div>
+          <div><%= contactAddress %></div>
+        </td>
+        <td width="33%">
+          <div class="address-header">Permanent Address</div>
+          <div><%= permanentAddress %></div>
+        </td>
+        <td width="33%">
+          <div class="address-header">Working Address</div>
+          <div><%= workingAddress %></div>
+        </td>
+      </tr>
+    </table>
+    <!-- Nominee Details -->
+    <table>
+      <tr>
+        <td rowspan="3" width="30%"><strong>Nominee particulars</strong></td>
+        <td width="15%"><strong>Name</strong></td>
+        <td width="10%">:<%= nomineeName %>/td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>Age</strong></td>
+        <td>:<%= nomineeAge %></td>
+        <td></td>
+        <td width="20%"><strong>Relationship</strong></td>
+        <td width="5%">:<%= nomineeRelation %></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><strong>Address</strong></td>
+        <td>:<%= nomineeAddress %></td>
+        <td colspan="4"></td>
+      </tr>
+      <tr>
+        <td><strong>Remarks, if any</strong></td>
+        <td colspan="6"></td>
+      </tr>
+      <tr>
+        <td><strong>Phone No.</strong></td>
+        <td colspan="2"><strong>Mobile:</strong><%= mobileNumber %> </td>
+        <td colspan="4"><strong>E-mail:</strong><%= email %> </td>
+      </tr>
+    </table>
+    
+    <!-- Membership Payment Details -->
+    <table class="payment-table">
+      <tr>
+        <td rowspan="3" width="15%"><strong>Membership Payment Details</strong></td>
+        <td width="20%"><strong>Membership Amount</strong><%= amount %></td>
+        <td colspan="4"><strong>Rs. 2500/- (Rupees Two Thousand Five Hundred Only)</strong></td>
+      </tr>
+      <tr>
+        <td>Cheque [ ] DD [ ] Online [  ]</td>
+        <td colspan="4"></td>
+      </tr>
+      <tr>
+        <td>Bank</td>
+        <td width="25%"><%= bankName %></td>
+        <td width="15%">Branch</td>
+        <td><%= branchName %></td>
+      </tr>
+    </table>
+    
+    <!-- Site Payment Details -->
+    <table class="payment-table">
+      <tr>
+        <td rowspan="4" width="15%"><strong>Purchase of Site Payment Details</strong></td>
+        <td width="20%"><strong>Site Advance Amount</strong></td>
+        <td width="20%"><strong>Rs. </strong><%= amount %></td>
+        <td width="15%"><strong>In words</strong></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Cheque [ ] DD [ ] Online [ ]</td>
+        <td colspan="3"></td>
+      </tr>
+      <tr>
+        <td>Bank</td>
+        <td><%= bankName %></td>
+        <td>Branch</td>
+        <td><%= branchName %></td>
+      </tr>
+    </table>
+    
+    <!-- Account Details -->
+    <table>
+      <tr>
+        <td colspan="4" style="text-align: center;"><strong>Account Details For NEFT/RTGS/Online Transaction:</strong></td>
+      </tr>
+      <tr>
+        <td width="25%"><strong>Account Name</strong></td>
+        <td colspan="3">: DEFENCE HABITAT HOUSING COOPERATIVE SOCIETY LIMITED.</td>
+      </tr>
+      <tr>
+        <td><strong>Account Number</strong></td>
+        <td colspan="3">: 05138870000120</td>
+      </tr>
+      <tr>
+        <td><strong>Bank</strong></td>
+        <td colspan="3">: YES BANK LTD.</td>
+      </tr>
+      <tr>
+        <td><strong>Branch</strong></td>
+        <td colspan="3">: SAHAKAR NAGAR</td>
+      </tr>
+      <tr>
+        <td><strong>IFSC Code</strong></td>
+        <td colspan="3">: YESB0000513</td>
+      </tr>
+    </table>
+    
+    <!-- Terms and Conditions -->
+    <div class="terms">TERMS AND CONDITIONS</div>
+    <div class="document">
+        <ol class="terms-list">
+            <li>Members of the society are governed by Govt. of Karnataka Co-operative Society by-Law Act 1960.</li>
+            
+            <li>Application for allotment of the Site in the Society is subject to the approval of the Membership/ Associate Membership, further clearance of land document by <span class="highlight">BDA/BMRDA/BIAPA/DTCP/RERA/DPA</span> and availability of the site.</li>
+            
+            <li>Members shall pay the initial payment as prescribed by the <span class="highlight">"Defence Habitat Housing Co-operative Society Ltd"</span>, remaining installment also be paid in the prescribed time for development work.</li>
+            
+            <li>In case of members furnishing false information/declaration, the society reserves the right to call for document verification before allotment/cancellation.</li>
+            
+            <li>Members shall update the Mobile No, e-mail ID and address, from time to time to update the record in the office for all kinds of communication and reminders.</li>
+            
+            <li>Members willing to withdraw or transfer the membership/booking shall be accepted only after the completion of the project period. However, genuine reason, the Board members may decide which shall attract a penalty.</li>
+            
+            <li>Seniority for allotment of the site shall be made purely on the basis of initial payment and prompt receipt of regular installment payment. Becoming only a member of the society, will not confirm entitlement for allotment of the site.</li>
+            
+            <li>I agree to abide by the conditions of allotment and sale of site as described by the <span class="highlight">"DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD"</span>, I, hereby declare that the above information furnished by me is true to the best of my knowledge. Furthermore, I shall furnish any other information that may be required with regards to allotment of site.</li>
+            
+            <li>I fully agree upon the above terms and conditions and it is binding on me.</li>
+        </ol>
+        
+        <div class="declaration-section">
+            <div class="declaration-title">DECLARATION</div>
+            
+            <div class="declaration-text">
+                I wish to become a member and to purchase site of the <span class="highlight">"DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD"</span>. I have read the above terms and conditions. Further, hereby I abide by all the terms & conditions mentioned in the bye-laws of the society Act 1960. And the decisions are taken by the Board from time to time, which shall be final and binding on me.
+            </div>
+            
+            <div class="declaration-text">
+                I declare that the particulars furnished by me are correct and true to the best my knowledge.
+            </div>
+            
+            <div class="signature-section">
+                <div class="signature-left">
+                    <div>Place: <span class="highlight"></span></div>
+                    <div>Date: <span class="highlight"></span></div>
+                </div>
+                <div class="signature-right">
+                    <!-- <img src="<%= MemberSign %>" alt=""> -->
+                    <img width="130" height="130" src="<%= MemberSign %>" alt="">
+                    <div class="signature-line"></div>
+                    <div>Signature of the Applicant</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="office-section">
+            <div class="office-title">FOR THE USE OF OFFICE</div>
+            
+            <div class="office-fields">
+                <div class="office-field">
+                    <span class="highlight">1. Date of receipt of application</span>
+                    <span class="field-line"></span>
+                    <span class="highlight">A.M. No.</span>
+                    <span class="field-line"></span>
+                </div>
+                
+                <div class="office-field">
+                    <span class="highlight">2. Amount received Rs.</span>
+                    <span class="field-line"></span>
+                    <span class="highlight">Receipt No.</span>
+                    <span class="field-line"></span>
+                    <span class="highlight">Date.</span>
+                    <span class="field-line"></span>
+                </div>
+            </div>
+            
+            <div class="office-signatures">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="highlight">President</div>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="highlight">Secretary</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="board-section">
+            <div class="board-title">DECISION OF THE BOARD</div>
+            
+            <div class="board-text">
+                Accepted as member of this Housing Society in the board Meeting held on ________________ / Meeting book Page No ________________ for allotment or residential site in society's future / present Layout in accordance with the Byelaws, Subsidiary Rules, Policy decision taken by the Board/General Body from time to time and Rules, Acts and Policies of Government of Karnataka on the member.
+            </div>
+            
+            <div class="office-field">
+                Date: <span class="field-line"></span>
+            </div>
+            
+            <div class="board-signatures">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="highlight">President</div>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="highlight">Secretary</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-number"></div>
+    </div>
+
+  </div>
+</body>
+</html>
