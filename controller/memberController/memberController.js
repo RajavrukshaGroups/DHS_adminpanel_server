@@ -8,6 +8,7 @@ import { transporter } from "../../utils/emailTransporter.js";
 import { createReceipt } from "../receiptController/receiptController.js";
 import Project from "../../model/projectModel.js"; // make sure the path is correct
 import mongoose from "mongoose";
+import Online from "../../model/onlineModel.js";
 
 const addMemberDetails = async (req, res) => {
   try {
@@ -1339,6 +1340,18 @@ const getMemberReceipt = async (req, res) => {
   }
 };
 
+const getMemberOnlineApplication =async(req,res)=>{
+  try {
+    console.log("Received request to get member online application...", req.params);
+   const applicationData = await Online.findById(req.params.id); // NOT .find()
+if (!applicationData) return res.status(404).json({ message: "Not found" });
+
+res.status(200).json(applicationData); 
+  } catch (error) {
+    
+  }
+}
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -1361,5 +1374,6 @@ export default {
   deleteMemberReceiptPaymentEach,
   collectSeniorityIds,
   collectMemberInfoOnSeniorityIds,
-  getMemberReceipt
+  getMemberReceipt,
+  getMemberOnlineApplication
 };

@@ -88,7 +88,8 @@ const AddOnlineApplication = async (req, res) => {
   try {
     const data = req.fields;
     const files = req.files;
-    console.log(files, "incoming files");
+    // console.log(files, "incoming files");
+    console.log(data, "incoming data");
     let memberPhotoUrl = "";
     let memberSignUrl = "";
 
@@ -134,6 +135,14 @@ const AddOnlineApplication = async (req, res) => {
       nomineeRelation: data.nomineeRelationship,
       nomineeAddress: data.nomineeAddress,
       date: data.date ? new Date(data.date) : new Date(),
+      paymentType:data.paymentType,
+      paymentMode:data.paymentMode,
+      bankName:data.bankName,
+      branchName:data.branchName,
+      chequeNumber:data.chequeNumber,
+      ddNumber:data.ddNumber,
+      transactionId:data.transactionId,
+      amount: Number(data.amount?.replace(/,/g, "")) || 0,
       propertyDetails: {
         projectName: data.projectName || "",
         propertySize: Number(data.PropertySize) || 0,
@@ -403,15 +412,17 @@ const verifyOtp = async (req, res) => {
     delete otpStore[email]; // ✅ Remove after success
     return res.json({ success: true });
   } else {
+    console.log('else block is calling');
+    
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
 };
 
 const getOnlineApplicationById = async (req, res) => {
-  console.log(req.params, "incomign information");
+  // console.log(req.params, "incomign information");
   try {
     const application = await Online.findById(req.params.id);
-    console.log(application, "application");
+    // console.log(application, "application");
     if (!application)
       return res
         .status(404)
@@ -426,20 +437,16 @@ const getOnlineApplicationById = async (req, res) => {
 const memberDashBoardContactAdmin = async (req, res) => {
   try {
     const { seniorityId, subject, message } = req.body;
-
     if (!seniorityId) {
       return res.status(400).json({ error: "Seniority ID is required" });
     }
-
     // Find member details based on seniorityId
     const member = await Member.findOne({ SeniorityID: seniorityId })
       .select("name email mobileNumber")
       .lean();
-
     if (!member) {
       return res.status(404).json({ error: "Member not found" });
     }
-
     // Create email content
     const mailOptions = {
       from: `"Member Panel Contact Form" <${member.name}>`,
@@ -500,36 +507,40 @@ const GetTrnasferedhistory = async (req, res) => {
 };
 
 
-export const sendApplicationDownloadEmail = async ({ name, email, mobile, address }) => {
+export const sendDownloadNotificationEmail = async ({
+  name,
+  email,
+  mobile,
+  address,
+  type = "Application", // default to Application
+}) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail", // or any email provider
+      service: "gmail",
       auth: {
         user: process.env.DHS_NODEMAILER_MAIL,
-        pass: process.env.DHS_NODEMAILER_KEY, // use App Password if 2FA is enabled
+        pass: process.env.DHS_NODEMAILER_KEY,
       },
     });
 
     const mailOptions = {
       from: '"DHS Admin" <yourcompanyemail@gmail.com>',
-      to: "mail@defencehousingsociety.com", // your company email
-      subject: "New Application Downloaded",
+      to: "mail@defencehousingsociety.com",
+      subject: `New ${type} Downloaded`,
       html: `
-        <h3>New Application Downloaded</h3>
+        <h3>New ${type} Downloaded</h3>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Mobile:</strong> ${mobile}</p>
         <p><strong>Address:</strong> ${address}</p>
       `,
     };
-
     await transporter.sendMail(mailOptions);
-    console.log("📨 Email notification sent successfully.");
+    console.log(`📨 Email notification sent for ${type} download.`);
   } catch (error) {
-    console.error("❌ Failed to send email:", error);
+    console.error(`❌ Failed to send ${type} email:`, error);
   }
 };
-
 
 export default {
   memberLogin,

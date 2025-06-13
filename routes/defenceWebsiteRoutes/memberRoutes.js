@@ -5,7 +5,12 @@ import puppeteer from "puppeteer";
 import upload from "../../middleware/multer.js";
 import nodemailer from "nodemailer";
 // import  sendApplicationDownloadEmail  from "../../controller/defenceController/memberController.js";
-import { sendApplicationDownloadEmail } from "../../controller/defenceController/memberController.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+import { sendDownloadNotificationEmail } from "../../controller/defenceController/memberController.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
@@ -36,54 +41,12 @@ router.post(
 );
 router.get("/get-transferred-history/:id",defenceController.GetTrnasferedhistory);
 
-// router.post("/download", async (req, res) => {
-//   const formData = req.body;
-
-//   try {
-//     const browser = await puppeteer.launch({ headless: "new" });
-//     const page = await browser.newPage();
-
-//     const queryString = new URLSearchParams({
-//       name: formData.name,
-//       email: formData.email,
-//       mobile: formData.mobile,
-//       address: formData.address
-//     }).toString();
-
-//     await page.goto(
-//       `http://localhost:4000/defenceWebsiteRoutes/render?${queryString}`,
-//       {
-//         waitUntil: "networkidle0",
-//       }
-//     );
-
-//     const pdfBuffer = await page.pdf({
-//       format: "A4",
-//       printBackground: true,
-//     });
-
-//     await browser.close();
-
-//     res.set({
-//       "Content-Type": "application/pdf",
-//       "Content-Disposition": "attachment; filename=ApplicationForm.pdf",
-//       "Content-Length": pdfBuffer.length,
-//     });
-
-//     res.send(pdfBuffer);
-//   } catch (error) {
-//     console.error("PDF generation error:", error);
-//     res.status(500).send("Failed to generate PDF");
-//   }
-// });
 
 router.post("/download", async (req, res) => {
   const formData = req.body;
-
   try {
     const browser = await puppeteer.launch({ headless: "new" });
     const page = await browser.newPage();
-
     const queryString = new URLSearchParams({
       name: formData.name,
       email: formData.email,
@@ -101,9 +64,9 @@ router.post("/download", async (req, res) => {
     });
 
     await browser.close();
-
     // Send Email Notification
-    await sendApplicationDownloadEmail(formData);
+     await sendDownloadNotificationEmail({ ...formData, type: "Application" });
+
 
     res.set({
       "Content-Type": "application/pdf",
@@ -122,6 +85,24 @@ router.post("/download", async (req, res) => {
 router.get("/render", (req, res) => {
   const { name, email, mobile, address } = req.query;
   res.render("application", { name, email, mobile, address });
+}); 
+
+
+router.post("/brochure", async (req, res) => {
+  const formData = req.body;
+  console.log("Brochure download request received:", formData);
+
+  try {
+    // Send email with type 'Brochure'
+    await sendDownloadNotificationEmail({ ...formData, type: "Brochure" });
+
+    // Send static brochure PDF file
+    const filePath = path.join(__dirname, "../../public/brochure/brochure.pdf");
+    res.download(filePath, "DHS_Brochure.pdf");
+  } catch (err) {
+    console.error("❌ Brochure download error:", err);
+    res.status(500).send("Brochure download failed");
+  }
 });
 
 
