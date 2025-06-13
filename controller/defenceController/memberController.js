@@ -8,10 +8,18 @@ import { transporter } from "../../utils/emailTransporter.js";
 import Project from "../../model/projectModel.js";
 import Receipt from "../../model/receiptModel.js";
 import MemberContact from "../../model/memberContactModel.js";
+import { generatePDFBuffer } from "../../utils/generatePDF.js";
+import path from "path";
+import { fileURLToPath } from "url";
+import ejs from "ejs";
+
 // import { transporter } from "../../utils/emailTransporter.js";
 // import { Transaction } from "mongodb";
 
 // import Member from "../../models/memberModels/memberModel.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const memberLogin = async (req, res) => {
   console.log("Login function called");
@@ -92,7 +100,6 @@ const AddOnlineApplication = async (req, res) => {
     console.log(data, "incoming data");
     let memberPhotoUrl = "";
     let memberSignUrl = "";
-
     // ✅ Handle memberPhoto
     if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
@@ -101,7 +108,6 @@ const AddOnlineApplication = async (req, res) => {
       );
       memberPhotoUrl = result.secure_url;
     }
-
     // ✅ Handle memberSign
     if (files?.memberSign) {
       const signFile = files.memberSign;
@@ -155,13 +161,41 @@ const AddOnlineApplication = async (req, res) => {
         paidAmount: Number(data.sitedownpaymentamount || 0),
       },
     };
-    const newOnlineApplication = new Online(mappedData);
+     const newOnlineApplication = new Online(mappedData);
     await newOnlineApplication.save();
-    // You can optionally save payment details in a separate model if needed:
-    // await savePaymentDetails(data, newOnlineApplication._id);
-    res
-      .status(201)
-      .json({ message: "Online application submitted successfully." });
+
+    // 1. Render EJS Template
+    const templatePath = path.join(__dirname, "../../views/emailTemplate.ejs");
+    const htmlContent = await ejs.renderFile(templatePath, mappedData);
+
+    // 2. Convert to PDF
+    const pdfBuffer = await generatePDFBuffer(htmlContent);
+
+    // 3. Send Email with PDF
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.DHS_NODEMAILER_MAIL,
+        pass: process.env.DHS_NODEMAILER_KEY,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Defence Habitat Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
+      to: mappedData.email,
+      subject: "Your Membership Application Receipt",
+      text: "Please find attached your membership application PDF.",
+      attachments: [
+        {
+          filename: "Membership_Application.pdf",
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ],
+    });
+
+    res.status(200).json({ success: true, message: "Application submitted successfully" });
+
   } catch (error) {
     console.error("Add Online Application Error:", error);
     res.status(500).json({ error: "Failed to submit online application." });
