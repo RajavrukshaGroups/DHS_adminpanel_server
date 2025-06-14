@@ -32,7 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
+const allowedOrigins = ["https://defencehousingsociety.com", "https://testtadminpanel.defencehousingsociety.com"];
 app.use(
   cors({
     origin: function (origin, callback) {
