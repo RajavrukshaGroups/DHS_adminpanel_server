@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Site Booking Confirmation</title>
+    
     <link rel="stylesheet" href="/css/viewSiteConfirmation.css" />
 </head>
 
@@ -11,8 +12,8 @@
     <div class="logo-section ">
       <body>
             </div>
-          <img style="width: 800px;" src=" https://adminpanel.defencehousingsociety.com/img/letterheader.jpg " alt="Defence Habitat Housing Logo" class="logo___">
-        <div class="document-header">
+     <img src="/images/letterheader.jpg" alt="Header Image" style="width: 800px;" />
+      <div class="document-header">
             <div>DHS/DHD/0380/2024-2025</div>
             <!-- <div> <%= new Date(member.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div> -->
             <div> <%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div>
@@ -31,27 +32,25 @@
             <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></span> in the proposed 
             <span class="bold project-name"><%= member.userId.propertyDetails.projectName %></span>
             located at <span class="bold"><%=projectLocation %></span>. 
-            
             You have booked your site by paying an initial amount of <span class="bold">Rs. <%= siteDownPayment?.amount %>/-</span> 
-
           <!-- <span class="bold">Rupees <%= amountInWords %> Only</span> -->
             by mode of <span class="bold"><%= siteDownPayment?.paymentMode %></span>.
-<% if (siteDownPayment?.paymentMode?.toLowerCase() !== 'cash') { %>
-  Ref.No
-  <span class="bold">
-    <% if (siteDownPayment?.paymentMode?.toLowerCase() === 'dd') { %>
-      <%= siteDownPayment?.ddNumber %>
-    <% } else if (siteDownPayment?.paymentMode?.toLowerCase() === 'netbanking') { %>
-      <%= siteDownPayment?.transactionId %>
-    <% } else if (siteDownPayment?.paymentMode?.toLowerCase() === 'cheque') { %>
-      <%= siteDownPayment?.chequeNumber %>
-    <% } else { %>
-      N/A
-    <% } %>
-  </span>
-<% } %>
+            <% if (siteDownPayment?.paymentMode?.toLowerCase() !== 'cash') { %>
+              Ref.No
+              <span class="bold">
+                <% if (siteDownPayment?.paymentMode?.toLowerCase() === 'dd') { %>
+                  <%= siteDownPayment?.ddNumber %>
+                <% } else if (siteDownPayment?.paymentMode?.toLowerCase() === 'netbanking') { %>
+                  <%= siteDownPayment?.transactionId %>
+                <% } else if (siteDownPayment?.paymentMode?.toLowerCase() === 'cheque') { %>
+                  <%= siteDownPayment?.chequeNumber %>
+                <% } else { %>
+                  N/A
+                <% } %>
+              </span>
+            <% } %>
 
-</span>.The booked site dimension is 
+        </span>.The booked site dimension is 
             <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT.
             Receipt number is <span class="bold"><%= siteDownPayment?.receiptNo %></span>,
             Membership No. <span class="bold"><%= member.userId.MembershipNo %></span>, 
@@ -73,7 +72,7 @@
             </ol>
         </div>
           </div>
-          <img style="width: 800px;" src="https://adminpanel.defencehousingsociety.com/img/footerSign.jpg" alt="footer__">
+          <img style="width: 800px;" src="/images/footerSign.jpg" alt="footer__">
     </div>
     
 </body>

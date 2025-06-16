@@ -63,6 +63,8 @@ router.get(
 );
 
 router.get('/get-member-onlineApplication/:id',MemberController.getMemberOnlineApplication);
+router.post("/resetpassword", MemberController.ResetPassword);
+
 
 // router.post("/receipt-extra-charge-form/:memberId")
 
