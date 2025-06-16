@@ -12,6 +12,7 @@ import Online from "../../model/onlineModel.js";
 
 const addMemberDetails = async (req, res) => {
   try {
+
     const data = req.fields;
     const files = req.files;
     console.log("check files:", files);
@@ -1352,6 +1353,32 @@ res.status(200).json(applicationData);
   }
 }
 
+const ResetPassword = async (req, res) => {
+  try {
+    console.log("Received request to reset password...",req.body);
+    const { seniorityId, password } = req.body;
+
+    if (!seniorityId || !password) {
+      return res.status(400).json({ message: "Seniority ID and password are required." });
+    }
+    // Find the member by seniority ID
+    const member = await Member.findOne({ SeniorityID: seniorityId });
+
+    if (!member) {
+      return res.status(404).json({ message: "Member not found." });
+    }
+
+    // Update password directly (no bcrypt)
+    member.password = password;
+    await member.save();
+
+    res.status(200).json({ message: "Password updated successfully." });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Server error. Please try again." });
+  }
+};
+
 export default {
   addMemberDetails,
   getMemberDetails,
@@ -1375,5 +1402,6 @@ export default {
   collectSeniorityIds,
   collectMemberInfoOnSeniorityIds,
   getMemberReceipt,
-  getMemberOnlineApplication
+  getMemberOnlineApplication,
+  ResetPassword
 };

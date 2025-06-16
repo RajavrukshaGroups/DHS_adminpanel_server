@@ -15,7 +15,6 @@ import ejs from "ejs";
 
 // import { transporter } from "../../utils/emailTransporter.js";
 // import { Transaction } from "mongodb";
-
 // import Member from "../../models/memberModels/memberModel.js";
 
 const __filename = fileURLToPath(import.meta.url);

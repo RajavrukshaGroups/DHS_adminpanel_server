@@ -100,19 +100,15 @@ const memberSchema = new mongoose.Schema({
   MembershipNo: {
     type: String,
   },
+  
   ConfirmationLetterNo: {
     type: String,
   },
+
   ShareCertificateNumber: {
     type: String,
   },
 
-  // receiptIds: [
-  //   {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: "Receipt",
-  //   },
-  // ],
   isTransferred: {
     type: Boolean,
     default: false,
