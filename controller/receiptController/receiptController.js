@@ -25,6 +25,7 @@ export const createReceipt = async (memberId, data) => {
       ddNumber: data.ddNumber,
       transactionId: data.transactionId,
       otherCharges: data.otherCharges,
+      correspondenceAddress: data.correspondenceAddress,
 
       // Membership Fee breakdown
       numberOfShares: Number(data.numberOfShares) || undefined,
@@ -218,7 +219,7 @@ const getReceiptDetailsById = async (req, res) => {
     const receipt = await Receipt.findById(id).populate({
       path: "member",
       select:
-        "name permanentAddress SeniorityID propertyDetails mobileNumber email",
+        "name contactAddress SeniorityID propertyDetails mobileNumber email",
     });
 
     if (!receipt) {
@@ -308,7 +309,10 @@ const getReceiptDetailsById = async (req, res) => {
       receiptNumber: payment.receiptNo,
       date: new Date(payment.date).toLocaleDateString("en-GB"),
       name: receipt.member.name,
-      address: receipt.member.permanentAddress || "-",
+      // address: receipt.member.contactAddress || "-",
+      address: payment.correspondenceAddress
+        ? payment.correspondenceAddress
+        : receipt.member.contactAddress,
       amountInWords: convertNumberToWords(payment.amount),
       total: new Intl.NumberFormat("en-IN").format(payment.amount),
       bankName: payment.bankName || "",

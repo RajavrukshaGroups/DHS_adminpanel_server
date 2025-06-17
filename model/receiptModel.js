@@ -14,6 +14,7 @@ const paymentEntrySchema = new mongoose.Schema({
   ddNumber: String,
   paid: { type: Boolean, default: true },
   otherCharges: String,
+  correspondenceAddress: String,
 
   // Membership-specific fields:
   applicationFee: {
@@ -52,11 +53,6 @@ const paymentEntrySchema = new mongoose.Schema({
       return this.paymentType === "Membership Fee";
     },
   },
-
-  // createdAt: {
-  //   type: Date,
-  //   default: Date.now,
-  // },
 });
 
 const receiptSchema = new mongoose.Schema({
