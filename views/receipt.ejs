@@ -16,7 +16,7 @@
         <div class="header-text">
           <h1>DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD.</h1>
           <p>
-            Behind Swathi Garden Hotel, E-Block, Sahakar Nagar, Bangalore –
+            Behind Swathi Gardenia Hotel, Sahakar Nagar E Block, Bangalore -
             560092
           </p>
           <p>Mobile: +91 7026147770</p>
@@ -28,110 +28,77 @@
           No. <strong class="highlight-red"><%= receiptNumber %></strong>
         </div>
         <div class="receipt">RECEIPT</div>
-        <div>Date : <strong><%= date %></strong></div>
+        <div>Date: <strong><%= date %></strong></div>
       </section>
 
-      <section class="details">
-        <p>
-          Received from Smt./Sri :
-          <strong style="text-transform: capitalize"><%= name %></strong>
-        </p>
-        <p>
-          Address :
-          <strong style="text-transform: capitalize"><%= address %></strong>
-        </p>
-        <p>Rupees : <strong><%= amountInWords %></strong></p>
-        <p>
-          Payment Mode :
-          <strong style="text-transform: capitalize"><%= paymentMode%></strong>
-        </p>
-        <!-- <p>
-          TransactionId/CHEQUES/DD No :
-          <strong
-            ><%= chequeNumber || ddNumber || transactionId || "-" %></strong
-          >
-        </p> -->
-        <p>
-            <% if (paymentMode?.toLowerCase() !== "cash") { %>
-            <p>
-              TransactionId / Cheque / DD No :
-              <strong>
-                <% if (paymentMode?.toLowerCase() === "netbanking") { %> <%=
-                transactionId %> <% } else if (paymentMode?.toLowerCase() ===
-                "cheque") { %> <%= chequeNumber %> <% } else if
-                (paymentMode?.toLowerCase() === "dd") { %> <%= ddNumber %> <% }
-                else { %> - <% } %>
-            </p>
-            <% } %>
-          </strong>
-          <% if (paymentMode?.toLowerCase() !== "cash") { %>
-        </p>
+      <section class="details-grid">
+        <div class="line">
+          Received from Smt. / Sri <span><%= name %></span>
+        </div>
+        <div class="line">Address <span><%= address %></span></div>
+        <div class="line">Rupees <span><%= amountInWords %></span></div>
+        <div class="line">by <span><%= paymentMode %></span></div>
 
-        <p>
-          Bank :
-          <strong><%= bankName || "-" %></strong>
-        </p>
-        <p>
-          Branch :
-          <strong style="text-transform: capitalize">
-            <%= branchName || "-" %>
-          </strong>
-        </p>
+        <% if (paymentMode?.toLowerCase() !== "cash") { %>
+        <div class="line">
+          RTGS / CHEQUES / DD No
+          <span>
+            <% if (paymentMode?.toLowerCase() === "netbanking") { %> <%=
+            transactionId %> <% } else if (paymentMode?.toLowerCase() ===
+            "cheque") { %> <%= chequeNumber %> <% } else if
+            (paymentMode?.toLowerCase() === "dd") { %> <%= ddNumber %> <% } else
+            { %> - <% } %>
+          </span>
+        </div>
+        <div class="line">
+          Branch <span><%= branchName || "-" %></span> &nbsp;&nbsp;&nbsp; Bank
+          <span><%= bankName || "-" %></span>
+        </div>
         <% } %> <% if (projectName) { %>
-        <p>
-          Project Name: <strong class="capitalize"><%= projectName %></strong>
-        </p>
-        <% } %> <% if (projectName) { %>
-        <p>Plot Dimension: <strong><%= plotDimension %></strong></p>
+        <div class="line">Project Name <span><%= projectName %></span></div>
+        <% } %> <% if (plotDimension) { %>
+        <div class="line">Plot Dimension <span><%= plotDimension %></span></div>
         <% } %>
-
-        <!-- <p>Amount : <strong><%= total %></strong></p> -->
       </section>
 
-      <% if (items.length > 0) { %>
-      <table class="fee-table">
+      <table class="fee-table fixed">
         <thead>
           <tr>
-            <th>Sl No</th>
-            <th>Particulars</th>
-            <th>L.F</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>L.F.</th>
             <th>Rs.</th>
             <th>Ps.</th>
           </tr>
         </thead>
         <tbody>
-          <!-- <% items.forEach((item, idx) => { %>
-          <tr>
-            <td><%= idx + 1 %></td>
-            <td><%= item.name %></td>
-            <td>..................</td>
-            <td><%= item.amount %></td>
-            <td>00</td>
-          </tr>
-          <% }); %> -->
           <% items.forEach((item, idx) => { %>
           <tr>
-            <td><%= idx + 1 %></td>
-            <td style="text-transform: capitalize"><%= item.name %></td>
-            <td>..................</td>
-            <td><%= item.amount %></td>
-            <td>00</td>
+            <td><%= idx + 1 %>.</td>
+            <td><%= item.name %></td>
+            <td class="dotted-cell">
+              <span
+                ><%= (item.name && item.amount > 0) ? plotDimension : ''
+                %></span
+              >
+            </td>
+
+            <td></td>
+            <td><%= (item.amount && item.amount>0)?item.amount:"" %></td>
+            <td></td>
           </tr>
           <% }); %>
         </tbody>
         <tfoot>
           <tr>
+            <td></td>
             <td colspan="3">Total</td>
             <td><%= total %></td>
             <td>00</td>
           </tr>
         </tfoot>
       </table>
-      <% } else { %>
-      <p class="no-items">
-        No itemized fee breakdown available for this payment type.
-      </p>
-      <% } %>
 
       <div class="signature">
         <img
