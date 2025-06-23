@@ -289,6 +289,7 @@ const getReceiptDetailsById = async (req, res) => {
     const filteredItems = allItems.map((item) => ({
       ...item,
       amount: item.amount || 0,
+      formattedAmount: new Intl.NumberFormat("en-IN").format(item.amount || 0),
     }));
 
     const totalAmount = filteredItems.reduce(
