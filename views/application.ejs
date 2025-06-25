@@ -13,12 +13,13 @@
       line-height: 1.4;
     }
     
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      border: 1px solid #000;
-      padding: 15px;
-    }
+ .container {
+  width: 21cm;
+  min-height: 29.7cm;
+  margin: 0 auto;
+  border: 1px solid #000;
+  padding: 15px;
+}
     
     .header {
       text-align: center;
@@ -122,7 +123,8 @@
     .address-header {
       font-weight: bold;
       text-align: center;
-      margin-bottom: 5px;
+       height:90px;
+      /* margin-bottom: 5px;  */
     }
     
     .payment-section {
@@ -267,6 +269,52 @@
             margin-top: 40px;
             text-align: center;
         }
+         @media print {
+    body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-size: 12pt;
+    }
+    
+    .container {
+      max-width: 100%;
+      border: none;
+      padding: 0;
+    }
+    
+    .terms {
+      page-break-before: always;
+    }
+    
+    .declaration-section {
+      page-break-after: always;
+    }
+    
+    .office-section {
+      page-break-after: always;
+    }
+    
+    .header {
+      margin-bottom: 10px;
+    }
+    
+    .title {
+      margin: 10px 0;
+    }
+    
+    table {
+      page-break-inside: avoid;
+    }
+    
+    @page {
+      size: A4;
+      margin: 1cm;
+      @bottom-right {
+        content: counter(page) " of 3";
+      }
+    }
+  }
         
         .board-title {
             font-size: 16px;
@@ -301,6 +349,7 @@
             font-size: 12px;
             margin-top: 40px;
         }
+        
   </style>
 </head>
 <body>
@@ -327,7 +376,7 @@
     <div style="position: relative;">
       <div style="width: 70%;">
         <div class="form-row">
-          <div class="form-label">SI.NO :</div>
+          <div class="form-label">SI.NO : </div>
           <div class="form-input"></div>
         </div>
         
@@ -338,9 +387,9 @@
         
         <div class="form-row">
           <div class="form-label">RANK/DESIGNATION:</div>
-          <div class="form-input"></div>
+          <div>________________</div>
           <div class="form-label" style="margin-left: 20px;">SERVICE / ID NO.</div>
-          <div class="form-input"></div>
+          <div class="">______</div>
         </div>
         
         <div class="form-row">
@@ -364,23 +413,22 @@
     </div>
     
     <div class="form-row">
-      <div class=" " >Booked a site of measuring</div>
-      <div class="form-input" style="width: 100px;"></div>
-      <div class="form-label" style="margin-left: 10px;">in the Project</div>
+      <div class=" " >Booked a site of measuring__________</div>
       <!-- <div class="form-input" style="width: 100px;"></div> -->
-      <div class="form-label" style="margin-right: 49px;">located at</div>
+      <div class="form-label" style="margin-left: 10px;">in the Project__________</div>
+    
+      <div class="form-label" style="">located at</div>
     </div>
     
     <div class="">
-      <div class="form-input" style="width: 200px;"></div>
-      <div class="" style="font-weight: bold; margin-left: 10px; text-align: center; flex: 1;">in "DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD"</div>
+<!--       <div class="form-input" style="width: 200px;"></div> -->
+      <div class="" style="font-weight: bold; margin-left: 10px; text-align: center; flex: 1;">______________________ "DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD"</div>
     </div>
     
     <!-- Applicant Details Table -->
     <table>
       <tr>
         <td width="30%"><strong>Applicant Name :</strong></td>
-        <td></td>
       </tr>
       <tr>
         <td><strong>Date of Birth :</strong></td>
@@ -416,21 +464,16 @@
     <table>
       <tr>
         <td rowspan="3" width="30%"><strong>Nominee particulars</strong></td>
-        <td width="15%"><strong>Name</strong></td>
-        <td width="10%">:</td>
-        <td></td>
+        <td width="15%"><strong>Name :</strong></td>
       </tr>
       <tr>
-        <td><strong>Age</strong></td>
-        <td>:</td>
+        <td><strong>Age :</strong></td>
         <td></td>
-        <td width="20%"><strong>Relationship</strong></td>
-        <td width="5%">:</td>
+        <td width="20%"><strong>Relationship :</strong></td>
         <td></td>
       </tr>
       <tr>
         <td><strong>Address</strong></td>
-        <td>:</td>
         <td colspan="4"></td>
       </tr>
       <tr>
@@ -485,9 +528,9 @@
     </table>
     
     <!-- Account Details -->
-    <table>
+    <table style="margin-top: 70px;">
       <tr>
-        <td colspan="4" style="text-align: center;"><strong>Account Details For NEFT/RTGS/Online Transaction:</strong></td>
+        <td colspan="4" style="text-align: center; "><strong>Account Details For NEFT/RTGS/Online Transaction:</strong></td>
       </tr>
       <tr>
         <td width="25%"><strong>Account Name</strong></td>

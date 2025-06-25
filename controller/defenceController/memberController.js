@@ -12,6 +12,8 @@ import { generatePDFBuffer } from "../../utils/generatePDF.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import ejs from "ejs";
+import puppeteer from "puppeteer";
+
 
 // import { transporter } from "../../utils/emailTransporter.js";
 // import { Transaction } from "mongodb";
@@ -575,6 +577,68 @@ export const sendDownloadNotificationEmail = async ({
   }
 };
 
+
+const downloadApplicationForm =async(req,res)=>{
+   const formData = req.body;
+  try {
+    // const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+  headless: "new",
+  args: ["--no-sandbox", "--disable-setuid-sandbox"]
+});
+    const page = await browser.newPage();
+    const queryString = new URLSearchParams({
+      name: formData.name,
+      email: formData.email,
+      mobile: formData.mobile,
+      address: formData.address,
+    }).toString();
+
+    await page.goto(`https://adminpanel.defencehousingsociety.com/defenceWebsiteRoutes/render?${queryString}`, {
+      waitUntil: "networkidle0",
+    });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+    });
+
+    await browser.close();
+    // Send Email Notification
+     await sendDownloadNotificationEmail({ ...formData, type: "Application" });
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "attachment; filename=ApplicationForm.pdf",
+      "Content-Length": pdfBuffer.length,
+    });
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("PDF generation error:", error);
+    res.status(500).send("Failed to generate PDF");
+  }           
+}
+const renderApplicationForm =(req,res)=>{
+    const { name, email, mobile, address } = req.query;
+  res.render("application", { name, email, mobile, address });
+}
+const downloadBrochure=async (req,res)=>{
+ const formData = req.body;
+  console.log("Brochure download request received:", formData);
+
+  try {
+    // Send email with type 'Brochure'
+    await sendDownloadNotificationEmail({ ...formData, type: "Brochure" });
+
+    // Send static brochure PDF file
+    const filePath = path.join(__dirname, "../../public/brochure/brochure.pdf");
+    res.download(filePath, "DHS_Brochure.pdf");
+  } catch (err) {
+    console.error("❌ Brochure download error:", err);
+    res.status(500).send("Brochure download failed");
+  }
+}
+
+
 export default {
   memberLogin,
   dashboardDatas,
@@ -590,5 +654,7 @@ export default {
   sendOtpToEmail,
   memberDashBoardContactAdmin,
   GetTrnasferedhistory,
-  
+  downloadApplicationForm,
+  renderApplicationForm,
+  downloadBrochure
 };
