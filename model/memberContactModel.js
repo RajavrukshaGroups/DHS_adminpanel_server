@@ -16,7 +16,6 @@ const memberContactSchema = new mongoose.Schema(
     },
     subject: {
       type: String,
-      required: true,
     },
     message: {
       type: String,

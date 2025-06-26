@@ -140,13 +140,13 @@ const AddOnlineApplication = async (req, res) => {
       nomineeRelation: data.nomineeRelationship,
       nomineeAddress: data.nomineeAddress,
       date: data.date ? new Date(data.date) : new Date(),
-      paymentType:data.paymentType,
-      paymentMode:data.paymentMode,
-      bankName:data.bankName,
-      branchName:data.branchName,
-      chequeNumber:data.chequeNumber,
-      ddNumber:data.ddNumber,
-      transactionId:data.transactionId,
+      paymentType: data.paymentType,
+      paymentMode: data.paymentMode,
+      bankName: data.bankName,
+      branchName: data.branchName,
+      chequeNumber: data.chequeNumber,
+      ddNumber: data.ddNumber,
+      transactionId: data.transactionId,
       amount: Number(data.amount?.replace(/,/g, "")) || 0,
       propertyDetails: {
         projectName: data.projectName || "",
@@ -160,7 +160,7 @@ const AddOnlineApplication = async (req, res) => {
         paidAmount: Number(data.sitedownpaymentamount || 0),
       },
     };
-     const newOnlineApplication = new Online(mappedData);
+    const newOnlineApplication = new Online(mappedData);
     await newOnlineApplication.save();
 
     // 1. Render EJS Template
@@ -193,8 +193,9 @@ const AddOnlineApplication = async (req, res) => {
       ],
     });
 
-    res.status(200).json({ success: true, message: "Application submitted successfully" });
-
+    res
+      .status(200)
+      .json({ success: true, message: "Application submitted successfully" });
   } catch (error) {
     console.error("Add Online Application Error:", error);
     res.status(500).json({ error: "Failed to submit online application." });
@@ -350,7 +351,7 @@ const contactUs = async (req, res) => {
   try {
     const { name, phone, email, subject, message, location } = req.body;
 
-    if (!name || !phone || !email || !subject) {
+    if (!name || !phone || !email || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
@@ -369,29 +370,29 @@ const contactUs = async (req, res) => {
     const mailOptions = {
       from: `"${name}" <${email}>`,
       to: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
-      subject: `Contact Form: ${subject}`,
+      ...(subject ? { subject: subject } : {}),
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2 style="color: #1f4892;">New Contact Us Submission</h2>
-          <p style="font-size: 16px;">You have received a new message from the website contact form.</p>
-          <hr style="margin: 20px 0;">
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Phone:</strong> ${phone}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Subject:</strong> ${subject}</p>
-        ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
-          ${
-            message
-              ? `<p><strong>Message:</strong><br>${message.replace(
-                  /\n/g,
-                  "<br>"
-                )}</p>`
-              : ""
-          }
-          <hr style="margin: 20px 0;">
-          <p style="color: gray; font-size: 12px;">This message was submitted through the Defence Housing Society contact form.</p>
-        </div>
-      `,
+    <div style="font-family: Arial, sans-serif; padding: 20px;">
+      <h2 style="color: #1f4892;">New Contact Us Submission</h2>
+      <p style="font-size: 16px;">You have received a new message from the website contact form.</p>
+      <hr style="margin: 20px 0;">
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Phone:</strong> ${phone}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ""}
+      ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
+      ${
+        message
+          ? `<p><strong>Message:</strong><br>${message.replace(
+              /\n/g,
+              "<br>"
+            )}</p>`
+          : ""
+      }
+      <hr style="margin: 20px 0;">
+      <p style="color: gray; font-size: 12px;">This message was submitted through the Defence Housing Society contact form.</p>
+    </div>
+  `,
     };
 
     await transporter.sendMail(mailOptions);
@@ -445,8 +446,8 @@ const verifyOtp = async (req, res) => {
     delete otpStore[email]; // ✅ Remove after success
     return res.json({ success: true });
   } else {
-    console.log('else block is calling');
-    
+    console.log("else block is calling");
+
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
 };
@@ -511,7 +512,6 @@ const memberDashBoardContactAdmin = async (req, res) => {
   }
 };
 
-
 const GetTrnasferedhistory = async (req, res) => {
   try {
     const seniorityId = req.params.id;
@@ -538,7 +538,6 @@ const GetTrnasferedhistory = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
 
 export const sendDownloadNotificationEmail = async ({
   name,
@@ -590,5 +589,4 @@ export default {
   sendOtpToEmail,
   memberDashBoardContactAdmin,
   GetTrnasferedhistory,
-  
 };
