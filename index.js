@@ -30,8 +30,8 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-const allowedOrigins = ["https://defencehousingsociety.com", "https://testingadminpanel.defencehousingsociety.com"];
-// const allowedOrigins = ["http://localhost:3000","http://localhost:5173"];
+// const allowedOrigins = ["https://defencehousingsociety.com", "https://testingadminpanel.defencehousingsociety.com"];
+const allowedOrigins = ["http://localhost:3000","http://localhost:5173"];
 app.use(
   cors({
     origin: function (origin, callback) {

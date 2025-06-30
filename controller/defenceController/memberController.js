@@ -25,6 +25,7 @@ const memberLogin = async (req, res) => {
   try {
     const { seniority_id, password } = req.body;
     console.log("Incoming Data:", req.body);
+    
 
     const memberData = await Member.findOne({ SeniorityID: seniority_id });
 
@@ -436,21 +437,87 @@ const getOnlineApplications = async (req, res) => {
   }
 };
 
+// const verifyOtp = async (req, res) => {
+//   console.log("funciton is calling ", req.body);
+
+//   const { email, otp } = req.body;
+//   console.log(otpStore, "otp storeeee");
+
+//   if (otpStore[email] && otpStore[email] == otp) {
+//     delete otpStore[email]; // ✅ Remove after success
+//     return res.json({ success: true });
+//   } else {
+//     console.log("else block is calling");
+
+//     return res.status(400).json({ success: false, message: "Invalid OTP" });
+//   }
+// };
+
+// const verifyOtp = async (req, res) => {
+//   console.log(req.body,'incoming otpsssssssssssssssssssss')
+//   const { email, seniority_id, otp } = req.body;
+//   try {
+//     let user;
+//     // Identify user by seniority ID or email
+//     if (seniority_id) {
+//       user = await Member.findOne({ SeniorityID: seniority_id });
+//     } else if (email) {
+//       user = await Member.findOne({ email });
+//     }
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: "User not found" });
+//     }
+
+//     if (!user.otp || user.otp !== otp) {
+//   return res.status(400).json({ success: false, message: "Invalid OTP" });
+// }
+
+// if (new Date() > new Date(user.otpExpiresAt)) {
+//   return res.status(400).json({ success: false, message: "OTP expired" });
+// }
+
+//     // Check OTP validity
+//     if (user.otp === otp && new Date() < new Date(user.otpExpiresAt)) {
+//       // Clear OTP on success
+//       user.otp = null;
+//       user.otpExpiresAt = null;
+//       await user.save();
+//       return res.json({ success: true });
+//     } else {
+//       return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+//     }
+//   } catch (err) {
+//     console.error("OTP verification error:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
 const verifyOtp = async (req, res) => {
-  console.log("funciton is calling ", req.body);
+  const { email, seniority_id, otp } = req.body;
+  let user;
+  if (seniority_id) {
+    user = await Member.findOne({ SeniorityID: seniority_id });
+  } else if (email) {
+    user = await Member.findOne({ email });
+  }
 
-  const { email, otp } = req.body;
-  console.log(otpStore, "otp storeeee");
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
 
-  if (otpStore[email] && otpStore[email] == otp) {
-    delete otpStore[email]; // ✅ Remove after success
-    return res.json({ success: true });
-  } else {
-    console.log("else block is calling");
+  const userEmail = user.email;
+  console.log("📥 Incoming OTP:", otp);
+  console.log("📦 Stored OTP in memory:", otpStore[userEmail]);
 
+  if (!otpStore[userEmail] || otpStore[userEmail] !== otp) {
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
-};
+
+  // Optional: clear it
+  delete otpStore[userEmail];
+
+  return res.json({ success: true });
+};  
+
 
 const getOnlineApplicationById = async (req, res) => {
   // console.log(req.params, "incomign information");
@@ -574,6 +641,74 @@ export const sendDownloadNotificationEmail = async ({
   }
 };
 
+  const forgotPassword = async (req, res) => {
+    const { seniority_id } = req.body;
+    console.log(seniority_id, '🔍 Incoming Seniority ID');
+    try {
+      const user = await Member.findOne({ SeniorityID: seniority_id });
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Seniority ID not found",
+        });
+      }
+      if (!user.isActive) {
+  return res.status(403).json({
+    success: false,
+    message: "Your account is not active. Please contact support.",
+  });
+}
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      user.otp = otp;
+      user.otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+      await user.save();
+      // Optional: store in temp if needed
+      otpStore[user.email] = otp;
+      await transporter.sendMail({
+        from: `"Defence Housing Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
+        to: user.email,
+        subject: "OTP for Password Reset",
+        text: `Your OTP is: ${otp}`,
+      });
+      res.json({
+        success: true,
+        message: "OTP sent successfully to your registered email",
+      });
+    } catch (err) {
+      console.error("❌ Error sending OTP:", err);
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+      });
+    }
+  };
+
+// const forgotPassword=async (req,res)=>{
+//    const  SeniorityID  = req.body.seniority_id ;
+//    console.log(seniority_id,'seniorrrrrrrrrrrrrrrr')
+//   //  console.log(req.body,'expecting seniority id')
+//   try {
+//     const user = await Member.findOne(Senior);
+//     console.log(user,'finded member')
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: "Seniority ID not found" });
+//     }
+
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+//     user.otp = otp;
+//     user.otpExpiresAt = new Date(Date.now() + 5 * 60000); // 5 min expiry
+//     await user.save();
+
+//     await sendEmail(user.email, "OTP for Password Reset", `Your OTP is: ${otp}`);
+
+//     res.json({ success: true, message: "OTP sent successfully to your registered email" });
+//   } catch (err) {
+//     console.error("Error sending OTP:", err);
+//     res.status(500).json({ success: false, message: "Internal Server Error" });
+//   }
+// }
+
 export default {
   memberLogin,
   dashboardDatas,
@@ -589,4 +724,5 @@ export default {
   sendOtpToEmail,
   memberDashBoardContactAdmin,
   GetTrnasferedhistory,
+  forgotPassword
 };
