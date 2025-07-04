@@ -15,15 +15,18 @@
             class="logo"
           />
           <h2 class="kannada-title">
-            ಡಿಫೆನ್ಸ್ ಹ್ಯಾಬಿಟಾಟ್ ಹೌಸಿಂಗ್ ಕೋ-ಆಪರೇಟಿವ್ ಸೊಸೈಟೀ ಲಿ..
+            ಡಿಫೆನ್ಸ್ ಹ್ಯಾಬಿಟಾಟ್ ಹೌಸಿಂಗ್ ಕೋ-ಆಪರೇಟಿವ್ ಸೊಸೈಟೀ ಲಿಮಿಟೆಡ್.
           </h2>
           <h1 class="main-title">
-            DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD.
+            DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LIMITED.
           </h1>
           <p class="reg-details">
-            Reg. No:- HSG-3/64/HHS/53744/2020-21 <br />
-            #2624, 7th Cross, 14th Main, E-Block, Sahakar Nagar, Bangalore -
-            560092, Ph: 080-29903931
+            <span class="reg-clr">Reg. No:- HSG-3/64/HHS/53744/2020-21</span>
+            <br />
+            <span class="uni-col">
+              #2624, 7th Cross, 14th Main, E-Block, Sahakar Nagar, Bangalore -
+              560092, Ph: 080-29903931
+            </span>
           </p>
           <h2 class="certificate-title">SHARE CERTIFICATE</h2>
         </header>
@@ -31,7 +34,7 @@
         <div class="share-info">
           <div class="left">
             <p>
-              No.
+              <span class="uni-col">No.</span>
               <span class="certificate-number"
                 ><%= member.ShareCertificateNumber %></span
               >
@@ -39,7 +42,7 @@
           </div>
           <div class="right">
             <p>
-              No. of Shares:
+              <span class="uni-col">No. of Shares:</span>
               <span class="share-count"
                 ><%= sharePayment.numberOfShares %></span
               >
@@ -49,30 +52,56 @@
 
         <main class="certificate-body">
           <p>
-            This is to certify that <strong><%= member.name %></strong>,
-            residing at <strong><%= member.permanentAddress %></strong>, is a
-            member of the Defence Habitat Housing Co-operative Society Ltd. and
-            holds <strong><%= numberOfSharesInWords %></strong> fully paid-up
-            shares of rupees <strong><%= shareValueInWords %></strong> subject
-            to the rules and regulations governed by the Society.
-          </p>
-
-          <!-- <p>subject to the rules and regulations governed by the Society.</p> -->
-
-          <p>
-            This certificate is issued on
-            <strong
-              ><%= new Date(member.date).toLocaleDateString("en-IN") %></strong
-            >.
-          </p>
-
-          <p>
-            Name of the Nominee:
-            <strong class="nom-relationship"><%= member.nomineeName %></strong>
-            &nbsp;&nbsp; Relationship:
-            <strong class="nom-relationship"
-              ><%= member.nomineeRelation %></strong
+            <span class="uni-col"
+              >This is to certify that <%= member.saluation %>.</span
             >
+            <strong
+              ><span class="dotted-underline"><%= member.name %></span></strong
+            >
+            <span class="uni-col">
+              is a member of the Defence Habitat Housing Co-operative Society
+              Limited and holds
+            </span>
+            <strong
+              ><span class="dotted-underline"
+                ><%= numberOfSharesInWords %></span
+              ></strong
+            >
+            <span class="uni-col">Fully paid-up shares of rupees</span>
+            <strong
+              ><span class="dotted-underline"
+                ><%= shareValueInWords %></span
+              ></strong
+            >
+          </p>
+          <p>
+            <span class="uni-col"
+              >Subject to the rules of regulations governed by the
+              Society.</span
+            >
+          </p>
+          <p>
+            <span class="uni-col"
+              >This will be handed over to you, on the day of</span
+            >
+            <strong
+              ><span class="dotted-underline"
+                ><%= new Date(member.date).toLocaleDateString("en-IN") %></span
+              ></strong
+            >
+          </p>
+
+          <p>
+            <span class="uni-col">Name of the Nominee:</span>
+            <strong class="nom-relationship">
+              <span class="dotted-underline"><%= member.nomineeName %></span>
+            </strong>
+            &nbsp;&nbsp; <span class="uni-col">Relationship:</span>
+            <strong class="nom-relationship">
+              <span class="dotted-underline"
+                ><%= member.nomineeRelation %></span
+              >
+            </strong>
           </p>
         </main>
 
@@ -83,7 +112,7 @@
               alt="Signature"
               class="signature-img"
             />
-            <p>Secretary</p>
+            <p><span class="uni-col">Secretary</span></p>
           </div>
         </footer>
       </div>

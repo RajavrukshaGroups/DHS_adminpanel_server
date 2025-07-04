@@ -5,6 +5,7 @@ import upload from "../../middleware/multer.js";
 const router = express.Router();
 
 router.post("/add-project", AddProjectDetController.addProjectDetails);
+router.patch("/edit-project/:id", AddProjectDetController.editProjectDetails);
 router.get("/all-projects", AddProjectDetController.getProjectDetails);
 router.patch("/update-land-details", AddProjectDetController.updateLandDetails);
 router.get("/search-projectname", AddProjectDetController.searchProjectName);

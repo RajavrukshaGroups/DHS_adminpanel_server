@@ -25,17 +25,17 @@ const memberAffidavitSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  uploadedAt: {
+  confirmationLetterIssueDate: {
     type: Date,
     default: Date.now,
   },
-  totalPaidAmount:{
-    type:Number
-  }
+  totalPaidAmount: {
+    type: Number,
+  },
 });
 
-const MemberAffidavit = mongoose.model("MemberAffidavit", memberAffidavitSchema);
+const MemberAffidavit = mongoose.model(
+  "MemberAffidavit",
+  memberAffidavitSchema
+);
 export default MemberAffidavit;
-
-
-

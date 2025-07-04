@@ -25,6 +25,7 @@ body {
   font-weight: bold;
   font-size: 20px;
   margin: 5px 0;
+  color: red;
 }
 
 .main-title {
@@ -32,6 +33,7 @@ body {
   font-size: 20px;
   margin: 5px 0;
   text-transform: uppercase;
+  color: #24447c;
 }
 
 .reg-details {
@@ -46,6 +48,7 @@ body {
   font-weight: bold;
   margin-top: 20px;
   margin-bottom: 20px;
+  color: red;
 }
 
 .share-info {
@@ -101,4 +104,20 @@ body {
 
 .nom-relationship {
   text-transform: capitalize;
+}
+
+.dotted-underline {
+  display: inline-block;
+  border-bottom: 1px dotted #000;
+  min-width: 130px; /* or a fixed width like 150px */
+  text-align: center;
+  padding: 2px 4px; /* Optional: to prevent text sticking to edges */
+}
+
+.reg-clr {
+  color: red;
+}
+
+p .uni-col {
+  color: #24447c;
 }
