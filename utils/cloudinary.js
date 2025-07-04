@@ -8,16 +8,34 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const uploadToCloudinary = (fileInput, folder = "dhs-project-status/member-uploads") => {
+export const uploadToCloudinary = (
+  fileInput,
+  folder = "dhs-project-status/member-uploads"
+) => {
   return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream({ folder }, (error, result) => {
-      if (error) {
-        console.error("Cloudinary upload error:", error);
-        reject(error);
-      } else {
-        resolve(result);
+    // const uploadStream = cloudinary.uploader.upload_stream({ folder }, (error, result) => {
+    //   if (error) {
+    //     console.error("Cloudinary upload error:", error);
+    //     reject(error);
+    //   } else {
+    //     resolve(result);
+    //   }
+    // });
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: "auto", // ✅ This enables upload of images, PDFs, DOC, etc.
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary upload error:", error);
+          reject(error);
+        } else {
+          resolve(result);
+        }
       }
-    });
+    );
 
     if (Buffer.isBuffer(fileInput)) {
       streamifier.createReadStream(fileInput).pipe(uploadStream);
@@ -28,4 +46,3 @@ export const uploadToCloudinary = (fileInput, folder = "dhs-project-status/membe
     }
   });
 };
-

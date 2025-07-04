@@ -33,11 +33,12 @@
 
       <section class="details-grid">
         <div class="line">
-          Received from Smt. / Sri <span><%= name %></span>
+          <!-- Received from Smt. / Sri <span><%= name %></span> -->
+          Received from <%= salutation %>.<span><%= name %></span>
         </div>
         <div class="line">Address <span><%= address %></span></div>
         <div class="line">Rupees <span><%= amountInWords %></span></div>
-        <div class="line">by <span><%= paymentMode %></span></div>
+        <!-- <div class="line">by <span><%= paymentMode %></span></div> -->
 
         <% if (paymentMode?.toLowerCase() !== "cash") { %>
         <div class="line">
@@ -56,8 +57,6 @@
         </div>
         <% } %> <% if (projectName) { %>
         <div class="line">Project Name <span><%= projectName %></span></div>
-        <% } %> <% if (plotDimension) { %>
-        <div class="line">Plot Dimension <span><%= plotDimension %></span></div>
         <% } %>
       </section>
 
@@ -85,8 +84,10 @@
             </td>
 
             <td></td>
-            <td><%= (item.amount && item.amount>0)?item.formattedAmount:"" %></td>
-            <td></td>
+            <td>
+              <%= (item.amount && item.amount>0)?item.formattedAmount:"" %>
+            </td>
+            <td><%= (item.amount && item.amount > 0) ? "00" : "" %></td>
           </tr>
           <% }); %>
         </tbody>

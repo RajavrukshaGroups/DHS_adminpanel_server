@@ -23,14 +23,17 @@ const __dirname = path.dirname(__filename);
 // View engine setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.use(express.static('public'));
+app.use(express.static("public"));
 // Connect to DB
 connectDB();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-const allowedOrigins = ["https://defencehousingsociety.com", "https://testingadminpanel.defencehousingsociety.com"];
+const allowedOrigins = [
+  "https://defencehousingsociety.com",
+  "https://testingadminpanel.defencehousingsociety.com",
+];
 // const allowedOrigins = ["http://localhost:3000","http://localhost:5173"];
 app.use(
   cors({
@@ -38,7 +41,7 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.log("cors error:orign not allowed",origin)
+        console.log("cors error:orign not allowed", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },

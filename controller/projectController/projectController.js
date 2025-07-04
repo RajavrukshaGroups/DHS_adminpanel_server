@@ -1,4 +1,5 @@
 import { error } from "console";
+import mongoose from "mongoose";
 import Project from "../../model/projectModel.js";
 import ProjectStatus from "../../model/projectStatusModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
@@ -100,6 +101,109 @@ const addProjectDetails = async (req, res) => {
   }
 };
 
+const editProjectDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      projectName,
+      shortCode,
+      status,
+      dimensions,
+      description,
+      location,
+    } = req.body;
+
+    if (
+      !projectName ||
+      !shortCode ||
+      !status ||
+      !description ||
+      !location ||
+      !Array.isArray(dimensions)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "All required fields must be provided." });
+    }
+
+    if (dimensions.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "At least one dimension is required." });
+    }
+
+    const invalidDim = dimensions.find(
+      (dim) =>
+        typeof dim.length !== "number" ||
+        dim.length <= 0 ||
+        typeof dim.breadth !== "number" ||
+        dim.breadth <= 0
+    );
+
+    if (invalidDim) {
+      return res.status(400).json({
+        message:
+          "Each dimension must include a valid length and breadth greater than zero.",
+      });
+    }
+
+    const projectNameLower = projectName.trim().toLowerCase();
+    const shortCodeLower = shortCode.trim().toLowerCase();
+    const descriptionTrim = description.trim();
+    const objectId = new mongoose.Types.ObjectId(id);
+
+    // Fetch the current project
+    const existingProject = await Project.findById(objectId);
+    if (!existingProject) {
+      return res.status(404).json({ message: "Project not found." });
+    }
+
+    // Only check for duplicates if projectName or shortCode has changed
+    if (existingProject.projectName !== projectNameLower) {
+      const duplicateProjectName = await Project.findOne({
+        projectName: projectNameLower,
+      });
+
+      if (duplicateProjectName) {
+        return res
+          .status(409)
+          .json({ message: "Project name already exists." });
+      }
+    }
+
+    if (existingProject.shortCode !== shortCodeLower) {
+      const duplicateShortCode = await Project.findOne({
+        shortCode: shortCodeLower,
+      });
+
+      if (duplicateShortCode) {
+        return res.status(409).json({ message: "Short code already exists." });
+      }
+    }
+
+    const updatedProject = await Project.findByIdAndUpdate(
+      id,
+      {
+        projectName: projectNameLower,
+        shortCode: shortCodeLower,
+        status,
+        description: descriptionTrim,
+        location,
+        dimensions,
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: "Project updated successfully.",
+      project: updatedProject,
+    });
+  } catch (err) {
+    console.error("Error updating project:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 const getProjectDetails = async (req, res) => {
   try {
     const projects = await Project.find(
@@ -111,7 +215,7 @@ const getProjectDetails = async (req, res) => {
         shortCode: 1,
         location: 1,
         description: 1,
-        _id: 0,
+        _id: 1,
       }
     );
     res.status(200).json({
@@ -467,6 +571,7 @@ const fetchTotalProjectsCount = async (req, res) => {
 
 export default {
   addProjectDetails,
+  editProjectDetails,
   getProjectDetails,
   updateLandDetails,
   searchProjectName,

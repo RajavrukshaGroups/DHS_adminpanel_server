@@ -14,9 +14,10 @@
             </div>
      <img src="/images/letterheader.jpg" alt="Header Image" style="width: 800px;" />
       <div class="document-header">
-            <div>DHS/DHD/0380/2024-2025</div>
+            <div><%= receipt.member.ConfirmationLetterNo%></div>
             <!-- <div> <%= new Date(member.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div> -->
-            <div> <%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div>
+            <!-- <div> Date:- <%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div> -->
+             <div>Date:- <%= new Date(confirmationLetterIssueDate).toLocaleDateString('en-GB').split('/').join('-') %></div>
         </div>
         <div class="title">SITE BOOKING CONFIRMATION</div>
         <div class="content">
@@ -29,14 +30,14 @@
            <span class="bold"><%= member.userId.propertyDetails.length %>X<%= member.userId.propertyDetails.breadth %> </span> 
             (Rate per SQFT Rs. <span class="bold"><%=receipt.member.propertyDetails.pricePerSqft %></span> /-) on this day of 
             <!-- <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN') %></span> in the proposed  -->
-            <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></span> in the proposed 
+            <span class="bold"><%= new Date(confirmationLetterIssueDate).toLocaleDateString('en-GB').split('/').join('-')%></span> in the proposed 
             <span class="bold project-name"><%= member.userId.propertyDetails.projectName %></span>
             located at <span class="bold"><%=projectLocation %></span>. 
-            You have booked your site by paying an initial amount of <span class="bold">Rs. <%= siteDownPayment?.amount %>/-</span> 
-          <!-- <span class="bold">Rupees <%= amountInWords %> Only</span> -->
-            by mode of <span class="bold"><%= siteDownPayment?.paymentMode %></span>.
+            You have booked your site by paying an initial amount of <span class="bold">Rs.<%= new Number(siteDownPayment?.amount || 0).toLocaleString('en-IN') %>/-</span> 
+          (Rupees <span class="bold"><%= amountInWords %></span>)
+            by way of <span class="bold"><%= siteDownPayment?.paymentMode %></span> bearing
             <% if (siteDownPayment?.paymentMode?.toLowerCase() !== 'cash') { %>
-              Ref.No
+              No.
               <span class="bold">
                 <% if (siteDownPayment?.paymentMode?.toLowerCase() === 'dd') { %>
                   <%= siteDownPayment?.ddNumber %>
@@ -49,8 +50,8 @@
                 <% } %>
               </span>
             <% } %>
-
-        </span>.The booked site dimension is 
+             <span>drawn at <span class="bold"><%=siteDownPayment?.bankName%></span>,<span class="bold"><%=siteDownPayment?.branchName%> Branch</span></span>.
+        </span>The booked site dimension is 
             <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT.
             Receipt number is <span class="bold"><%= siteDownPayment?.receiptNo %></span>,
             Membership No. <span class="bold"><%= member.userId.MembershipNo %></span>, 
@@ -59,13 +60,14 @@
         
         <div class="conditions">
             <div class="conditions-title">The site is booked under the following conditions:</div>
+            <span>The booking of your site is purely based on rules and regulations of the society and provisions of Karnataka Co-operative Societies Act and the rules and By-laws of the society.</span>
             <ol>
-                <li>The booking of your site is purely based on rules and regulations of the society and provisions of Karnataka Co-operative registration act and the rules and By-laws of the society.</li>
+                <!-- <li>The booking of your site is purely based on rules and regulations of the society and provisions of Karnataka Co-operative registration act and the rules and By-laws of the society.</li> -->
                 <li>The allotment of site is subject to approval of membership / associate membership, clearance of land by concerned authority and subject to availability of the site.</li>
                 <li>Sites will be allotted on a first come first serve basis and Conditions mentioned behind the application will be applicable. Seniority number may change, in case of failing to pay the installment amount in time.</li>
                 <li>Withdrawals or transfers of membership / bookings are only after the completion of the project period. Any withdrawal before completion of the project will be liable for penalty and Interest will not be paid for any withdrawals of site advances.</li>
                 <li>All the remaining payments should be paid as per Defence Habitat Housing co-operative Society Norms. Bank loans will be arranged from leading banks after the plan approval.</li>
-                <li>Installment amount should be paid within 6 to 8 months from the date of booking confirmation.</li>
+                <li>Installment amount should be paid within <%=duration %> from the date of booking confirmation.</li>
                 <li>Corner/Commercial plots will be charged extra.</li>
                 <li>Any issues that arise in the process of completion of the project should be resolved in the General Body Meeting.</li>
                 <li>As per rules & regulations of Karnataka Co-Operative Department, the paid amount will be refundable in case of project failure.</li>

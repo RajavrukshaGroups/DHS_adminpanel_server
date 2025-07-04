@@ -8,7 +8,7 @@ router.get("/get-receipt-details/:id", ReceiptController.getReceiptDetailsById);
 router.get("/receipts/member/:id", ReceiptController.getViewReceiptHistory);
 router.get("/view-confirmation/:memberId", ReceiptController.viewconfirmation);
 
-router.get("/get-affidavit/:id", ReceiptController.EditAffidavit);
+// router.get("/get-affidavit/:id", ReceiptController.getAffidavitById);
 router.get("/checkMembershipFee/:id", ReceiptController.CheckMembershipFee);
 router.get(
   "/check-affidavit-model/:memberId",

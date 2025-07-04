@@ -12,7 +12,6 @@ import Online from "../../model/onlineModel.js";
 
 const addMemberDetails = async (req, res) => {
   try {
-
     const data = req.fields;
     const files = req.files;
     console.log("check files:", files);
@@ -66,7 +65,7 @@ const addMemberDetails = async (req, res) => {
       ShareCertificateNumber: data.shareCertificateNo,
       // ReceiptNo: data.recieptNo,
       date: new Date(data.date),
-   
+
       propertyDetails: {
         projectName: data.projectName || "",
         propertySize: Number(data.PropertySize) || 0,
@@ -138,7 +137,7 @@ const checkDuplicates = async (req, res) => {
     SeniorityID,
     MembershipNo,
     ConfirmationLetterNo,
-    ShareCertificateNumber
+    ShareCertificateNumber,
   } = req.query;
 
   try {
@@ -146,22 +145,28 @@ const checkDuplicates = async (req, res) => {
 
     if (SeniorityID) {
       conditions.push({
-        SeniorityID: { $regex: `^${SeniorityID}$`, $options: "i" }
+        SeniorityID: { $regex: `^${SeniorityID}$`, $options: "i" },
       });
     }
     if (MembershipNo) {
       conditions.push({
-        MembershipNo: { $regex: `^${MembershipNo}$`, $options: "i" }
+        MembershipNo: { $regex: `^${MembershipNo}$`, $options: "i" },
       });
     }
     if (ConfirmationLetterNo) {
       conditions.push({
-        ConfirmationLetterNo: { $regex: `^${ConfirmationLetterNo}$`, $options: "i" }
+        ConfirmationLetterNo: {
+          $regex: `^${ConfirmationLetterNo}$`,
+          $options: "i",
+        },
       });
     }
     if (ShareCertificateNumber) {
       conditions.push({
-        ShareCertificateNumber: { $regex: `^${ShareCertificateNumber}$`, $options: "i" }
+        ShareCertificateNumber: {
+          $regex: `^${ShareCertificateNumber}$`,
+          $options: "i",
+        },
       });
     }
 
@@ -178,9 +183,11 @@ const checkDuplicates = async (req, res) => {
         MembershipNo:
           existing.MembershipNo?.toLowerCase() === MembershipNo?.toLowerCase(),
         ConfirmationLetterNo:
-          existing.ConfirmationLetterNo?.toLowerCase() === ConfirmationLetterNo?.toLowerCase(),
+          existing.ConfirmationLetterNo?.toLowerCase() ===
+          ConfirmationLetterNo?.toLowerCase(),
         ShareCertificateNumber:
-          existing.ShareCertificateNumber?.toLowerCase() === ShareCertificateNumber?.toLowerCase(),
+          existing.ShareCertificateNumber?.toLowerCase() ===
+          ShareCertificateNumber?.toLowerCase(),
       };
 
       return res.status(200).json({
@@ -195,7 +202,6 @@ const checkDuplicates = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 const updateStatus = async (req, res) => {
   try {
@@ -359,10 +365,11 @@ const addConfirmation = async (req, res) => {
       userId: req.params.id,
       projectAddress: req.body.projectAddress,
       chequeNo: req.body.ChequeNo,
-      duration: req.body.Duration,
+      duration: req.body.duration,
       affidavitUrl: result.secure_url,
       cloudinaryId: result.public_id,
       totalPaidAmount: req.body.Amount,
+      confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
     });
     await newAffidavit.save();
     // Example: save to database
@@ -589,40 +596,38 @@ const deleteMember = async (req, res) => {
 //   }
 // };
 
-
 const getMemberById = async (req, res) => {
   try {
     const { id } = req.params;
     // Find all receipts for the given member
-      const member = await Member.findById(id);
-//     if (!member) {
-//       return res.status(404).json({ message: "Member not found" });
-//     }
+    const member = await Member.findById(id);
+    //     if (!member) {
+    //       return res.status(404).json({ message: "Member not found" });
+    //     }
     const receipts = await Receipt.find({ member: id });
     let result = null;
     for (const receipt of receipts) {
       const payment = receipt.payments.find(
         (p) => p.paymentType === "Membership Fee"
       );
-      
+
       if (payment) {
         console.log("Membership Fee payment found:", payment);
         result = {
           receiptId: receipt._id,
           receiptNo: payment.receiptNo,
-          amount:payment.amount,
+          amount: payment.amount,
           paymentInfo: payment,
         };
         break; // Stop at first match
       }
     }
-      console.log("Membership Fee Receipt ID:", result);
+    console.log("Membership Fee Receipt ID:", result);
     if (result) {
-      res.status(200).json({result:result,member:member});
+      res.status(200).json({ result: result, member: member });
     } else {
       res.status(404).json({ message: "Membership Fee receipt not found." });
     }
-
   } catch (error) {
     console.error("Error fetching membership receipt:", error);
     res.status(500).json({ message: "Server error" });
@@ -674,7 +679,8 @@ const updateMemberDetails = async (req, res) => {
     if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
       const result = await uploadToCloudinary(
-        photoFile.buffer || photoFile.path);
+        photoFile.buffer || photoFile.path
+      );
       memberPhotoUrl = result.secure_url;
     }
     // Upload new member sign if provided
@@ -727,47 +733,54 @@ const updateMemberDetails = async (req, res) => {
     const updatedMember = await Member.findByIdAndUpdate(memberId, updateData, {
       new: true,
     });
-// 1. Find the receipt with "Membership Fee" in its payments array
-const receipt = await Receipt.findOne({ member: memberId });
+    // 1. Find the receipt with "Membership Fee" in its payments array
+    const receipt = await Receipt.findOne({ member: memberId });
 
-if (!receipt) {
-  return res.status(404).json({ error: "Receipt not found for the member." });
-}
+    if (!receipt) {
+      return res
+        .status(404)
+        .json({ error: "Receipt not found for the member." });
+    }
 
-// 2. Find the specific payment to update
-const paymentToUpdate = receipt.payments.find(
-  (p) => p.paymentType === "Membership Fee"
-);
+    // 2. Find the specific payment to update
+    const paymentToUpdate = receipt.payments.find(
+      (p) => p.paymentType === "Membership Fee"
+    );
 
-if (!paymentToUpdate) {
-  return res.status(404).json({ error: "Membership Fee payment not found." });
-}
+    if (!paymentToUpdate) {
+      return res
+        .status(404)
+        .json({ error: "Membership Fee payment not found." });
+    }
 
-// 3. Update fields on the found payment
-paymentToUpdate.paymentMode = data.paymentMode;
-paymentToUpdate.bankName = data.bankName;
-paymentToUpdate.branchName = data.branchName;
-paymentToUpdate.amount = Number(data.amount);
-paymentToUpdate.chequeNumber = data.chequeNumber || "";
-paymentToUpdate.transactionId = data.transactionId || "";
-paymentToUpdate.ddNumber = data.ddNumber || "";
-paymentToUpdate.applicationFee = Number(data.applicationFee) || 0;
-paymentToUpdate.admissionFee = Number(data.admissionFee || data.adminissionFee) || 0;
-paymentToUpdate.miscellaneousExpenses = Number(data.miscellaneousExpenses) || 0;
-paymentToUpdate.membershipFee = Number(data.membershipFee || data.memberShipFee) || 0;
-paymentToUpdate.shareFee = Number(data.shareFee) || 0;
-paymentToUpdate.numberOfShares = Number(data.numberOfShares) || 0;
-paymentToUpdate.date = new Date(data.date);
+    // 3. Update fields on the found payment
+    paymentToUpdate.paymentMode = data.paymentMode;
+    paymentToUpdate.bankName = data.bankName;
+    paymentToUpdate.branchName = data.branchName;
+    paymentToUpdate.amount = Number(data.amount);
+    paymentToUpdate.chequeNumber = data.chequeNumber || "";
+    paymentToUpdate.transactionId = data.transactionId || "";
+    paymentToUpdate.ddNumber = data.ddNumber || "";
+    paymentToUpdate.applicationFee = Number(data.applicationFee) || 0;
+    paymentToUpdate.admissionFee =
+      Number(data.admissionFee || data.adminissionFee) || 0;
+    paymentToUpdate.miscellaneousExpenses =
+      Number(data.miscellaneousExpenses) || 0;
+    paymentToUpdate.membershipFee =
+      Number(data.membershipFee || data.memberShipFee) || 0;
+    paymentToUpdate.shareFee = Number(data.shareFee) || 0;
+    paymentToUpdate.numberOfShares = Number(data.numberOfShares) || 0;
+    paymentToUpdate.date = new Date(data.date);
 
-// 4. Save the updated receipt
-const updatedReceipt = await receipt.save();
+    // 4. Save the updated receipt
+    const updatedReceipt = await receipt.save();
 
-// 5. Return success
-res.status(200).json({
-  message: "Member and Membership Fee receipt updated successfully!",
-  updatedMember,
-  updatedReceipt,
-});
+    // 5. Return success
+    res.status(200).json({
+      message: "Member and Membership Fee receipt updated successfully!",
+      updatedMember,
+      updatedReceipt,
+    });
 
     if (!updatedMember) {
       return res.status(404).json({ error: "Member not found." });
@@ -883,7 +896,10 @@ const editConfirmationLetter = async (req, res) => {
     existingAffidavit.chequeNo =
       req.body.ChequeNo || existingAffidavit.chequeNo;
     existingAffidavit.duration =
-      req.body.Duration || existingAffidavit.duration;
+      req.body.duration || existingAffidavit.duration;
+    existingAffidavit.confirmationLetterIssueDate =
+      req.body.confirmationLetterIssueDate ||
+      existingAffidavit.confirmationLetterIssueDate;
     existingAffidavit.totalPaidAmount =
       req.body.Amount || existingAffidavit.totalPaidAmount;
     existingAffidavit.pricePerSqft =
@@ -927,7 +943,8 @@ const getAffidavitById = async (req, res) => {
       Amount: affidavit.totalPaidAmount || "",
       PaymentType: affidavit.paymentMethod || "",
       ConfirmationLetterNo: affidavit.confirmationNumber || "",
-      ConfirmationLetterDate: affidavit.confirmationDate || "",
+      confirmationLetterIssueDate: affidavit.confirmationLetterIssueDate || "",
+      duration: affidavit.duration || "",
       affidavitUrl: affidavit.affidavitUrl || "",
     };
     res.status(200).json(responseData);
@@ -1318,7 +1335,7 @@ const collectMemberInfoOnSeniorityIds = async (req, res) => {
     console.error("error fetching member info", err);
     res.status(500).json({ success: false, message: "server error" });
   }
-}; 
+};
 
 // controllers/receiptController.js
 
@@ -1349,7 +1366,9 @@ const getMemberReceipt = async (req, res) => {
     }
 
     if (!membershipPayment) {
-      return res.status(404).json({ message: "Membership Fee payment not found" });
+      return res
+        .status(404)
+        .json({ message: "Membership Fee payment not found" });
     }
 
     // Send the payment info as response
@@ -1360,25 +1379,28 @@ const getMemberReceipt = async (req, res) => {
   }
 };
 
-const getMemberOnlineApplication =async(req,res)=>{
+const getMemberOnlineApplication = async (req, res) => {
   try {
-    console.log("Received request to get member online application...", req.params);
-   const applicationData = await Online.findById(req.params.id); // NOT .find()
-if (!applicationData) return res.status(404).json({ message: "Not found" });
+    console.log(
+      "Received request to get member online application...",
+      req.params
+    );
+    const applicationData = await Online.findById(req.params.id); // NOT .find()
+    if (!applicationData) return res.status(404).json({ message: "Not found" });
 
-res.status(200).json(applicationData); 
-  } catch (error) {
-    
-  }
-}
+    res.status(200).json(applicationData);
+  } catch (error) {}
+};
 
 const ResetPassword = async (req, res) => {
   try {
-    console.log("Received request to reset password...",req.body);
+    console.log("Received request to reset password...", req.body);
     const { seniorityId, password } = req.body;
 
     if (!seniorityId || !password) {
-      return res.status(400).json({ message: "Seniority ID and password are required." });
+      return res
+        .status(400)
+        .json({ message: "Seniority ID and password are required." });
     }
     // Find the member by seniority ID
     const member = await Member.findOne({ SeniorityID: seniorityId });
@@ -1422,5 +1444,5 @@ export default {
   collectMemberInfoOnSeniorityIds,
   getMemberReceipt,
   getMemberOnlineApplication,
-  ResetPassword
+  ResetPassword,
 };

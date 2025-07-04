@@ -219,7 +219,7 @@ const getReceiptDetailsById = async (req, res) => {
     const receipt = await Receipt.findById(id).populate({
       path: "member",
       select:
-        "name contactAddress SeniorityID propertyDetails mobileNumber email",
+        "saluation name contactAddress SeniorityID propertyDetails mobileNumber email",
     });
 
     if (!receipt) {
@@ -229,10 +229,14 @@ const getReceiptDetailsById = async (req, res) => {
       });
     }
 
+    console.log("receipts salutation", receipt);
+
     // Find the specific payment by its _id
     const payment = receipt.payments.find(
       (p) => p._id.toString() === paymentId
     );
+
+    console.log("receipts payment", payment);
 
     if (!payment) {
       return res.status(404).json({
@@ -300,7 +304,7 @@ const getReceiptDetailsById = async (req, res) => {
     const receiptData = {
       projectName:
         payment.paymentType.toLowerCase() === "membership fee"
-          ? ""
+          ? payment.paymentType
           : receipt.member.propertyDetails.projectName,
       plotDimension:
         payment.paymentType.toLowerCase() === "membership fee"
@@ -309,6 +313,7 @@ const getReceiptDetailsById = async (req, res) => {
       paymentMode: payment.paymentMode,
       receiptNumber: payment.receiptNo,
       date: new Date(payment.date).toLocaleDateString("en-GB"),
+      salutation: receipt.member.saluation,
       name: receipt.member.name,
       // address: receipt.member.contactAddress || "-",
       address: payment.correspondenceAddress
@@ -416,21 +421,26 @@ const viewconfirmation = async (req, res) => {
     const affidavit = await MemberAffidavit.findOne({
       userId: memberId,
     }).populate("userId");
-    // console.log("Affidavit data:", affidavit);
+    console.log("Affidavit data:", affidavit);
     if (!affidavit) {
       return res.status(404).send("Affidavit not found");
     }
-    const amount = affidavit.totalPaidAmount || 0;
-    const amountInWords = numWords(amount);
+    const amount = siteDownPayment.amount || 0;
+    const amountInWords = convertNumberToWords(amount);
     const formattedAmountInWords =
       amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
     console.log(siteDownPayment, "project siteDownPayment");
+
+    const confirmationLetterIssueDate = affidavit.confirmationLetterIssueDate;
+    const duration = affidavit.duration;
     res.render("viewsiteBookingConfirmation", {
       member: affidavit,
-      amountInWords: formattedAmountInWords,
+      amountInWords: amountInWords,
       receipt,
       projectLocation,
       siteDownPayment,
+      confirmationLetterIssueDate,
+      duration,
     });
   } catch (error) {
     console.error("Error:", error);
@@ -438,11 +448,22 @@ const viewconfirmation = async (req, res) => {
   }
 };
 
-const EditAffidavit = async (req, res) => {
+const getAffidavitById = async (req, res) => {
   try {
-    console.log(req.body, "incoming datas");
+    const { id } = req.params;
+    const affidavit = await MemberAffidavit.findOne({ userId: id });
+
+    if (!affidavit) {
+      return res
+        .status(404)
+        .json({ message: "Affidavit not found for the given member id" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Affidavit fetched successfully", data: affidavit });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching affidavit:", error);
+    res.status(500).json({ message: "Server error while fetching affidavit" });
   }
 };
 
@@ -739,7 +760,7 @@ const renderShareCertificate = async (req, res) => {
     const receipt = await Receipt.findById(receiptId).populate({
       path: "member",
       select:
-        "name permanentAddress nomineeName nomineeRelation date ShareCertificateNumber",
+        "saluation name permanentAddress nomineeName nomineeRelation date ShareCertificateNumber",
     });
 
     console.log("receipt", receipt);
@@ -972,7 +993,7 @@ export default {
   getReceiptDetailsById,
   getViewReceiptHistory,
   viewconfirmation,
-  EditAffidavit,
+  getAffidavitById,
   CheckMembershipFee,
   CheckMemberAffidavitModel,
   FetchEditReceiptHistory,
