@@ -315,67 +315,68 @@ const getConfirmation = async (req, res) => {
   }
 };
 
-// const getConfirmation = async (req, res) => {
+// const addConfirmation = async (req, res) => {
 //   try {
-//     const member = await Member.findById(req.params.id);
-
-//     if (!member) {
-//       return res.status(404).json({ message: "Member not found" });
-//     }
-
-//     // Find the project using projectName
-//     const project = await Project.findOne({
-//       projectName: member.propertyDetails.projectName,
+//     console.log("Received file:", req.file);
+//     console.log("Received bodyy:", req.body);
+//     console.log("Received params:", req.params);
+//     const { id } = req.params;
+//     const result = await uploadToCloudinary(req.file.buffer);
+//     const affidavitUrl = result.secure_url;
+//     // Use the URL along with other form fields
+//     const newAffidavit = new MemberAffidavit({
+//       userId: req.params.id,
+//       projectAddress: req.body.projectAddress,
+//       chequeNo: req.body.ChequeNo,
+//       duration: req.body.duration,
+//       affidavitUrl: result.secure_url,
+//       cloudinaryId: result.public_id,
+//       totalPaidAmount: req.body.Amount,
+//       confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
 //     });
-
-//     const projectLocation = project?.location || "Location not found";
-
-//     // Exclude 'Membership Fee' from paymentDetails
-//     const paymentsExcludingMembership = member.paymentDetails.filter(
-//       (payment) => payment.paymentType !== "Membership Fee"
-//     );
-
-//     // Calculate total amount excluding membership fee
-//     const totalAmount = paymentsExcludingMembership.reduce(
-//       (sum, payment) => sum + (payment.amount || 0),
-//       0
-//     );
-
+//     await newAffidavit.save();
+//     // Example: save to database
+//     // await updateMember(id, memberData);
 //     res.status(200).json({
-//       ...member.toObject(),
-//       projectLocation,
-//       paymentsExcludingMembership,
-//       totalAmount,
+//       message: "Affidavit uploaded successfully",
+//       data: newAffidavit,
 //     });
 //   } catch (error) {
-//     res.status(500).json({ message: "Server error", error });
+//     console.error("Upload error:", error);
+//     res.status(500).json({ error: "Failed to upload affidavit" });
 //   }
 // };
 
 const addConfirmation = async (req, res) => {
   try {
     console.log("Received file:", req.file);
-    console.log("Received bodyy:", req.body);
-    console.log("Received params:", req.params);
+    console.log("Received body:", req.body);
     const { id } = req.params;
-    const result = await uploadToCloudinary(req.file.buffer);
-    const affidavitUrl = result.secure_url;
-    // Use the URL along with other form fields
+
+    let affidavitUrl = null;
+    let cloudinaryId = null;
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      affidavitUrl = result.secure_url;
+      cloudinaryId = result.public_id;
+    }
+
     const newAffidavit = new MemberAffidavit({
-      userId: req.params.id,
+      userId: id,
       projectAddress: req.body.projectAddress,
       chequeNo: req.body.ChequeNo,
       duration: req.body.duration,
-      affidavitUrl: result.secure_url,
-      cloudinaryId: result.public_id,
+      affidavitUrl, // will be null if not uploaded
+      cloudinaryId, // will be null if not uploaded
       totalPaidAmount: req.body.Amount,
       confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
     });
+
     await newAffidavit.save();
-    // Example: save to database
-    // await updateMember(id, memberData);
+
     res.status(200).json({
-      message: "Affidavit uploaded successfully",
+      message: "Affidavit saved successfully",
       data: newAffidavit,
     });
   } catch (error) {
@@ -383,60 +384,6 @@ const addConfirmation = async (req, res) => {
     res.status(500).json({ error: "Failed to upload affidavit" });
   }
 };
-
-// const getAllAffidavits = async (req, res) => {
-//   try {
-//     const data = await MemberAffidavit.find()
-//       .populate(
-//         "userId",
-//         "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo"
-//       )
-//       // adjust fields as needed
-//       .sort({ createdAt: -1 });
-//     console.log(data, "ddddddddddddddddd");
-//     res.status(200).json(data);
-//   } catch (error) {
-//     console.error("Error fetching affidavits:", error);
-//     res.status(500).json({ message: "Failed to fetch affidavits" });
-//   }
-// };
-
-// const getAllAffidavits = async (req, res) => {
-//   try {
-//     const affidavits = await MemberAffidavit.find()
-//       .populate(
-//         "userId",
-//         "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo"
-//       )
-//       .sort({ createdAt: -1 });
-
-//     const enrichedAffidavits = await Promise.all(
-//       affidavits.map(async (affidavit) => {
-//         const memberId = affidavit.userId?._id;
-
-//         if (!memberId) return affidavit;
-
-//         const receipt = await Receipt.findOne({ member: memberId }).lean();
-
-//         const siteDownPayments =
-//           receipt?.payments?.filter(
-//             (payment) =>
-//               (payment.paymentType || "").toLowerCase() === "sitedownpayment"
-//           ) || [];
-
-//         return {
-//           ...affidavit.toObject(),
-//           siteDownPayments, // attach matching payments
-//         };
-//       })
-//     );
-
-//     res.status(200).json(enrichedAffidavits);
-//   } catch (error) {
-//     console.error("Error fetching affidavits:", error);
-//     res.status(500).json({ message: "Failed to fetch affidavits" });
-//   }
-// };
 
 const getAllAffidavits = async (req, res) => {
   try {

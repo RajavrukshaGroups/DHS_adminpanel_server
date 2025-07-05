@@ -19,11 +19,11 @@ const memberAffidavitSchema = new mongoose.Schema({
   },
   affidavitUrl: {
     type: String,
-    required: true,
+    // required: true,
   },
   cloudinaryId: {
     type: String,
-    required: true,
+    // required: true,
   },
   confirmationLetterIssueDate: {
     type: Date,
