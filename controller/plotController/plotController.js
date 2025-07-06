@@ -1,14 +1,11 @@
 import Member from "../../model/memberModel.js"; // adjust path as needed
-import Transfer from "../../model/plotTransfer.js"
+import Transfer from "../../model/plotTransfer.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 
-
- const getMemberBySeniorityID = async (req, res) => {
+const getMemberBySeniorityID = async (req, res) => {
   try {
-    console.log(req.params.id,'paramssssssssssssssssssssss');
-    const  seniorityId  = req.params.id;
+    const seniorityId = req.params.id;
     const member = await Member.findOne({ SeniorityID: seniorityId });
-    console.log(member,'membererrrrrrrrrrrrrrrr')
     if (!member) return res.status(404).json({ message: "Member not found" });
     res.status(200).json(member);
   } catch (error) {
@@ -16,21 +13,21 @@ import { uploadToCloudinary } from "../../utils/cloudinary.js";
   }
 };
 
-
 const CreateTransfer = async (req, res) => {
   try {
-    console.log("Body Data:", req.body);
-    console.log("Uploaded Files:", req.files);
-
     // Parse JSON strings
     const fromMember = JSON.parse(req.body.fromMember);
     const toMember = JSON.parse(req.body.toMember);
     const { reason, transferDate } = req.body;
 
     // Find the existing member by SeniorityID
-    const fromMemberRecord = await Member.findOne({ SeniorityID: fromMember.seniorityId });
+    const fromMemberRecord = await Member.findOne({
+      SeniorityID: fromMember.seniorityId,
+    });
     if (!fromMemberRecord) {
-      return res.status(404).json({ message: "From member not found with given SeniorityID." });
+      return res
+        .status(404)
+        .json({ message: "From member not found with given SeniorityID." });
     }
 
     // Save previous member details
@@ -47,12 +44,16 @@ const CreateTransfer = async (req, res) => {
     let memberSignUrl = fromMemberRecord.MemberSign;
 
     if (req.files?.memberPhoto?.[0]) {
-      const uploadedPhoto = await uploadToCloudinary(req.files.memberPhoto[0].buffer);
+      const uploadedPhoto = await uploadToCloudinary(
+        req.files.memberPhoto[0].buffer
+      );
       memberPhotoUrl = uploadedPhoto.secure_url;
     }
 
     if (req.files?.memberSign?.[0]) {
-      const uploadedSign = await uploadToCloudinary(req.files.memberSign[0].buffer);
+      const uploadedSign = await uploadToCloudinary(
+        req.files.memberSign[0].buffer
+      );
       memberSignUrl = uploadedSign.secure_url;
     }
 
@@ -63,27 +64,31 @@ const CreateTransfer = async (req, res) => {
       mobileNumber: toMember.mobile,
       contactAddress: toMember.address,
       isTransferred: true,
-      transferReason: reason,         // <-- include transfer reason
+      transferReason: reason, // <-- include transfer reason
       refname: toMember.name,
       MemberPhoto: memberPhotoUrl,
       MemberSign: memberSignUrl,
       previousMemberDetails: previousDetails,
-      date: transferDate,            // <-- optional: track transfer date
+      date: transferDate, // <-- optional: track transfer date
     });
-    res.status(200).json({ message: "Member updated with transfer details successfully." });
+    res
+      .status(200)
+      .json({ message: "Member updated with transfer details successfully." });
   } catch (error) {
     console.error("Transfer creation error:", error);
     res.status(500).json({ message: "Error updating transfer", error });
   }
 };
 
-const plotTransferhistory = async (req, res) => {  
+const plotTransferhistory = async (req, res) => {
   try {
     // Fetch members where isTransferred is true
     const transferredMembers = await Member.find({ isTransferred: true })
-      .select("name mobileNumber email previousMemberDetails propertyDetails transferDate SeniorityID transferReason") // select only required fields
+      .select(
+        "name mobileNumber email previousMemberDetails propertyDetails transferDate SeniorityID transferReason"
+      ) // select only required fields
       .sort({ transferDate: -1 });
-    const result = transferredMembers.map(member => ({
+    const result = transferredMembers.map((member) => ({
       toMemberName: member.name,
       toMemberMobile: member.mobileNumber,
       toMemberEmail: member.email,
@@ -91,13 +96,11 @@ const plotTransferhistory = async (req, res) => {
       fromMemberMobile: member.previousMemberDetails?.mobileNumber || "N/A",
       fromMemberEmail: member.previousMemberDetails?.email || "N/A",
       projectName: member.propertyDetails?.projectName || "N/A",
-      transferDate: member.transferDate || member.updatedAt, 
-      SeniorityID	:member.SeniorityID,
-      transferReason: member.transferReason
-        }
-      )
-    );
-    console.log(result,'this is the resutl')
+      transferDate: member.transferDate || member.updatedAt,
+      SeniorityID: member.SeniorityID,
+      transferReason: member.transferReason,
+    }));
+    console.log(result, "this is the resutl");
     res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching transferred plots:", error);
@@ -105,10 +108,8 @@ const plotTransferhistory = async (req, res) => {
   }
 };
 
- const cancelMemberPlot = async (req, res) => {
+const cancelMemberPlot = async (req, res) => {
   try {
-    console.log('Function is called', req.body);
-
     const { reason, remarks, cancellationDate, member } = req.body;
 
     // Parse the member JSON string
@@ -129,7 +130,10 @@ const plotTransferhistory = async (req, res) => {
     // Upload cancellation letter to Cloudinary if file exists
     let cancellationLetterUrl = null;
     if (req.file && req.file.buffer) {
-      const result = await uploadToCloudinary(req.file.buffer, "dhs-project-status/member-uploads");
+      const result = await uploadToCloudinary(
+        req.file.buffer,
+        "dhs-project-status/member-uploads"
+      );
       cancellationLetterUrl = result.secure_url;
     }
 
@@ -137,14 +141,17 @@ const plotTransferhistory = async (req, res) => {
     memberDoc.cancellationDetails = {
       reason,
       remarks,
-      cancellationDate: cancellationDate ? new Date(cancellationDate) : new Date(),
+      cancellationDate: cancellationDate
+        ? new Date(cancellationDate)
+        : new Date(),
       cancellationLetter: cancellationLetterUrl,
     };
 
     await memberDoc.save();
 
-    res.status(200).json({ message: "Plot cancellation updated", data: memberDoc });
-
+    res
+      .status(200)
+      .json({ message: "Plot cancellation updated", data: memberDoc });
   } catch (error) {
     console.error("Cancel plot error:", error);
     res.status(500).json({ message: "Failed to cancel plot", error });
@@ -152,11 +159,12 @@ const plotTransferhistory = async (req, res) => {
 };
 
 // GET /api/members/cancelled
-
- const getCancelledMembers = async (req, res) => {
+const getCancelledMembers = async (req, res) => {
   try {
-    const cancelledMembers = await Member.find({ cancellationDetails: { $ne: null } });
-    console.log(cancelledMembers,'total cancelled members')
+    const cancelledMembers = await Member.find({
+      cancellationDetails: { $ne: null },
+    });
+    console.log(cancelledMembers, "total cancelled members");
     res.status(200).json({ data: cancelledMembers });
   } catch (error) {
     console.error("Error fetching cancelled members:", error);
@@ -164,10 +172,10 @@ const plotTransferhistory = async (req, res) => {
   }
 };
 
-const DeletePlotCancelation =async (req,res)=>{
-try {
+const DeletePlotCancelation = async (req, res) => {
+  try {
     const { memberId } = req.body;
-    console.log(memberId,'incomign member id')
+    console.log(memberId, "incomign member id");
     if (!memberId) {
       return res.status(400).json({ message: "Member ID is required" });
     }
@@ -178,19 +186,20 @@ try {
     // Clear the cancellationDetails field
     member.cancellationDetails = null;
     await member.save();
-    res.status(200).json({ message: "Plot cancellation details deleted successfully" });
+    res
+      .status(200)
+      .json({ message: "Plot cancellation details deleted successfully" });
   } catch (error) {
     console.error("Error deleting cancellation details:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-}
-
+};
 
 export default {
-    getMemberBySeniorityID,
-    CreateTransfer,
-    plotTransferhistory,
-    cancelMemberPlot,
-    getCancelledMembers,
-    DeletePlotCancelation
-}
+  getMemberBySeniorityID,
+  CreateTransfer,
+  plotTransferhistory,
+  cancelMemberPlot,
+  getCancelledMembers,
+  DeletePlotCancelation,
+};

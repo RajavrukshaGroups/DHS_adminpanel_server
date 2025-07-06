@@ -318,7 +318,6 @@ const extraChargeReceipts = async (req, res) => {
     const receipts = await Receipt.find({ _id: { $in: receiptIds } });
 
     const extraCharges = [];
-
     receipts.forEach((receipt) => {
       receipt.payments.forEach((payment) => {
         if (payment.paymentType.toLowerCase() === "extra charge") {
