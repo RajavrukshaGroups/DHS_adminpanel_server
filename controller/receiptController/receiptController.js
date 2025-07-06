@@ -68,61 +68,6 @@ export const createReceipt = async (memberId, data) => {
   }
 };
 
-// const fetchReceipts = async (req, res) => {
-//   try {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const search = req.query.search?.trim() || "";
-//     const skip = (page - 1) * limit;
-
-//     let query = {};
-
-//     if (search) {
-//       // Find matching members based on name, SeniorityID, or project name
-//       const matchingMembers = await Member.find({
-//         $or: [
-//           { name: new RegExp(search, "i") },
-//           { SeniorityID: new RegExp(search, "i") },
-//           { "propertyDetails.projectName": new RegExp(search, "i") },
-//         ],
-//       }).select("_id");
-//       console.log("matching members", matchingMembers);
-
-//       const matchingMemberIds = matchingMembers.map((m) => m._id);
-
-//       query = {
-//         $or: [
-//           { receiptNo: new RegExp(search, "i") },
-//           { member: { $in: matchingMemberIds } },
-//         ],
-//       };
-//     }
-
-//     const totalCount = await Receipt.countDocuments(query);
-
-//     const receipts = await Receipt.find(query)
-//       .populate({
-//         path: "member",
-//         select:
-//           "name mobileNumber email SeniorityID isActive date propertyDetails",
-//       })
-//       .sort({ date: -1 })
-//       .skip(skip)
-//       .limit(limit);
-
-//     const totalPages = Math.ceil(totalCount / limit);
-
-//     res.status(200).json({
-//       data: receipts,
-//       totalPages,
-//       currentPage: page,
-//     });
-//   } catch (err) {
-//     console.error("error fetching receipts", err);
-//     res.status(500).json({ error: "Failed to fetch receipts." });
-//   }
-// };
-
 const fetchReceipts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -362,39 +307,6 @@ const getViewReceiptHistory = async (req, res) => {
   }
 };
 
-// const viewconfirmation = async (req, res) => {
-//   try {
-//     console.log("view confirmation called")
-//     const { memberId } = req.params;
-//     console.log("Member ID:", memberId);
-//     // const reciptData = await Receipt.findOne({})
-//      const receipt = await Receipt.findOne({ member: memberId }).populate("member");
-//      console.log("receipt data",receipt);
-//      const affidavit = await MemberAffidavit.findOne({
-//       userId: memberId,
-//     }).populate("userId");
-//     // console.log("Affidavit data:", affidavit);
-//     if (!affidavit) {
-//       return res.status(404).send("Affidavit not found");
-//       }
-//     // Convert amount to words
-//     const amount = affidavit.totalPaidAmount || 0;
-//     const amountInWords = numWords(amount);
-//     const formattedAmountInWords =
-//     amountInWords.charAt(0).toUpperCase() + amountInWords.slice(1);
-//     res.render("viewsiteBookingConfirmation", {
-//       member: affidavit,
-//       amountInWords: formattedAmountInWords,
-//       receipt
-//     });
-//     // res.render("viewsiteBookingConfirmation", { member: affidavit });
-//   } catch (error) {
-//     console.error("Error:", error);
-//     // Return here too
-//     return res.status(500).send("Server Error");
-//   }
-// };
-
 const viewconfirmation = async (req, res) => {
   try {
     const { memberId } = req.params;
@@ -466,98 +378,6 @@ const getAffidavitById = async (req, res) => {
     res.status(500).json({ message: "Server error while fetching affidavit" });
   }
 };
-
-// const CheckMembershipFee = async (req, res) => {
-//   const memberId = req.params.id;
-//   try {
-//     if (!mongoose.Types.ObjectId.isValid(memberId)) {
-//       return res
-//         .status(400)
-//         .json({ feeAdded: false, message: "Invalid member ID" });
-//     }
-
-//     const receipt = await Receipt.findOne({ member: memberId }).lean();
-
-//     if (!receipt || !receipt.payments?.length) {
-//       return res.json({ feeAdded: false, message: "No payments found." });
-//     }
-
-//     const hasNonMembershipPayment = receipt.payments.some(
-//       (payment) => payment.paymentType !== "Membership Fee"
-//     );
-
-//     const totalMembershipAmount = receipt.payments
-//       .filter((payment) => payment.paymentType === "Membership Fee")
-//       .reduce((sum, payment) => sum + (payment.amount || 0), 0);
-
-//     if (hasNonMembershipPayment || totalMembershipAmount > 2500) {
-//       return res.json({ feeAdded: true });
-//     }
-
-//     return res.json({
-//       feeAdded: false,
-//       message:
-//         "Please generate a receipt for site down payment to continue with the confirmation letter.",
-//     });
-//   } catch (err) {
-//     console.error("Error checking membership fee:", err);
-//     res.status(500).json({ feeAdded: false, message: "Server error." });
-//   }
-// };
-
-// const FetchEditReceiptHistory = async (req, res) => {
-//   try {
-//     const { receiptId } = req.params;
-//     const { paymentType, installmentNumber } = req.query;
-
-//     console.log("receiptId", receiptId);
-//     console.log("payment type", paymentType);
-
-//     const receipt = await Receipt.findById(receiptId).populate({
-//       path: "member",
-//       select:
-//         "name permanentAddress SeniorityID propertyDetails mobileNumber email",
-//     });
-
-//     if (!receipt) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Receipt not found",
-//       });
-//     }
-
-//     let payment;
-
-//     if (paymentType === "installments" && installmentNumber) {
-//       payment = receipt.payments.find(
-//         (p) =>
-//           p.paymentType === "installments" &&
-//           p.installmentNumber === installmentNumber
-//       );
-//     } else {
-//       payment = receipt.payments.find((p) => p.paymentType === paymentType);
-//     }
-
-//     if (!payment) {
-//       return res.status(404).json({
-//         success: false,
-//         message: `Payment of type "${paymentType}" not found for this receipt.`,
-//       });
-//     }
-
-//     // res.status(200).json(payment);
-//     res.status(200).json({
-//       payment,
-//       member: receipt.member,
-//     });
-//     console.log("Fetched payment:", payment);
-//   } catch (err) {
-//     console.error("Error fetching details:", err);
-//     res.status(500).send("Failed to fetch receipt details.");
-//   }
-// };
-
-// In your backend routes
 
 // Controller
 

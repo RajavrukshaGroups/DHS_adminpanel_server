@@ -1,5 +1,3 @@
-// models/MemberAffidavit.js
-
 import mongoose from "mongoose";
 
 const memberAffidavitSchema = new mongoose.Schema({

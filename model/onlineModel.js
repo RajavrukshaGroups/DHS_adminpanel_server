@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-
 const propertyDetailsSchema = new mongoose.Schema({
   projectName: { type: String },
   propertySize: { type: Number },
@@ -12,7 +11,6 @@ const propertyDetailsSchema = new mongoose.Schema({
   breadth: { type: Number },
   paidAmount: { type: Number, default: 0 },
 });
-
 
 const onlineSchema = new mongoose.Schema({
   refname: {
@@ -102,7 +100,7 @@ const onlineSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  
+
   password: {
     type: String,
   },
@@ -110,30 +108,30 @@ const onlineSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  paymentType:{
-    type:String,
-  },
-  paymentMode:{
+  paymentType: {
     type: String,
   },
-  bankName:{
+  paymentMode: {
     type: String,
   },
-  branchName:{
-    type:String
+  bankName: {
+    type: String,
   },
-  amount:{
-    type:Number
+  branchName: {
+    type: String,
   },
-   chequeNumber:{
-    type:String
-   },
-   ddNumber:{
-    type:String
-   },
-   transactionId:{
-    type:String
-   }
+  amount: {
+    type: Number,
+  },
+  chequeNumber: {
+    type: String,
+  },
+  ddNumber: {
+    type: String,
+  },
+  transactionId: {
+    type: String,
+  },
 });
 
 const Online = mongoose.model("Onlineapplication", onlineSchema);

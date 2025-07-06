@@ -39,9 +39,10 @@ router.post(
   "/dashboard-contact-admin",
   defenceController.memberDashBoardContactAdmin
 );
-router.get("/get-transferred-history/:id",defenceController.GetTrnasferedhistory);
-
-
+router.get(
+  "/get-transferred-history/:id",
+  defenceController.GetTrnasferedhistory
+);
 router.post("/download", async (req, res) => {
   const formData = req.body;
   try {
@@ -54,9 +55,12 @@ router.post("/download", async (req, res) => {
       address: formData.address,
     }).toString();
 
-    await page.goto(`http://localhost:4000/defenceWebsiteRoutes/render?${queryString}`, {
-      waitUntil: "networkidle0",
-    });
+    await page.goto(
+      `http://localhost:4000/defenceWebsiteRoutes/render?${queryString}`,
+      {
+        waitUntil: "networkidle0",
+      }
+    );
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -65,8 +69,7 @@ router.post("/download", async (req, res) => {
 
     await browser.close();
     // Send Email Notification
-     await sendDownloadNotificationEmail({ ...formData, type: "Application" });
-
+    await sendDownloadNotificationEmail({ ...formData, type: "Application" });
 
     res.set({
       "Content-Type": "application/pdf",
@@ -85,8 +88,7 @@ router.post("/download", async (req, res) => {
 router.get("/render", (req, res) => {
   const { name, email, mobile, address } = req.query;
   res.render("application", { name, email, mobile, address });
-}); 
-
+});
 
 router.post("/brochure", async (req, res) => {
   const formData = req.body;
@@ -104,6 +106,5 @@ router.post("/brochure", async (req, res) => {
     res.status(500).send("Brochure download failed");
   }
 });
-
 
 export default router;

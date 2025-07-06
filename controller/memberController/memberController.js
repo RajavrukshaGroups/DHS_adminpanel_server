@@ -233,45 +233,6 @@ const getInactiveMembers = async (req, res) => {
   }
 };
 
-// const getConfirmation = async (req, res) => {
-//   try {
-//     const member = await Member.findById(req.params.id)
-//     console.log(member, "member details");
-//     if (!member) {
-//       return res.status(404).json({ message: "Member not found" });
-//     }
-
-//     res.status(200).json(member);
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error });
-//   }
-// };
-
-// const getConfirmation = async (req, res) => {
-//   try {
-//     const member = await Member.findById(req.params.id);
-
-//     if (!member) {
-//       return res.status(404).json({ message: "Member not found" });
-//     }
-//     // Find the project using projectName
-//     const project = await Project.findOne({
-//       projectName: member.propertyDetails.projectName,
-//     });
-
-//     console.log(project, "project details");
-
-//     const projectLocation = project?.location || "Location not found";
-
-//     res.status(200).json({
-//       ...member.toObject(),
-//       projectLocation,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error });
-//   }
-// };
-
 const getConfirmation = async (req, res) => {
   try {
     const memberId = req.params.id;
@@ -314,38 +275,6 @@ const getConfirmation = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
-// const addConfirmation = async (req, res) => {
-//   try {
-//     console.log("Received file:", req.file);
-//     console.log("Received bodyy:", req.body);
-//     console.log("Received params:", req.params);
-//     const { id } = req.params;
-//     const result = await uploadToCloudinary(req.file.buffer);
-//     const affidavitUrl = result.secure_url;
-//     // Use the URL along with other form fields
-//     const newAffidavit = new MemberAffidavit({
-//       userId: req.params.id,
-//       projectAddress: req.body.projectAddress,
-//       chequeNo: req.body.ChequeNo,
-//       duration: req.body.duration,
-//       affidavitUrl: result.secure_url,
-//       cloudinaryId: result.public_id,
-//       totalPaidAmount: req.body.Amount,
-//       confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
-//     });
-//     await newAffidavit.save();
-//     // Example: save to database
-//     // await updateMember(id, memberData);
-//     res.status(200).json({
-//       message: "Affidavit uploaded successfully",
-//       data: newAffidavit,
-//     });
-//   } catch (error) {
-//     console.error("Upload error:", error);
-//     res.status(500).json({ error: "Failed to upload affidavit" });
-//   }
-// };
 
 const addConfirmation = async (req, res) => {
   try {
@@ -528,21 +457,6 @@ const deleteMember = async (req, res) => {
   }
 };
 
-// const getMemberById = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const member = await Member.findById(id);
-//     if (!member) {
-//       return res.status(404).json({ message: "Member not found" });
-//     }
-
-//     res.status(200).json(member);
-//   } catch (error) {
-//     console.error("Fetch error:", error);
-//     res.status(500).json({ message: "Server error while fetching member" });
-//   }
-// };
-
 const getMemberById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -580,35 +494,6 @@ const getMemberById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-// const getMemberById = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     console.log(id, 'member iddddddddddd');
-//     const member = await Member.findById(id);
-//     if (!member) {
-//       return res.status(404).json({ message: "Member not found" });
-//     }
-//     const receipts = await Receipt.find({ member: id });
-//     console.log(receipts, "receipts for member");
-//     let membershipReceiptId = null;
-//     for (const receipt of receipts) {
-//       const hasMembershipFee = receipt.payments.some(
-//         (payment) => payment.paymentType === "Membership Fee"
-//       );
-//       if (hasMembershipFee) {
-//         membershipReceiptId = receipt._id;
-//         break; // Stop at first match
-//       }
-//     }
-//     // console.log("Membership fee receipt fount",membershipReceiptId)
-//     console.log("Membership Fee Receipt ID:", membershipReceiptId);
-//     res.status(200).json({ member, membershipReceiptId });
-//   } catch (error) {
-//     console.error("Fetch error:", error);
-//     res.status(500).json({ message: "Server error while fetching member" });
-//   }
-// };
 
 const updateMemberDetails = async (req, res) => {
   try {
@@ -741,37 +626,6 @@ const updateMemberDetails = async (req, res) => {
   }
 };
 
-// const addReceiptToMember = async (req, res) => {
-//   try {
-//     const { memberId } = req.params;
-//     console.log("memberId", memberId);
-//     const data = req.body;
-//     console.log("data receipt", data);
-
-//     // 1. Fetch the existing member
-//     const existingMember = await Member.findById(memberId);
-
-//     if (!existingMember) {
-//       return res.status(404).json({ error: "Member not found" });
-//     }
-
-//     // 2. Call the same createReceipt logic used in addMemberDetails
-//     const receiptResponse = await createReceipt(memberId, data);
-
-//     if (receiptResponse.status === 200) {
-//       res.status(200).json({
-//         message: "Receipt added successfully",
-//         receipt: receiptResponse.data,
-//       });
-//     } else {
-//       res.status(500).json({ error: receiptResponse.error });
-//     }
-//   } catch (error) {
-//     console.error("Error in addReceiptToMember:", error);
-//     res.status(500).json({ error: "Failed to add receipt to member" });
-//   }
-// };
-
 const addReceiptToMember = async (req, res) => {
   try {
     const { memberId } = req.params;
@@ -872,11 +726,9 @@ const editConfirmationLetter = async (req, res) => {
 const getAffidavitById = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id, "parammssssssssssssssss");
     // Fetch affidavit/confirmation letter based on userId (memberId)
     const affidavit = await MemberAffidavit.findOne({ userId: id });
     // const affidavit = await MemberAffidavit.findOne({ userId: new mongoose.Types.ObjectId(id) });
-    console.log(affidavit, "aaaaaaaaaaaaaaaaaaaaaaaa");
     if (!affidavit) {
       return res
         .status(404)
@@ -900,99 +752,6 @@ const getAffidavitById = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-// const editReceiptToMember = async (req, res) => {
-//   try {
-//     const { memberId } = req.params;
-//     const data = req.body;
-//     const { paymentId } = req.query;
-
-//     console.log("Member ID:", memberId);
-//     console.log("Updated data:", data);
-//     console.log("Target paymentId:", paymentId);
-
-//     // 1. Find the member
-//     const member = await Member.findById(memberId);
-//     if (!member) return res.status(404).json({ error: "Member not found" });
-
-//     console.log("member receipt", member);
-
-//     // 2. Get the single receiptId
-//     const receipt = await Receipt.findById(member.receiptId);
-//     if (!receipt) return res.status(404).json({ error: "Receipt not found" });
-
-//     // 3. Find the matching payment
-//     const payment = receipt.payments.id(paymentId);
-//     if (!payment) return res.status(404).json({ error: "Payment not found" });
-
-//     // 4. Update fields
-//     Object.keys(data).forEach((key) => {
-//       payment[key] = data[key];
-//     });
-
-//     await receipt.save();
-
-//     return res.status(200).json({
-//       message: "Receipt payment updated successfully",
-//       updatedPayment: payment,
-//     });
-//   } catch (error) {
-//     console.error("Error in editReceiptToMember:", error);
-//     res.status(500).json({ error: "Failed to update receipt payment" });
-//   }
-// };
-
-// In your routes
-// Controller
-
-// const editReceiptToMember = async (req, res) => {
-//   try {
-//     const { memberId } = req.params;
-//     const data = req.body;
-//     const { paymentId } = req.query;
-
-//     // 1. Find the member
-//     const member = await Member.findById(memberId);
-//     if (!member) return res.status(404).json({ error: "Member not found" });
-
-//     // 2. Get all receipts for the member
-//     const receipts = await Receipt.find({ member: memberId });
-
-//     // 3. Find the payment in any of the receipts
-//     let paymentToUpdate = null;
-//     let receiptContainingPayment = null;
-
-//     for (const receipt of receipts) {
-//       const payment = receipt.payments.id(paymentId);
-//       if (payment) {
-//         paymentToUpdate = payment;
-//         receiptContainingPayment = receipt;
-//         break;
-//       }
-//     }
-
-//     if (!paymentToUpdate) {
-//       return res.status(404).json({ error: "Payment not found" });
-//     }
-
-//     // 4. Update fields
-//     Object.keys(data).forEach((key) => {
-//       if (data[key] !== undefined) {
-//         paymentToUpdate[key] = data[key];
-//       }
-//     });
-
-//     await receiptContainingPayment.save();
-
-//     return res.status(200).json({
-//       message: "Receipt payment updated successfully",
-//       updatedPayment: paymentToUpdate,
-//     });
-//   } catch (error) {
-//     console.error("Error in editReceiptToMember:", error);
-//     res.status(500).json({ error: "Failed to update receipt payment" });
-//   }
-// };
 
 const editReceiptToMember = async (req, res) => {
   try {
@@ -1119,59 +878,6 @@ const getMemberData = async (req, res) => {
   try {
   } catch (err) {}
 };
-
-// const deleteMemberReceiptPaymentEach = async (req, res) => {
-//   const { memberId } = req.params;
-//   const { paymentType, installmentNumber } = req.body;
-
-//   try {
-//     // Step 1: Find the member
-//     const member = await Member.findById(memberId);
-//     if (!member) {
-//       return res.status(404).json({ message: "Member not found" });
-//     }
-
-//     // Step 2: Get the receipt(s) linked to this member
-//     const receipts = await Receipt.find({ _id: { $in: member.receiptId } });
-
-//     let paymentDeleted = false;
-
-//     // Step 3: Iterate through receipts and try to remove the matching payment
-//     for (const receipt of receipts) {
-//       const initialLength = receipt.payments.length;
-
-//       receipt.payments = receipt.payments.filter((payment) => {
-//         if (installmentNumber) {
-//           return !(
-//             payment.paymentType === paymentType &&
-//             payment.installmentNumber === installmentNumber
-//           );
-//         } else {
-//           return payment.paymentType !== paymentType;
-//         }
-//       });
-
-//       if (receipt.payments.length < initialLength) {
-//         await receipt.save();
-//         paymentDeleted = true;
-//         break; // stop after the first successful deletion
-//       }
-//     }
-
-//     if (!paymentDeleted) {
-//       return res.status(404).json({
-//         message: "No matching payment found to delete",
-//       });
-//     }
-
-//     res.status(200).json({
-//       message: "Payment deleted successfully",
-//     });
-//   } catch (err) {
-//     console.error("Error deleting receipt entry:", err);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
 
 const deleteMemberReceiptPaymentEach = async (req, res) => {
   const { memberId } = req.params;

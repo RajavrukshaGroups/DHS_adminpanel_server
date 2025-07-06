@@ -1,11 +1,13 @@
 import express from "express";
 import PlotController from "../../controller/plotController/plotController.js";
-import PlotTransfer from "../../model/plotTransfer.js"
+import PlotTransfer from "../../model/plotTransfer.js";
 import upload from "../../middleware/multer.js";
 const router = express.Router();
 
-
-router.get("/getMemberBySeniorityID/:id", PlotController.getMemberBySeniorityID);
+router.get(
+  "/getMemberBySeniorityID/:id",
+  PlotController.getMemberBySeniorityID
+);
 
 router.post(
   "/create-transfer",
@@ -13,13 +15,17 @@ router.post(
     { name: "memberPhoto", maxCount: 1 },
     { name: "memberSign", maxCount: 1 },
   ]),
-  PlotController.CreateTransfer);
+  PlotController.CreateTransfer
+);
 
-router.get('/plot-Transferhistory',PlotController.plotTransferhistory)
+router.get("/plot-Transferhistory", PlotController.plotTransferhistory);
 // router.post('/plot-cancel',PlotController.cancelMemberPlot)
-router.post("/plot-cancel", upload.single("cancelLetter"),PlotController.cancelMemberPlot);
-router.get("/plot-cancelled-list",PlotController.getCancelledMembers)
-router.post('/delete-plote-cancelation',PlotController.DeletePlotCancelation)
-
+router.post(
+  "/plot-cancel",
+  upload.single("cancelLetter"),
+  PlotController.cancelMemberPlot
+);
+router.get("/plot-cancelled-list", PlotController.getCancelledMembers);
+router.post("/delete-plote-cancelation", PlotController.DeletePlotCancelation);
 
 export default router;

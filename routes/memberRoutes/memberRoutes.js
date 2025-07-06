@@ -3,11 +3,9 @@ import MemberController from "../../controller/memberController/memberController
 import formidable from "express-formidable";
 // import upload from '../../middleware/multer.js';
 import memberController from "../../controller/memberController/memberController.js";
-import Member from "../../model/memberModel.js"; // adjust path as needed
 const router = express.Router();
 import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path as needed
 import upload from "../../middleware/multer.js";
-import MemberAffidavit from "../../model/memberAffidavit.js"; // adjust path as needed
 
 router.post(
   "/add-member",
@@ -57,16 +55,14 @@ router.get(
   MemberController.collectMemberInfoOnSeniorityIds
 );
 
-router.get(
-  "/get-member-receipt/:memberId",
-  MemberController.getMemberReceipt
-);
+router.get("/get-member-receipt/:memberId", MemberController.getMemberReceipt);
 
-router.get('/get-member-onlineApplication/:id',MemberController.getMemberOnlineApplication);
+router.get(
+  "/get-member-onlineApplication/:id",
+  MemberController.getMemberOnlineApplication
+);
 router.post("/resetpassword", MemberController.ResetPassword);
 
-
 // router.post("/receipt-extra-charge-form/:memberId")
-
 
 export default router;
