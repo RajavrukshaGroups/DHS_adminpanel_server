@@ -572,6 +572,14 @@ const collectShareCertificate = async (req, res) => {
   }
 };
 
+function formatDate(inputDate) {
+  const d = new Date(inputDate);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 const renderShareCertificate = async (req, res) => {
   try {
     const { receiptId } = req.params;
@@ -613,6 +621,7 @@ const renderShareCertificate = async (req, res) => {
       // shareValueInWords:
       //   toWords.toWords(sharePayment.shareFee) + " rupees",
       shareValueInWords: convertNumberToWords(sharePayment.shareFee),
+      dateOfIssue: formatDate(member.date),
     });
   } catch (err) {
     console.error("Error rendering share certificate:", err);

@@ -86,8 +86,10 @@
               >This will be handed over to you, on the day of</span
             >
             <strong
-              ><span class="dotted-underline"
-                ><%= new Date(member.date).toLocaleDateString("en-IN") %></span
+              ><span class="dotted-underline">
+                <!-- <%= new Date(member.date).toLocaleDateString("en-IN") %> -->
+                                 <%= dateOfIssue %>
+                </span
               ></strong
             >
           </p>
