@@ -35,7 +35,7 @@ const allowedOrigins = [
   "https://testingadminpanel.defencehousingsociety.com",
   "https://defencehabitat--thapasihalli.defencehousingsociety.com",
 ];
-// const allowedOrigins = ["http://localhost:3000","http://localhost:5173"];
+// const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
 app.use(
   cors({
     origin: function (origin, callback) {
