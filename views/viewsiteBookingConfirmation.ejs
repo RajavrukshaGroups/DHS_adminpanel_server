@@ -24,18 +24,25 @@
           <div class="confirmation-text">
             This is to confirm that 
             <span class="bold"><%= member.userId.saluation %>. <%= member.userId.name %></span> 
-            residing at 
-            <span class="bold"><%= member.userId.permanentAddress %></span>, 
-            booked a site of measuring 
+            is Residing at 
+            <!-- <span class="bold"><%= member.userId.permanentAddress %></span>,  -->
+             <span class="bold"><%= member.userId.contactAddress %></span>.
+            Booked a site of measuring 
            <span class="bold"><%= member.userId.propertyDetails.length %>X<%= member.userId.propertyDetails.breadth %> </span> 
-            (Rate per SQFT Rs. <span class="bold"><%=receipt.member.propertyDetails.pricePerSqft %></span> /-) on this day of 
-            <!-- <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN') %></span> in the proposed  -->
-            <span class="bold"><%= new Date(confirmationLetterIssueDate).toLocaleDateString('en-GB').split('/').join('-')%></span> in the proposed 
-            <span class="bold project-name"><%= member.userId.propertyDetails.projectName %></span>
-            located at <span class="bold"><%=projectLocation %></span>. 
+            (Rate per SQFT Rs.<span><%=receipt.member.propertyDetails.pricePerSqft %></span> /-) on this day of 
+            <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-GB').split('/').join('-') %></span> in the proposed 
+            <!-- <span class="bold"><%= new Date(confirmationLetterIssueDate).toLocaleDateString('en-GB').split('/').join('-')%></span> in the proposed  -->
+            <!-- <span class="bold project-name"><%= member.userId.propertyDetails.projectName %></span> -->
+            <!-- <span class="bold project-name">"Defence Habitat"</span>, -->
+<% if (member.userId.propertyDetails.projectName.toLowerCase() === "defence habitat - marasandra") { %>
+  <span class="bold project-name">"Defence Habitat"</span>
+<% } else { %>
+  <span class="bold project-name"><%= `"${member.userId.propertyDetails.projectName}"`%></span>
+<% } %>,
+            located at <span><%=projectLocation %></span>. 
             You have booked your site by paying an initial amount of <span class="bold">Rs.<%= new Number(siteDownPayment?.amount || 0).toLocaleString('en-IN') %>/-</span> 
           (Rupees <span class="bold"><%= amountInWords %></span>)
-            by way of <span class="bold"><%= siteDownPayment?.paymentMode %></span> bearing
+            <!-- by way of <span class="bold"><%= siteDownPayment?.paymentMode %></span> bearing
             <% if (siteDownPayment?.paymentMode?.toLowerCase() !== 'cash') { %>
               No.
               <span class="bold">
@@ -49,8 +56,24 @@
                   N/A
                 <% } %>
               </span>
-            <% } %>
-             <span>drawn at <span class="bold"><%=siteDownPayment?.bankName%></span>,<span class="bold"><%=siteDownPayment?.branchName%> Branch</span></span>.
+            <% } %> -->
+
+            <% const mode = siteDownPayment?.paymentMode?.toLowerCase(); %>
+
+<% if (mode === 'netbanking') { %>
+  by mode of NEFT/RTGS Ref <span class="bold">No.</span>
+  <span class="bold"><%= siteDownPayment?.transactionId %></span>
+<% } else if (mode === 'cheque') { %>
+  by way of cheque bearing<span class="bold"> No.</span>
+  <span class="bold"><%=siteDownPayment?.chequeNumber %></span>
+<% } else if (mode === 'dd') { %>
+  by way of <span class="bold">DD bearing No.</span>
+  <span class="bold"><%= siteDownPayment?.ddNumber %></span>
+<% } else { %>
+  by way of <span class="bold"><%= siteDownPayment?.paymentMode %></span>
+<% } %>
+
+             <span>Drawn at <span class="bold"><%=siteDownPayment?.bankName%> Bank</span>,<span class="bold"><%=siteDownPayment?.branchName%> Branch</span></span>.
         </span>The booked site dimension is 
             <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT.
             Receipt number is <span class="bold"><%= siteDownPayment?.receiptNo %></span>,

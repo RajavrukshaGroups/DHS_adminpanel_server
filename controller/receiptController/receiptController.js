@@ -315,6 +315,11 @@ const viewconfirmation = async (req, res) => {
     );
 
     console.log("receipt-affidavit", receipt);
+    const siteDownPaymentData = receipt.payments.map((receipt) => {
+      return receipt;
+    });
+
+    console.log("sitedownpaymentsdata", siteDownPaymentData);
 
     const member = await Member.findById(memberId);
     if (!member) {
@@ -588,7 +593,7 @@ const renderShareCertificate = async (req, res) => {
     const receipt = await Receipt.findById(receiptId).populate({
       path: "member",
       select:
-        "saluation name permanentAddress nomineeName nomineeRelation date ShareCertificateNumber",
+        "saluation name permanentAddress nomineeName nomineeRelation date ShareCertificateNumber contactAddress",
     });
 
     console.log("receipt", receipt);
@@ -601,6 +606,7 @@ const renderShareCertificate = async (req, res) => {
     }
 
     const member = receipt.member;
+    console.log("member address", member);
 
     const sharePayment = receipt.payments.find(
       (p) => p.paymentType.toLowerCase() === "membership fee"

@@ -5,10 +5,17 @@ body {
   background: #fff;
 }
 
-.certificate-border {
+/* .certificate-border {
   border: 2px solid black;
   padding: 40px;
   margin: 20px;
+} */
+
+.certificate-border {
+  border: 2px solid black;
+  padding: 20px; /* Reduced from 40px */
+  margin: 10px auto; /* Reduce top-bottom margin for printing */
+  max-width: 800px; /* Optional: limit width for print clarity */
 }
 
 .certificate-container {
@@ -16,9 +23,20 @@ body {
   text-align: center;
 }
 
-.logo {
+/* .logo {
   width: 90px;
   margin: 0 auto 10px;
+} */
+
+.logo {
+  width: 70px; /* Reduced slightly to save space */
+  margin: 0 auto 5px;
+}
+
+.kannada-title,
+.main-title,
+.certificate-title {
+  margin: 3px 0;
 }
 
 .kannada-title {
@@ -36,27 +54,48 @@ body {
   color: #24447c;
 }
 
-.reg-details {
+/* .reg-details {
   font-size: 14px;
   margin: 5px 0;
   line-height: 1.5;
+} */
+
+.reg-details {
+  font-size: 13px;
+  margin: 2px 0;
+  line-height: 1.3;
 }
 
-.certificate-title {
+/* .certificate-title {
   text-decoration: underline;
   font-size: 22px;
   font-weight: bold;
   margin-top: 20px;
   margin-bottom: 20px;
   color: red;
+} */
+
+.certificate-title {
+  font-size: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: red;
 }
 
-.share-info {
+/* .share-info {
   display: flex;
   justify-content: space-between;
   padding: 0 40px;
   font-size: 18px;
   font-weight: bold;
+} */
+
+.share-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 30px;
+  font-size: 16px;
+  margin-bottom: 10px;
 }
 
 .certificate-number {
@@ -67,11 +106,18 @@ body {
   font-weight: bold;
 }
 
-.certificate-body {
+/* .certificate-body {
   padding: 20px 40px;
   text-align: left;
   font-size: 16px;
   line-height: 1.7;
+} */
+
+.certificate-body {
+  padding: 10px 30px;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: left;
 }
 
 .underline {
@@ -86,13 +132,19 @@ body {
   font-weight: bold;
 }
 
-.certificate-footer {
+/* .certificate-footer {
   margin-top: 50px;
   padding-right: 60px;
   text-align: right;
+} */
+
+.certificate-footer {
+  margin-top: 20px; /* Reduced from 50px */
+  padding-right: 40px;
+  text-align: right;
 }
 
-.signature-box {
+/* .signature-box {
   display: inline-block;
   text-align: center;
 }
@@ -100,6 +152,17 @@ body {
 .signature-img {
   width: 120px;
   height: auto;
+} */
+
+.signature-box {
+  display: inline-block;
+  text-align: center;
+}
+
+.signature-img {
+  width: 100px; /* Slightly smaller */
+  height: auto;
+  margin-bottom: 2px;
 }
 
 .nom-relationship {
@@ -120,4 +183,24 @@ body {
 
 p .uni-col {
   color: #24447c;
+}
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .certificate-border {
+    padding: 10px;
+    border: none; /* Optional: remove border in print */
+  }
+
+  .certificate-footer {
+    margin-top: 10px;
+  }
+
+  .signature-img {
+    width: 90px;
+  }
 }
