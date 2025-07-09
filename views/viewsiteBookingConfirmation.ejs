@@ -1,104 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site Booking Confirmation</title>
-    
-    <link rel="stylesheet" href="/css/viewSiteConfirmation.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Site Booking Confirmation</title>
+  <link rel="stylesheet" href="/css/viewSiteConfirmation.css" />
 </head>
-
-<div class="container">
-    <div class="logo-section ">
-      <body>
-            </div>
-     <img src="/images/letterheader.jpg" alt="Header Image" style="width: 800px;" />
-      <div class="document-header">
-            <div><%= receipt.member.ConfirmationLetterNo%></div>
-            <!-- <div> <%= new Date(member.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div> -->
-            <!-- <div> Date:- <%= new Date(siteDownPayment?.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) %></div> -->
-             <div>Date:- <%= new Date(confirmationLetterIssueDate).toLocaleDateString('en-GB').split('/').join('-') %></div>
-        </div>
-        <div class="title">SITE BOOKING CONFIRMATION</div>
-        <div class="content">
-          <div class="confirmation-text">
-            This is to confirm that 
-            <span class="bold"><%= member.userId.saluation %>. <%= member.userId.name %></span> 
-            is Residing at 
-            <!-- <span class="bold"><%= member.userId.permanentAddress %></span>,  -->
-             <span class="bold"><%= member.userId.contactAddress %></span>.
-            Booked a site of measuring 
-           <span class="bold"><%= member.userId.propertyDetails.length %>X<%= member.userId.propertyDetails.breadth %> </span> 
-            (Rate per SQFT Rs.<span><%=receipt.member.propertyDetails.pricePerSqft %></span> /-) on this day of 
-            <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-GB').split('/').join('-') %></span> in the proposed 
-            <!-- <span class="bold"><%= new Date(confirmationLetterIssueDate).toLocaleDateString('en-GB').split('/').join('-')%></span> in the proposed  -->
-            <!-- <span class="bold project-name"><%= member.userId.propertyDetails.projectName %></span> -->
-            <!-- <span class="bold project-name">"Defence Habitat"</span>, -->
-<% if (member.userId.propertyDetails.projectName.toLowerCase() === "defence habitat - marasandra") { %>
-  <span class="bold project-name">"Defence Habitat"</span>
-<% } else { %>
-  <span class="bold project-name"><%= `"${member.userId.propertyDetails.projectName}"`%></span>
-<% } %>,
-            located at <span><%=projectLocation %></span>. 
-            You have booked your site by paying an initial amount of <span class="bold">Rs.<%= new Number(siteDownPayment?.amount || 0).toLocaleString('en-IN') %>/-</span> 
-          (Rupees <span class="bold"><%= amountInWords %></span>)
-            <!-- by way of <span class="bold"><%= siteDownPayment?.paymentMode %></span> bearing
-            <% if (siteDownPayment?.paymentMode?.toLowerCase() !== 'cash') { %>
-              No.
-              <span class="bold">
-                <% if (siteDownPayment?.paymentMode?.toLowerCase() === 'dd') { %>
-                  <%= siteDownPayment?.ddNumber %>
-                <% } else if (siteDownPayment?.paymentMode?.toLowerCase() === 'netbanking') { %>
-                  <%= siteDownPayment?.transactionId %>
-                <% } else if (siteDownPayment?.paymentMode?.toLowerCase() === 'cheque') { %>
-                  <%= siteDownPayment?.chequeNumber %>
-                <% } else { %>
-                  N/A
-                <% } %>
-              </span>
-            <% } %> -->
-
-            <% const mode = siteDownPayment?.paymentMode?.toLowerCase(); %>
-
-<% if (mode === 'netbanking') { %>
-  by mode of NEFT/RTGS Ref <span class="bold">No.</span>
-  <span class="bold"><%= siteDownPayment?.transactionId %></span>
-<% } else if (mode === 'cheque') { %>
-  by way of cheque bearing<span class="bold"> No.</span>
-  <span class="bold"><%=siteDownPayment?.chequeNumber %></span>
-<% } else if (mode === 'dd') { %>
-  by way of <span class="bold">DD bearing No.</span>
-  <span class="bold"><%= siteDownPayment?.ddNumber %></span>
-<% } else { %>
-  by way of <span class="bold"><%= siteDownPayment?.paymentMode %></span>
-<% } %>
-
-             <span>Drawn at <span class="bold"><%=siteDownPayment?.bankName%> Bank</span>,<span class="bold"><%=siteDownPayment?.branchName%> Branch</span></span>.
-        </span>The booked site dimension is 
-            <span class="bold"> <%= member.userId.propertyDetails.propertySize %></span> SQFT.
-            Receipt number is <span class="bold"><%= siteDownPayment?.receiptNo %></span>,
-            Membership No. <span class="bold"><%= member.userId.MembershipNo %></span>, 
-            Seniority Number <span class="bold"><%= member.userId.SeniorityID %></span>.
-        </div>
-        
-        <div class="conditions">
-            <div class="conditions-title">The site is booked under the following conditions:</div>
-            <span>The booking of your site is purely based on rules and regulations of the society and provisions of Karnataka Co-operative Societies Act and the rules and By-laws of the society.</span>
-            <ol>
-                <!-- <li>The booking of your site is purely based on rules and regulations of the society and provisions of Karnataka Co-operative registration act and the rules and By-laws of the society.</li> -->
-                <li>The allotment of site is subject to approval of membership / associate membership, clearance of land by concerned authority and subject to availability of the site.</li>
-                <li>Sites will be allotted on a first come first serve basis and Conditions mentioned behind the application will be applicable. Seniority number may change, in case of failing to pay the installment amount in time.</li>
-                <li>Withdrawals or transfers of membership / bookings are only after the completion of the project period. Any withdrawal before completion of the project will be liable for penalty and Interest will not be paid for any withdrawals of site advances.</li>
-                <li>All the remaining payments should be paid as per Defence Habitat Housing co-operative Society Norms. Bank loans will be arranged from leading banks after the plan approval.</li>
-                <li>Installment amount should be paid within <%=duration %> from the date of booking confirmation.</li>
-                <li>Corner/Commercial plots will be charged extra.</li>
-                <li>Any issues that arise in the process of completion of the project should be resolved in the General Body Meeting.</li>
-                <li>As per rules & regulations of Karnataka Co-Operative Department, the paid amount will be refundable in case of project failure.</li>
-            </ol>
-        </div>
-          </div>
-          <img style="width: 800px;" src="/images/footerSign.jpg" alt="footer__">
+<body>
+  <div class="container">
+    <div class="logo-section">
+      <img src="/images/letterheader.jpg" alt="Header Image" class="header-img" />
     </div>
-    
+
+    <div class="document-header">
+      <div><%= receipt.member.ConfirmationLetterNo %></div>
+      <div>Date: <%= new Date(confirmationLetterIssueDate).toLocaleDateString('en-GB').split('/').join('-') %></div>
+    </div>
+
+    <div class="title">SITE BOOKING CONFIRMATION</div>
+
+    <div class="content">
+      <div class="confirmation-text">
+        This is to confirm that 
+        <span class="bold"><%= member.userId.saluation %>. <%= member.userId.name %></span>, 
+        is residing at 
+        <span class="bold"><%= siteDownPayment.correspondenceAddress %></span>, 
+        booked a site of measuring 
+        <span class="bold"><%= member.userId.propertyDetails.length %> X <%= member.userId.propertyDetails.breadth %></span> 
+        (Rate per SQFT Rs. <%= receipt.member.propertyDetails.pricePerSqft %>/–) on this day of
+        <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-GB').split('/').join('-') %></span> in the proposed 
+        <% if (member.userId.propertyDetails.projectName.toLowerCase() === "defence habitat - marasandra") { %>
+          <span class="bold project-name">"Defence Habitat"</span>
+        <% } else { %>
+          <span class="bold project-name"><%= `"${member.userId.propertyDetails.projectName}"` %></span>
+        <% } %>, 
+        located at <span><%= projectLocation %></span>. 
+        You have boooked your site by paying an initial amount of 
+        <span class="bold">Rs. <%= new Number(siteDownPayment?.amount || 0).toLocaleString('en-IN') %>/–</span> 
+        (Rupees <span class="bold"><%= amountInWords %></span>) 
+        <% const mode = siteDownPayment?.paymentMode?.toLowerCase(); %>
+        <% if (mode === 'netbanking') { %>
+          by mode of NEFT/RTGS Ref <span class="bold">No.<%= siteDownPayment?.transactionId %></span>
+        <% } else if (mode === 'cheque') { %>
+          by way of cheque bearing <span class="bold">No.<%= siteDownPayment?.chequeNumber %></span>
+        <% } else if (mode === 'dd') { %>
+          via DD No. <span class="bold"><%= siteDownPayment?.ddNumber %></span>
+        <% } else { %>
+          by <span class="bold"><%= siteDownPayment?.paymentMode %></span>
+        <% } %> drawn at <span class="bold"><%= siteDownPayment?.bankName %> Bank</span>, 
+        <span class="bold"><%= siteDownPayment?.branchName %> Branch</span>. 
+        The booked site dimension is <span class="bold"><%= member.userId.propertyDetails.propertySize %></span> SQFT. 
+        Receipt number is <span class="bold"><%= siteDownPayment?.receiptNo %></span>, 
+        Membership No: <span class="bold"><%= member.userId.MembershipNo %></span>, 
+        Seniority Number <span class="bold"><%= member.userId.SeniorityID %></span>.
+      </div>
+
+      <div class="conditions">
+        <div class="conditions-title">The site is booked under the following conditions:</div>
+        <span>The booking of your site is purely based on rules and regulations of the society and provisions of Karnataka 
+co-operative registration act and the rules and By-laws of the society.</span>
+        <ol>
+          <li>The allotment of site is subject to approval of membership/associate membership, clearance of land 
+by concerned authority and subject to availability of the site.</li>
+          <li>Sites will be allotted on a first come first serve basis and Conditions mentioned behind the 
+application will be applicable. Seniority number may change, in case of failing to pay the installment 
+amount in time.</li>
+          <li>Withdrawals or transfers of membership/bookings are only after the completion of the project 
+period. Any withdrawal before completion of the project will be liable for penalty and Interest will 
+not be paid for any withdrawals of site advances.</li>
+<li>All the remaining payments should be paid as per Defence Habitat Housing Co-operative Society 
+Norms. Bank loans will be arranged from leading banks after the plan approval.</li>
+          <li>Installment amount should be paid within <%= duration %> from the date of booking confirmation.</li>
+          <li>Corner/Commercial plots will be charged extra.</li>
+          <li>Any issues that arise in the process of completion of the project should be resolved in the General 
+Body Meeting.</li>
+          <li>As per rules & regulations of Karnataka Co-Operative Department, the paid amount will be 
+refundable in case of project failure.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="footer-image">
+      <img src="/images/footerSign.jpg" alt="Footer Signature" class="footer-img"/>
+    </div>
+  </div>
 </body>
 </html>
