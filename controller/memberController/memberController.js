@@ -105,6 +105,7 @@ const getMemberDetails = async (req, res) => {
             { SeniorityID: { $regex: search, $options: "i" } },
           ],
         }
+        
       : {};
     const totalMembers = await Member.countDocuments(query);
     const members = await Member.find(query).skip(skip).limit(limit);
