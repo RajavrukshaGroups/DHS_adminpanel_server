@@ -436,20 +436,32 @@ const getOnlineApplications = async (req, res) => {
 };
 
 const verifyOtp = async (req, res) => {
-  console.log("funciton is calling ", req.body);
+  const { email, seniority_id, otp } = req.body;
+  let user;
+  if (seniority_id) {
+    user = await Member.findOne({ SeniorityID: seniority_id });
+  } else if (email) {
+    user = await Member.findOne({ email });
+  }
 
-  const { email, otp } = req.body;
-  console.log(otpStore, "otp storeeee");
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
 
-  if (otpStore[email] && otpStore[email] == otp) {
-    delete otpStore[email]; // ✅ Remove after success
-    return res.json({ success: true });
-  } else {
-    console.log("else block is calling");
+  const userEmail = user.email;
+  console.log("📥 Incoming OTP:", otp);
+  console.log("📦 Stored OTP in memory:", otpStore[userEmail]);
 
+  if (!otpStore[userEmail] || otpStore[userEmail] !== otp) {
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
-};
+
+  // Optional: clear it
+  delete otpStore[userEmail];
+
+  return res.json({ success: true });
+};  
+
 
 const getOnlineApplicationById = async (req, res) => {
   // console.log(req.params, "incomign information");
@@ -573,6 +585,48 @@ export const sendDownloadNotificationEmail = async ({
   }
 };
 
+const forgotPassword = async (req, res) => {
+    const { seniority_id } = req.body;
+    console.log(seniority_id, '🔍 Incoming Seniority ID');
+    try {
+      const user = await Member.findOne({ SeniorityID: seniority_id });
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Seniority ID not found",
+        });
+      }
+      if (!user.isActive) {
+  return res.status(403).json({
+    success: false,
+    message: "Your account is not active. Please contact support.",
+  });
+}
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      user.otp = otp;
+      user.otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+      await user.save();
+      // Optional: store in temp if needed
+      otpStore[user.email] = otp;
+      await transporter.sendMail({
+        from: `"Defence Housing Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
+        to: user.email,
+        subject: "OTP for Password Reset",
+        text: `Your OTP is: ${otp}`,
+      });
+      res.json({
+        success: true,
+        message: "OTP sent successfully to your registered email",
+      });
+    } catch (err) {
+      console.error("❌ Error sending OTP:", err);
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+      });
+    }
+  };
+
 export default {
   memberLogin,
   dashboardDatas,
@@ -588,4 +642,5 @@ export default {
   sendOtpToEmail,
   memberDashBoardContactAdmin,
   GetTrnasferedhistory,
+  forgotPassword
 };

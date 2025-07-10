@@ -43,6 +43,8 @@ router.get(
   "/get-transferred-history/:id",
   defenceController.GetTrnasferedhistory
 );
+router.post("/forgot-password",defenceController.forgotPassword)
+
 router.post("/download", async (req, res) => {
   const formData = req.body;
   try {
