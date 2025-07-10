@@ -48,7 +48,11 @@ router.post("/forgot-password",defenceController.forgotPassword)
 router.post("/download", async (req, res) => {
   const formData = req.body;
   try {
-    const browser = await puppeteer.launch({ headless: "new" });
+    // const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+  headless: true,
+  args: ["--no-sandbox", "--disable-setuid-sandbox"],
+});
     const page = await browser.newPage();
     const queryString = new URLSearchParams({
       name: formData.name,
