@@ -452,9 +452,12 @@ const verifyOtp = async (req, res) => {
   console.log("📥 Incoming OTP:", otp);
   console.log("📦 Stored OTP in memory:", otpStore[userEmail]);
 
-  if (!otpStore[userEmail] || otpStore[userEmail] !== otp) {
-    return res.status(400).json({ success: false, message: "Invalid OTP" });
-  }
+  // if (!otpStore[userEmail] || otpStore[userEmail] !== otp) {
+  //   return res.status(400).json({ success: false, message: "Invalid OTP" });
+  // }
+   if (!otpStore[userEmail] || String(otpStore[userEmail]).trim() !== String(otp).trim()) {
+  return res.status(400).json({ success: false, message: "Invalid OTP" });
+}
 
   // Optional: clear it
   delete otpStore[userEmail];
