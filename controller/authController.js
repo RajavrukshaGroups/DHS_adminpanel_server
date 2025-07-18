@@ -43,7 +43,8 @@ const contactedMembers = async (req, res) => {
 
     const total = await MemberContact.countDocuments(searchFilter);
     const contacts = await MemberContact.find(searchFilter)
-      .sort({ _id: 1 })
+      // .sort({ _id: 1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 

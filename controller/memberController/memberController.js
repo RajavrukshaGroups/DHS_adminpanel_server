@@ -107,7 +107,10 @@ const getMemberDetails = async (req, res) => {
         }
       : {};
     const totalMembers = await Member.countDocuments(query);
-    const members = await Member.find(query).skip(skip).limit(limit);
+    const members = await Member.find(query)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
     if (search && members.length === 0) {
       return res.status(404).json({
         success: false,
