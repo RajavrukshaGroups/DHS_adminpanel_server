@@ -189,11 +189,13 @@ p .uni-col {
   body {
     margin: 0;
     padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .certificate-border {
     padding: 10px;
-    border: none; /* Optional: remove border in print */
+    border: 2px solid black !important; /* ✅ Restore border for print */
   }
 
   .certificate-footer {
