@@ -348,60 +348,62 @@ const extraChargeReceipts = async (req, res) => {
 
 const contactUs = async (req, res) => {
   try {
-    const { name, phone, email, subject, message, location } = req.body;
-
+    const { name, phone, email, subject, message, location, source } = req.body;
+    console.log("Contact Us Data:", req.body.source,'incoming source details');
     if (!name || !phone || !email || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Save to database
+    // Save to database with source
     const newContact = new MemberContact({
       name,
       phone,
       email,
-      subject,
+      subject: source === 'google_ads' ? 'Google Ads Lead' : subject,
       message,
       location,
+      source: source || 'website'
     });
     await newContact.save();
+
+    // Determine recipient email
+    // const recipientEmail = source === 'google_ads' 
+    // //   ? process.env.GOOGLE_ADS_LEADS_EMAIL || process.env.DHS_NODEMAILER_MAIL
+    //   : process.env.DHS_NODEMAILER_MAIL;
+
+     const recipientEmail = source === 'google_ads'
+      ? process.env.GOOGLE_ADS_LEADS_EMAIL  // Use Google Ads email if specified
+      : process.env.DHS_NODEMAILER_MAIL;    // Default to your main email
+
+    // Customize email subject
+    const emailSubject = source === 'google_ads'
+      ? `[Google Ads Lead] ${subject || 'New Lead'}`
+      : subject || 'New Contact Form Submission';
 
     // Send email
     const mailOptions = {
       from: `"${name}" <${email}>`,
-      to: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
-      ...(subject ? { subject: subject } : {}),
+      to: recipientEmail,
+      subject: emailSubject,
       html: `
-    <div style="font-family: Arial, sans-serif; padding: 20px;">
-      <h2 style="color: #1f4892;">New Contact Us Submission</h2>
-      <p style="font-size: 16px;">You have received a new message from the website contact form.</p>
-      <hr style="margin: 20px 0;">
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Phone:</strong> ${phone}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ""}
-      ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
-      ${
-        message
-          ? `<p><strong>Message:</strong><br>${message.replace(
-              /\n/g,
-              "<br>"
-            )}</p>`
-          : ""
-      }
-      <hr style="margin: 20px 0;">
-      <p style="color: gray; font-size: 12px;">This message was submitted through the Defence Housing Society contact form.</p>
-    </div>
-  `,
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2 style="color: #1f4892;">New ${source === 'google_ads' ? 'Google Ads Lead' : 'Contact Form Submission'}</h2>
+          <p><strong>Source:</strong> ${source || 'website'}</p>
+          <hr style="margin: 20px 0;">
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ""}
+          ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
+          ${message ? `<p><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}</p>` : ""}
+        </div>
+      `,
     };
-
     await transporter.sendMail(mailOptions);
-
-    res.status(200).json({
-      message: "Message sent successfully.",
-    });
+    res.status(200).json({ message: "Message sent successfully." });
   } catch (err) {
-    console.error("Error sending email:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
