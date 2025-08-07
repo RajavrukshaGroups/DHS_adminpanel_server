@@ -100,7 +100,7 @@ const memberSchema = new mongoose.Schema({
   MembershipNo: {
     type: String,
   },
-  
+
   ConfirmationLetterNo: {
     type: String,
   },
@@ -122,10 +122,23 @@ const memberSchema = new mongoose.Schema({
   transferReason: {
     type: String,
   },
+  transferDate: {
+    type: Date,
+  },
   previousMemberDetails: {
+    saluation: String,
     name: String,
     email: String,
     mobileNumber: Number,
+    dateofbirth: Date,
+    fatherName: String,
+    contactAddress: String,
+    permanentAddress: String,
+    workingAddress: String,
+    nomineeName: String,
+    nomineeAge: String,
+    nomineeRelation: String,
+    nomineeAddress: String,
     MemberPhoto: String,
     MemberSign: String,
   },

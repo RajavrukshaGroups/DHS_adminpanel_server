@@ -8,6 +8,7 @@ import { transporter } from "../../utils/emailTransporter.js";
 import Project from "../../model/projectModel.js";
 import Receipt from "../../model/receiptModel.js";
 import MemberContact from "../../model/memberContactModel.js";
+import MemberAffidavit from "../../model/memberAffidavit.js";
 import { generatePDFBuffer } from "../../utils/generatePDF.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -56,6 +57,7 @@ const memberLogin = async (req, res) => {
 
 const dashboardDatas = async (req, res) => {
   const seniorityId = req.params.id;
+  console.log("seniority id", seniorityId);
   try {
     const memberData = await Member.findOne({ SeniorityID: seniorityId });
     console.log(memberData, "incoming member datas");
@@ -65,7 +67,14 @@ const dashboardDatas = async (req, res) => {
         .json({ success: false, message: "Member not found" });
     }
 
-    res.status(200).json({ success: true, data: memberData });
+    const affidavit = await MemberAffidavit.findOne({ userId: memberData._id });
+
+    const responseData = {
+      ...memberData._doc, // convert Mongoose document to plain object
+      affidavitUrl: affidavit?.affidavitUrl || null,
+    };
+
+    res.status(200).json({ success: true, data: responseData });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -349,7 +358,7 @@ const extraChargeReceipts = async (req, res) => {
 const contactUs = async (req, res) => {
   try {
     const { name, phone, email, subject, message, location, source } = req.body;
-    console.log("Contact Us Data:", req.body.source,'incoming source details');
+    console.log("Contact Us Data:", req.body.source, "incoming source details");
     if (!name || !phone || !email || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
@@ -359,26 +368,28 @@ const contactUs = async (req, res) => {
       name,
       phone,
       email,
-      subject: source === 'google_ads' ? 'Google Ads Lead' : subject,
+      subject: source === "google_ads" ? "Google Ads Lead" : subject,
       message,
       location,
-      source: source || 'website'
+      source: source || "website",
     });
     await newContact.save();
 
     // Determine recipient email
-    // const recipientEmail = source === 'google_ads' 
+    // const recipientEmail = source === 'google_ads'
     // //   ? process.env.GOOGLE_ADS_LEADS_EMAIL || process.env.DHS_NODEMAILER_MAIL
     //   : process.env.DHS_NODEMAILER_MAIL;
 
-     const recipientEmail = source === 'google_ads'
-      ? process.env.GOOGLE_ADS_LEADS_EMAIL  // Use Google Ads email if specified
-      : process.env.DHS_NODEMAILER_MAIL;    // Default to your main email
+    const recipientEmail =
+      source === "google_ads"
+        ? process.env.GOOGLE_ADS_LEADS_EMAIL // Use Google Ads email if specified
+        : process.env.DHS_NODEMAILER_MAIL; // Default to your main email
 
     // Customize email subject
-    const emailSubject = source === 'google_ads'
-      ? `[Google Ads Lead] ${subject || 'New Lead'}`
-      : subject || 'New Contact Form Submission';
+    const emailSubject =
+      source === "google_ads"
+        ? `[Google Ads Lead] ${subject || "New Lead"}`
+        : subject || "New Contact Form Submission";
 
     // Send email
     const mailOptions = {
@@ -387,15 +398,26 @@ const contactUs = async (req, res) => {
       subject: emailSubject,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2 style="color: #1f4892;">New ${source === 'google_ads' ? 'Google Ads Lead' : 'Contact Form Submission'}</h2>
-          <p><strong>Source:</strong> ${source || 'website'}</p>
+          <h2 style="color: #1f4892;">New ${
+            source === "google_ads"
+              ? "Google Ads Lead"
+              : "Contact Form Submission"
+          }</h2>
+          <p><strong>Source:</strong> ${source || "website"}</p>
           <hr style="margin: 20px 0;">
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Phone:</strong> ${phone}</p>
           <p><strong>Email:</strong> ${email}</p>
           ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ""}
           ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
-          ${message ? `<p><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}</p>` : ""}
+          ${
+            message
+              ? `<p><strong>Message:</strong><br>${message.replace(
+                  /\n/g,
+                  "<br>"
+                )}</p>`
+              : ""
+          }
         </div>
       `,
     };
@@ -457,16 +479,18 @@ const verifyOtp = async (req, res) => {
   // if (!otpStore[userEmail] || otpStore[userEmail] !== otp) {
   //   return res.status(400).json({ success: false, message: "Invalid OTP" });
   // }
-   if (!otpStore[userEmail] || String(otpStore[userEmail]).trim() !== String(otp).trim()) {
-  return res.status(400).json({ success: false, message: "Invalid OTP" });
-}
+  if (
+    !otpStore[userEmail] ||
+    String(otpStore[userEmail]).trim() !== String(otp).trim()
+  ) {
+    return res.status(400).json({ success: false, message: "Invalid OTP" });
+  }
 
   // Optional: clear it
   delete otpStore[userEmail];
 
   return res.json({ success: true });
-};  
-
+};
 
 const getOnlineApplicationById = async (req, res) => {
   // console.log(req.params, "incomign information");
@@ -591,46 +615,46 @@ export const sendDownloadNotificationEmail = async ({
 };
 
 const forgotPassword = async (req, res) => {
-    const { seniority_id } = req.body;
-    console.log(seniority_id, '🔍 Incoming Seniority ID');
-    try {
-      const user = await Member.findOne({ SeniorityID: seniority_id });
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "Seniority ID not found",
-        });
-      }
-      if (!user.isActive) {
-  return res.status(403).json({
-    success: false,
-    message: "Your account is not active. Please contact support.",
-  });
-}
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      user.otp = otp;
-      user.otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-      await user.save();
-      // Optional: store in temp if needed
-      otpStore[user.email] = otp;
-      await transporter.sendMail({
-        from: `"Defence Housing Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
-        to: user.email,
-        subject: "OTP for Password Reset",
-        text: `Your OTP is: ${otp}`,
-      });
-      res.json({
-        success: true,
-        message: "OTP sent successfully to your registered email",
-      });
-    } catch (err) {
-      console.error("❌ Error sending OTP:", err);
-      res.status(500).json({
+  const { seniority_id } = req.body;
+  console.log(seniority_id, "🔍 Incoming Seniority ID");
+  try {
+    const user = await Member.findOne({ SeniorityID: seniority_id });
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: "Internal Server Error",
+        message: "Seniority ID not found",
       });
     }
-  };
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is not active. Please contact support.",
+      });
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    await user.save();
+    // Optional: store in temp if needed
+    otpStore[user.email] = otp;
+    await transporter.sendMail({
+      from: `"Defence Housing Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
+      to: user.email,
+      subject: "OTP for Password Reset",
+      text: `Your OTP is: ${otp}`,
+    });
+    res.json({
+      success: true,
+      message: "OTP sent successfully to your registered email",
+    });
+  } catch (err) {
+    console.error("❌ Error sending OTP:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
 
 export default {
   memberLogin,
@@ -647,5 +671,5 @@ export default {
   sendOtpToEmail,
   memberDashBoardContactAdmin,
   GetTrnasferedhistory,
-  forgotPassword
+  forgotPassword,
 };

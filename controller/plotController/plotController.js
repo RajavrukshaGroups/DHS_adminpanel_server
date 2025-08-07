@@ -1,5 +1,6 @@
 import Member from "../../model/memberModel.js"; // adjust path as needed
 import Transfer from "../../model/plotTransfer.js";
+import Receipt from "../../model/receiptModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 
 const getMemberBySeniorityID = async (req, res) => {
@@ -20,6 +21,20 @@ const CreateTransfer = async (req, res) => {
     const toMember = JSON.parse(req.body.toMember);
     const { reason, transferDate } = req.body;
 
+    console.log("req transfer date", transferDate);
+
+    let newTransferDate;
+    if (transferDate) {
+      newTransferDate = new Date(transferDate);
+      if (isNaN(newTransferDate.getTime())) {
+        newTransferDate = new Date(); // Fallback to current date if invalid
+      }
+    } else {
+      newTransferDate = new Date();
+    }
+
+    console.log("new transfer date", newTransferDate);
+
     // Find the existing member by SeniorityID
     const fromMemberRecord = await Member.findOne({
       SeniorityID: fromMember.seniorityId,
@@ -32,9 +47,20 @@ const CreateTransfer = async (req, res) => {
 
     // Save previous member details
     const previousDetails = {
+      saluation: fromMemberRecord.saluation,
       name: fromMemberRecord.name,
       email: fromMemberRecord.email,
       mobileNumber: fromMemberRecord.mobileNumber,
+      AlternativeNumber: fromMemberRecord.AlternativeNumber,
+      dateofbirth: fromMemberRecord.dateofbirth,
+      fatherName: fromMemberRecord.fatherName,
+      contactAddress: fromMemberRecord.contactAddress,
+      permanentAddress: fromMemberRecord.permanentAddress,
+      workingAddress: fromMemberRecord.workingAddress,
+      nomineeName: fromMemberRecord.nomineeName,
+      nomineeAge: fromMemberRecord.nomineeAge,
+      nomineeRelation: fromMemberRecord.nomineeRelation,
+      nomineeAddress: fromMemberRecord.nomineeAddress,
       MemberPhoto: fromMemberRecord.MemberPhoto,
       MemberSign: fromMemberRecord.MemberSign,
     };
@@ -57,23 +83,72 @@ const CreateTransfer = async (req, res) => {
       memberSignUrl = uploadedSign.secure_url;
     }
 
+    // let newTransferDate = transferDate ? new Date(transferDate) : new Date();
+
     // ✅ Update the existing member with new details (no new creation)
-    await Member.findByIdAndUpdate(fromMemberRecord._id, {
-      name: toMember.name,
-      email: toMember.email,
-      mobileNumber: toMember.mobile,
-      contactAddress: toMember.address,
-      isTransferred: true,
-      transferReason: reason, // <-- include transfer reason
-      refname: toMember.name,
-      MemberPhoto: memberPhotoUrl,
-      MemberSign: memberSignUrl,
-      previousMemberDetails: previousDetails,
-      date: transferDate, // <-- optional: track transfer date
+    const updatedMember = await Member.findByIdAndUpdate(
+      fromMemberRecord._id,
+      {
+        //basic info
+        saluation: toMember.saluation,
+        name: toMember.name,
+        email: toMember.email,
+        mobileNumber: toMember.mobile,
+        AlternativeNumber:
+          toMember.AlternativeNumber || fromMemberRecord.AlternativeNumber,
+        dateofbirth: toMember.dateofbirth,
+        fatherName: toMember.fatherName,
+
+        //addresses
+        contactAddress: toMember.contactAddress,
+        permanentAddress: toMember.permanentAddress,
+        workingAddress: toMember.workingAddress,
+
+        //nominee info
+        nomineeName: toMember.nomineeName,
+        nomineeAge: toMember.nomineeAge,
+        nomineeRelation: toMember.nomineeRelation,
+        nomineeAddress: toMember.nomineeAddress,
+
+        //transfer meta data
+        isTransferred: true,
+        transferReason: reason, // <-- include transfer reason
+        refname: toMember.name,
+
+        //images
+        MemberPhoto: memberPhotoUrl,
+        MemberSign: memberSignUrl,
+
+        //previous details
+        previousMemberDetails: previousDetails,
+        transferDate: newTransferDate,
+      },
+      { new: true }
+    );
+
+    if (toMember.contactAddress || transferDate) {
+      const updateObj = {};
+      if (toMember.contactAddress) {
+        updateObj["payments.$[].correspondenceAddress"] =
+          toMember.contactAddress;
+      }
+
+      if (transferDate) {
+        updateObj["payments.$[].date"] = newTransferDate;
+      }
+      await Receipt.updateMany(
+        { member: fromMemberRecord._id },
+        { $set: updateObj }
+      );
+    }
+    res.status(200).json({
+      message: "Member updated with transfer details successfully.",
+      member: updatedMember,
+      updatedFields: {
+        contactAddress: toMember.contactAddress,
+        transferDate: newTransferDate,
+      },
     });
-    res
-      .status(200)
-      .json({ message: "Member updated with transfer details successfully." });
   } catch (error) {
     console.error("Transfer creation error:", error);
     res.status(500).json({ message: "Error updating transfer", error });
@@ -82,12 +157,13 @@ const CreateTransfer = async (req, res) => {
 
 const plotTransferhistory = async (req, res) => {
   try {
-    // Fetch members where isTransferred is true
+    // Fetch only transferred members, select only the required fields.
     const transferredMembers = await Member.find({ isTransferred: true })
       .select(
         "name mobileNumber email previousMemberDetails propertyDetails transferDate SeniorityID transferReason"
-      ) // select only required fields
+      )
       .sort({ transferDate: -1 });
+
     const result = transferredMembers.map((member) => ({
       toMemberName: member.name,
       toMemberMobile: member.mobileNumber,
@@ -96,11 +172,12 @@ const plotTransferhistory = async (req, res) => {
       fromMemberMobile: member.previousMemberDetails?.mobileNumber || "N/A",
       fromMemberEmail: member.previousMemberDetails?.email || "N/A",
       projectName: member.propertyDetails?.projectName || "N/A",
-      transferDate: member.transferDate || member.updatedAt,
+      transferDate: member.transferDate, // pick only from schema field!
       SeniorityID: member.SeniorityID,
       transferReason: member.transferReason,
     }));
-    console.log(result, "this is the resutl");
+
+    console.log(result, "this is the result");
     res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching transferred plots:", error);
