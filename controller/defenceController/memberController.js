@@ -13,6 +13,8 @@ import { generatePDFBuffer } from "../../utils/generatePDF.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import ejs from "ejs";
+import { error } from "console";
+import axios from "axios";
 
 // import { transporter } from "../../utils/emailTransporter.js";
 // import { Transaction } from "mongodb";
@@ -357,8 +359,49 @@ const extraChargeReceipts = async (req, res) => {
 
 const contactUs = async (req, res) => {
   try {
-    const { name, phone, email, subject, message, location, source } = req.body;
-    console.log("Contact Us Data:", req.body.source, "incoming source details");
+    const {
+      name,
+      phone,
+      email,
+      subject,
+      message,
+      location,
+      source,
+      captchaValue,
+    } = req.body;
+    console.log("Contact Us Data:", req.body, "incoming source details");
+
+    if (!captchaValue) {
+      return res
+        .status(400)
+        .json({ error: "reCaptcha verification failed - no token provided" });
+    }
+
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    if (!secretKey) {
+      console.error("RECAPTCHA_SECRET_KEY is not set in environment variables");
+      return res.status(500).json({ error: "Server configuration error" });
+    }
+    try {
+      const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaValue}`;
+      const recaptchaResponse = await axios.post(verificationUrl);
+      const { success, score } = recaptchaResponse.data;
+
+      if (!success) {
+        console.log("reCAPTCHA verification failed:", recaptchaResponse.data);
+        return res.status(400).json({ error: "reCAPTCHA verification failed" });
+      }
+
+      // Optional: Check score threshold (for v3)
+      if (score && score < 0.5) {
+        console.log("reCAPTCHA score too low:", score);
+        return res.status(400).json({ error: "reCAPTCHA verification failed" });
+      }
+    } catch (recaptchaError) {
+      console.error("reCAPTCHA verification error:", recaptchaError);
+      return res.status(400).json({ error: "reCAPTCHA verification failed" });
+    }
+
     if (!name || !phone || !email || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
