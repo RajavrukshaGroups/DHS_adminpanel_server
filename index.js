@@ -31,13 +31,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// const allowedOrigins = [
-//   "https://defencehousingsociety.com",
-//   "https://testingadminpanel.defencehousingsociety.com",
-//   "https://defencehabitat-tapasihalli.defencehousingsociety.com",
-// ];
+const allowedOrigins = [
+  "https://defencehousingsociety.com",
+  "https://testingadminpanel.defencehousingsociety.com",
+  "https://defencehabitat-tapasihalli.defencehousingsociety.com",
+];
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5175"];
+// const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -62,7 +62,7 @@ app.use("/defenceWebsiteRoutes", defenceWebsiteRoutes);
 
 // Start server
 const PORT = 4000;
-// const PORT = 3030;
+// const PORT = 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
