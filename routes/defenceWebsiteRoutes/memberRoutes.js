@@ -43,51 +43,64 @@ router.get(
   "/get-transferred-history/:id",
   defenceController.GetTrnasferedhistory
 );
-router.post("/forgot-password",defenceController.forgotPassword)
+router.post("/forgot-password", defenceController.forgotPassword);
+
+// router.post("/download", async (req, res) => {
+//   const formData = req.body;
+//   try {
+//     // const browser = await puppeteer.launch({ headless: "new" });
+//     const browser = await puppeteer.launch({
+//   headless: true,
+//   args: ["--no-sandbox", "--disable-setuid-sandbox"],
+// });
+//     const page = await browser.newPage();
+//     const queryString = new URLSearchParams({
+//       name: formData.name,
+//       email: formData.email,
+//       mobile: formData.mobile,
+//       address: formData.address,
+//     }).toString();
+
+//     await page.goto(
+//       `http://localhost:4000/defenceWebsiteRoutes/render?${queryString}`,
+//       {
+//         waitUntil: "networkidle0",
+//       }
+//     );
+
+//     const pdfBuffer = await page.pdf({
+//       format: "A4",
+//       printBackground: true,
+//     });
+
+//     await browser.close();
+//     // Send Email Notification
+//     await sendDownloadNotificationEmail({ ...formData, type: "Application" });
+
+//     res.set({
+//       "Content-Type": "application/pdf",
+//       "Content-Disposition": "attachment; filename=ApplicationForm.pdf",
+//       "Content-Length": pdfBuffer.length,
+//     });
+
+//     res.send(pdfBuffer);
+//   } catch (error) {
+//     console.error("PDF generation error:", error);
+//     res.status(500).send("Failed to generate PDF");
+//   }
+// });
 
 router.post("/download", async (req, res) => {
   const formData = req.body;
+
   try {
-    // const browser = await puppeteer.launch({ headless: "new" });
-    const browser = await puppeteer.launch({
-  headless: true,
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
-});
-    const page = await browser.newPage();
-    const queryString = new URLSearchParams({
-      name: formData.name,
-      email: formData.email,
-      mobile: formData.mobile,
-      address: formData.address,
-    }).toString();
-    
-
-    await page.goto(
-      `http://localhost:4000/defenceWebsiteRoutes/render?${queryString}`,
-      {
-        waitUntil: "networkidle0",
-      }
-    );
-
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-    });
-
-    await browser.close();
     // Send Email Notification
     await sendDownloadNotificationEmail({ ...formData, type: "Application" });
 
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": "attachment; filename=ApplicationForm.pdf",
-      "Content-Length": pdfBuffer.length,
-    });
-
-    res.send(pdfBuffer);
+    res.status(200).json({ message: "Form submitted successfully" });
   } catch (error) {
-    console.error("PDF generation error:", error);
-    res.status(500).send("Failed to generate PDF");
+    console.error("Error handling form submission:", error);
+    res.status(500).send("Failed to process request");
   }
 });
 
