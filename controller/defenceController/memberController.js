@@ -37,6 +37,13 @@ const memberLogin = async (req, res) => {
         .json({ success: false, message: "Seniority ID not found" });
     }
 
+    if (!memberData.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is inactive.Please contact admin.",
+      });
+    }
+
     if (password !== memberData.password) {
       return res
         .status(400)
