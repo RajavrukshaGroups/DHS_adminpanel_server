@@ -135,6 +135,8 @@ const fetchReceipts = async (req, res) => {
             isActive: "$member.isActive",
             date: "$member.date",
             propertyDetails: "$member.propertyDetails",
+            isTransferred: "$member.isTransferred",
+            cancellationDetails: "$member.cancellationDetails",
           },
           payment: "$payments",
         },
