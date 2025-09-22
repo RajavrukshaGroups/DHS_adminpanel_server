@@ -508,27 +508,33 @@ const getOnlineApplications = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
 const verifyOtp = async (req, res) => {
   const { email, seniority_id, otp } = req.body;
-  let user;
+  console.log(req.body, "incoming verify otp details");
+
+  let user = null;
+
   if (seniority_id) {
     user = await Member.findOne({ SeniorityID: seniority_id });
   } else if (email) {
     user = await Member.findOne({ email });
   }
 
-  if (!user) {
-    return res.status(404).json({ success: false, message: "User not found" });
+  let userEmail;
+
+  if (user) {
+    // Forgot password flow
+    userEmail = user.email;
+  } else if (email) {
+    // Online application flow (no DB user yet)
+    userEmail = email;
+  } else {
+    return res.status(400).json({ success: false, message: "Invalid request" });
   }
 
-  const userEmail = user.email;
   console.log("📥 Incoming OTP:", otp);
   console.log("📦 Stored OTP in memory:", otpStore[userEmail]);
 
-  // if (!otpStore[userEmail] || otpStore[userEmail] !== otp) {
-  //   return res.status(400).json({ success: false, message: "Invalid OTP" });
-  // }
   if (
     !otpStore[userEmail] ||
     String(otpStore[userEmail]).trim() !== String(otp).trim()
@@ -536,11 +542,46 @@ const verifyOtp = async (req, res) => {
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
 
-  // Optional: clear it
+  // Optional: clear OTP after successful verification
   delete otpStore[userEmail];
 
-  return res.json({ success: true });
+  return res.json({ success: true, message: "OTP verified successfully" });
 };
+
+
+// const verifyOtp = async (req, res) => {
+//   const { email, seniority_id, otp } = req.body;
+//   console.log(req.body,"incoming verify otp details")
+//   let user;
+//   if (seniority_id) {
+//     user = await Member.findOne({ SeniorityID: seniority_id });
+//   } else if (email) {
+//     user = await Member.findOne({ email });
+//   }
+
+//   if (!user) {
+//     return res.status(404).json({ success: false, message: "User not found" });
+//   }
+
+//   const userEmail = user.email;
+//   console.log("📥 Incoming OTP:", otp);
+//   console.log("📦 Stored OTP in memory:", otpStore[userEmail]);
+
+//   // if (!otpStore[userEmail] || otpStore[userEmail] !== otp) {
+//   //   return res.status(400).json({ success: false, message: "Invalid OTP" });
+//   // }
+//   if (
+//     !otpStore[userEmail] ||
+//     String(otpStore[userEmail]).trim() !== String(otp).trim()
+//   ) {
+//     return res.status(400).json({ success: false, message: "Invalid OTP" });
+//   }
+
+//   // Optional: clear it
+//   delete otpStore[userEmail];
+
+//   return res.json({ success: true });
+// };
 
 const getOnlineApplicationById = async (req, res) => {
   // console.log(req.params, "incomign information");
