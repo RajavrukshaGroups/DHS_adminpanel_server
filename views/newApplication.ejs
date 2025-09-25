@@ -88,10 +88,10 @@
 
       .terms-list {
         margin: 0;
-        /* padding-left: 116px; */
+        padding-left: 116px;
         list-style: none;
         counter-reset: term-counter;
-        /* padding-right: 74px; */
+        padding-right: 74px;
       }
 
       .terms-list li {
@@ -115,7 +115,7 @@
       }
 
       .declaration-section {
-        padding-left: 90px;
+        padding-left: 114px;
         margin-top: 40px;
         text-align: center;
             padding-right: 72px;
@@ -319,9 +319,9 @@
                     <td>RANK / DESIGNATION:</td>
                     <td><div type="text" class="underline-input" style="width: 45%; display: inline-block;" ><%= rankDesignation %></div> SERVICE / ID NO. <div type="text" class="underline-input" style="width: 45%; display: inline-block;" ><%= serviceId %></div></td>
                 </tr>
-                           <div >
+                           <div class="photo-box">
                 <!-- Affix your<br>PP/SS<br>Photograph<br>along with<br>Signature<br>(5 Copies) -->
-                 <img  class="photo-box"
+                 <img 
             src="<%= MemberPhoto %>"
             alt="virat kohli"
           />
@@ -547,7 +547,7 @@
           <div class="signature-section">
             <div class="signature-left">
               <div>Place: <span class="highlight">Bengaluru</span></div>
-              <div>Date: <span class="highlight">  <%= new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) %></span></div>
+              <div>Date: <span class="highlight"><%= date %></span></div>
             </div>
             <div class="signature-right">
               <!-- <img src="<%= MemberSign %>" alt=""> -->
