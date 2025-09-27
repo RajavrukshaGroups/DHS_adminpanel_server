@@ -37,13 +37,6 @@ const memberLogin = async (req, res) => {
         .json({ success: false, message: "Seniority ID not found" });
     }
 
-    if (!memberData.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: "Your account is inactive.Please contact admin.",
-      });
-    }
-
     if (password !== memberData.password) {
       return res
         .status(400)
@@ -131,6 +124,7 @@ const AddOnlineApplication = async (req, res) => {
       const result = await uploadToCloudinary(signFile.buffer || signFile.path);
       memberSignUrl = result.secure_url;
     }
+
     console.log(memberPhotoUrl, "imagesssssss");
     console.log(memberSignUrl, "imagesphoto");
     // Generate password
@@ -195,7 +189,8 @@ const AddOnlineApplication = async (req, res) => {
         pass: process.env.DHS_NODEMAILER_KEY,
       },
     });
-// Send to Member
+    
+   // Send to Member
     await transporter.sendMail({
       from: `"Defence Habitat Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
       to: mappedData.email,
@@ -209,11 +204,11 @@ const AddOnlineApplication = async (req, res) => {
         },
       ],
     });
-
-    // Send to Admin
+    
+        // Send to Admin
 await transporter.sendMail({
   from: `"Defence Habitat Society" <${process.env.GOOGLE_ADS_LEADS_EMAIL}>`,
-  to: process.env.GOOGLE_ADS_LEADS_EMAIL,
+  to: process.env.DHS_NODEMAILER_MAIL,
   subject: "New Membership Application Submitted",
   text: `A new application has been submitted by ${mappedData.name} (${mappedData.email}).`,
   attachments: [
@@ -224,6 +219,7 @@ await transporter.sendMail({
     },
   ],
 });
+
 
     res
       .status(200)
@@ -549,21 +545,22 @@ const verifyOtp = async (req, res) => {
 
   console.log("📥 Incoming OTP:", otp);
   console.log("📦 Stored OTP in memory:", otpStore[userEmail]);
+
   if (
     !otpStore[userEmail] ||
     String(otpStore[userEmail]).trim() !== String(otp).trim()
   ) {
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
+
   // Optional: clear OTP after successful verification
   delete otpStore[userEmail];
+
   return res.json({ success: true, message: "OTP verified successfully" });
 };
 
-
 // const verifyOtp = async (req, res) => {
 //   const { email, seniority_id, otp } = req.body;
-//   console.log(req.body,"incoming verify otp details")
 //   let user;
 //   if (seniority_id) {
 //     user = await Member.findOne({ SeniorityID: seniority_id });
