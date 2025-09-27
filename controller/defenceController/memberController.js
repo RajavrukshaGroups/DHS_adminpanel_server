@@ -131,7 +131,6 @@ const AddOnlineApplication = async (req, res) => {
       const result = await uploadToCloudinary(signFile.buffer || signFile.path);
       memberSignUrl = result.secure_url;
     }
-
     console.log(memberPhotoUrl, "imagesssssss");
     console.log(memberSignUrl, "imagesphoto");
     // Generate password
@@ -196,7 +195,7 @@ const AddOnlineApplication = async (req, res) => {
         pass: process.env.DHS_NODEMAILER_KEY,
       },
     });
-
+// Send to Member
     await transporter.sendMail({
       from: `"Defence Habitat Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
       to: mappedData.email,
@@ -210,6 +209,21 @@ const AddOnlineApplication = async (req, res) => {
         },
       ],
     });
+
+    // Send to Admin
+await transporter.sendMail({
+  from: `"Defence Habitat Society" <${process.env.GOOGLE_ADS_LEADS_EMAIL}>`,
+  to: process.env.GOOGLE_ADS_LEADS_EMAIL,
+  subject: "New Membership Application Submitted",
+  text: `A new application has been submitted by ${mappedData.name} (${mappedData.email}).`,
+  attachments: [
+    {
+      filename: "Membership_Application.pdf",
+      content: pdfBuffer,
+      contentType: "application/pdf",
+    },
+  ],
+});
 
     res
       .status(200)
@@ -508,6 +522,7 @@ const getOnlineApplications = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
 const verifyOtp = async (req, res) => {
   const { email, seniority_id, otp } = req.body;
   console.log(req.body, "incoming verify otp details");
@@ -534,17 +549,14 @@ const verifyOtp = async (req, res) => {
 
   console.log("📥 Incoming OTP:", otp);
   console.log("📦 Stored OTP in memory:", otpStore[userEmail]);
-
   if (
     !otpStore[userEmail] ||
     String(otpStore[userEmail]).trim() !== String(otp).trim()
   ) {
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
-
   // Optional: clear OTP after successful verification
   delete otpStore[userEmail];
-
   return res.json({ success: true, message: "OTP verified successfully" });
 };
 
