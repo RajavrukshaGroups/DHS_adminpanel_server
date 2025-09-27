@@ -1,143 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Defence Habitat Housing Co-operative Society Ltd.</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Form</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        color: #000;
-        line-height: 1.4;
-      }
-
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-        border: 1px solid #000;
-        padding: 12px;
-      }
-
-      .header {
-        text-align: center;
-        margin-bottom: 15px;
-        position: relative;
-      }
-
-      .logo {
-        width: 110px;
-        height: 110px;
-        position: absolute;
-        left: 10px;
-        top: 0;
-      }
-
-      .header-text {
-        margin-left: 120px;
-      }
-
-      .header-text h1 {
-        margin: 0;
-        font-size: 18px;
-        color: #000080;
-        font-weight: bold;
-      }
-
-      .header-text h2 {
-        margin: 5px 0;
-        font-size: 16px;
-        color: #000080;
-      }
-
-      .header-text p {
-        margin: 5px 0;
-        font-size: 12px;
-      }
-
-      .title {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 20px;
-        color: #040453;
-        text-align: center;
-        text-decoration: underline;
-        font-weight: bold;
-        margin: 20px 0;
-      }
-
-      .form-row {
-        margin-bottom: 10px;
-        display: flex;
-      }
-
-      .form-label {
-        font-weight: bold;
-        width: 200px;
-      }
-
-      .form-input {
-        flex: 1;
-        border-bottom: 1px solid #000;
-      }
-
-      .site-image {
-        width: 100px;
-        height: 100px;
-        border: 1px solid #000;
-        float: right;
-        margin-left: 10px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 15px 0;
-      }
-
-      table,
-      th,
-      td {
-        border: 1px solid #000;
-      }
-
-      th,
-      td {
-        padding: 5px;
-        text-align: left;
-        font-size: 12px;
-      }
-
-      th {
-        background-color: #f2f2f2;
-      }
-
-      .address-table {
-        display: flex;
-      }
-
-      .address-column {
-        flex: 1;
-        padding: 5px;
-        border: 1px solid #000;
-      }
-
-      .address-header {
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 5px;
-      }
-
-      .payment-section {
-        margin-top: 15px;
-      }
-
-      .payment-table th {
-        background-color: #f2f2f2;
-        font-weight: bold;
-      }
-
-      .terms {
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 20px;
+            font-size: 12pt;
+        }
+        .container {
+            width: 8.5in; /* Standard letter width */
+            margin: 0 auto;
+            border: 1px solid black;
+            padding: 10px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 14pt;
+            text-decoration: underline;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        td, th {
+            border: 1px solid black;
+            padding: 5px;
+            vertical-align: top;
+        }
+        .no-border td, .no-border th {
+            border: none;
+        }
+        .underline-input {
+            border: none;
+            border-bottom: 1px solid black;
+            width: 100%;
+            padding: 2px 0;
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            outline: none;
+        }
+        .underline-text {
+            display: inline-block;
+            border-bottom: 1px solid black;
+            min-width: 100px; /* Adjust as needed */
+            padding: 0 2px;
+            text-align: left;
+        }
+        .photo-box {
+            border: 1px solid black;
+            width: 138px;
+            height: 120px;
+            text-align: center;
+            padding: 5px;
+            font-size: 10pt;
+            float: right;
+            margin-left: 20px;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .small-text {
+            font-size: 10pt;
+        }
+         .terms {
         text-align: center;
         font-weight: bold;
         margin-top: 20px;
@@ -154,9 +88,10 @@
 
       .terms-list {
         margin: 0;
-        padding-left: 0;
+        /* padding-left: 116px; */
         list-style: none;
         counter-reset: term-counter;
+        /* padding-right: 74px; */
       }
 
       .terms-list li {
@@ -180,8 +115,10 @@
       }
 
       .declaration-section {
+        padding-left: 90px;
         margin-top: 40px;
         text-align: center;
+            padding-right: 72px;
       }
 
       .declaration-title {
@@ -201,8 +138,8 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        margin-top: 30px;
-        margin-bottom: 40px;
+        margin-top: -33px;
+        margin-bottom: -58px;
       }
 
       .signature-left {
@@ -241,6 +178,7 @@
       .office-field {
         margin-bottom: 15px;
         font-size: 14px;
+        padding-left: 112px;
       }
 
       .field-line {
@@ -256,11 +194,16 @@
         display: flex;
         justify-content: space-between;
         margin-top: 30px;
+        margin-left: 108px;
+        padding-right: 90px;
       }
 
       .board-section {
         margin-top: 40px;
         text-align: center;
+        padding-left: 105px;
+        padding-right: 62px;
+
       }
 
       .board-title {
@@ -348,202 +291,141 @@
         }
       }
     </style>
-  </head>
-  <body>
-        <div>
+</head>
+<body>
+       <div>
    <!-- <img style="width: 747px; height: 200px;" src="/images/bANNER_DHS1.jpg" alt="logo"> -->
         <img style="width: 747px; height: 200px;" src="https://res.cloudinary.com/den0iz8zn/image/upload/v1752129621/bANNER_DHS1_krj3y3.jpg" alt="logo">
-
   </div>
-        
-    <div class="container">
-      <!-- Header Section -->
-      <div class="header">
-       
+        <div class="container">
+        <h1>APPLICATION FOR MEMBERSHIP AND PURCHASE OF SITE</h1>
 
-      <!-- Title -->
-      <div class="title">APPLICATION FOR MEMBERSHIP AND PURCHASE OF SITE</div>
-      <!-- Form Content -->
-      <div class="responsive-section">
-        <div class="details-column">
-          <div class="form-row">
-            <div class="form-label">SI.NO :</div>
-            <div class="form-input"></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-label">NAME (Full name in Block Letters):</div>
-            <div class="form-input"><%= refname %></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-label">RANK/DESIGNATION:</div>
-            <div class="form-input"><%= rankDesignation %></div>
-            <div class="form-label">SERVICE / ID NO.:</div>
-            <div class="form-input"><%= serviceId %></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-label">RELATIONSHIP WITH APPLICANT:</div>
-            <div class="form-input"><%= relationship %></div>
-          </div>
-        </div>
-
-        <div style="padding: 10px; padding-left: 45px; font-weight: bold">
-          <!-- Affix your<br> -->
-          <!-- PP/SS<br>
-    Photograph<br>
-    along with<br>
-    Signature<br>
-    (4 Copies) -->
-          <img
-            style="width: 150px; height: 150px"
+        <div style="overflow: hidden; margin-bottom: 10px;">
+          
+             <table class="no-border" style="width: calc(100% - 170px);">
+               
+                <tr>
+                    <td style="width: 150px;">Sl. No.</td>
+                    <td><div type="text" class="" ></div></td>
+                </tr>
+                <tr>
+                    <td style="width: 250px;">NAME (Full name in Block Letters):</td>
+                      <td><div type="text" class="underline-input" > <%= refname %></div></td>
+                </tr>
+                <tr>
+                    <td>RANK / DESIGNATION:</td>
+                    <td><div type="text" class="underline-input" style="width: 45%; display: inline-block;" ><%= rankDesignation %></div> SERVICE / ID NO. <div type="text" class="underline-input" style="width: 45%; display: inline-block;" ><%= serviceId %></div></td>
+                </tr>
+                           <div >
+                <!-- Affix your<br>PP/SS<br>Photograph<br>along with<br>Signature<br>(5 Copies) -->
+                 <img  class="photo-box"
             src="<%= MemberPhoto %>"
             alt="virat kohli"
           />
+            </div>
+                <tr>
+                    <td>RELATIONSHIP WITH THE APPLICANT:</td>
+                    <td><div type="text" class="underline-input" ><%= relationship %></div></td>
+                </tr>
+                  
+            </table>
         </div>
-      </div>
 
-      <!-- Project Info Row -->
-      <div class="form-row">
-        <div>Booked a site of measuring</div>
-        <div class="form-input" style="width: auto">
-          <%= propertyDetails.length %> X <%= propertyDetails.breadth %>
-        </div>
-        <div class="form-label">in the Project</div>
-        <div class="form-input"><%= propertyDetails.projectName %></div>
-      </div>
+        <p style="margin-top: 0;">
+            Booked a site of measuring <div type="text" class="underline-input" style="width: 190px; display: inline-block;" ><%= propertyDetails.length %> X <%= propertyDetails.breadth %></div> in the Project “<div type="text" class="underline-input" style="width: 190px; display: inline-block;" placeholder="Project Name"><%= propertyDetails.projectName %></div>” located at
+            “<div type="text" class="underline-input" style="width: 300px; display: inline-block;" ><%= propertyDetails.projectName %> </div>” in <span class="bold">“DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD.”</span>
+        </p>
 
-      <div class="">
-        <div class="form-input" style="width: 200px"></div>
-        <div
-          class=""
-          style="
-            font-weight: bold;
-            margin-left: 10px;
-            text-align: center;
-            flex: 1;
-          "
-        >
-          in "DEFENCE HABITAT HOUSING CO-OPERATIVE SOCIETY LTD"
-        </div>
-      </div>
+        <table>
+            <tr>
+                <td style="width: 30%;">Applicant Name:</td>
+                <td colspan="3"><div type="text" class="underline-input" ><%= name %></div></td>
+            </tr>
+            <tr>
+                <td>Date of Birth:</td>
+                <td style="width: 35%;"><div type="text" class="underline-input" ><%= dateofbirth.toDateString() %> </div></td>
+                <td style="width: 10%;">Age:</td>
+                <td style="width: 25%;"><div type="text" class="underline-input" > <%= nomineeAge %></div></td>
+            </tr>
+            <tr>
+                <td>Father’s / Spouse Name:</td>
+                <td colspan="3"><div type="text" class="underline-input" ><%= fatherName %></div></td>
+            </tr>
+            <tr>
+                <td><span class="bold">Correspondence Address</span></td>
+                <td><span class="bold">Permanent Address</span></td>
+                <td colspan="2"><span class="bold">Working Address</span></td>
+            </tr>
+            <tr>
+                <td><textarea class="underline-input" rows="5" ><%= contactAddress %></textarea></td>
+                <td><textarea class="underline-input" rows="5" ><%= permanentAddress %></textarea></td>
+                <td colspan="2"><textarea class="underline-input" rows="5" ><%= workingAddress %></textarea></td>
+            </tr>
+            <tr>
+                <td rowspan="3">Nominee particulars</td>
+                <td colspan="3">Name : <div type="text" class="underline-input" style="width: calc(100% - 60px); display: inline-block;" ><%= nomineeName %></div> </td>
+            </tr>
+            <tr>
+                <td colspan="3">Age : <div type="text" class="underline-input" style="width: calc(100% - 60px); display: inline-block;" ><%= nomineeAge %> </div> Relationship : <div type="text" class="underline-input" style="width: calc(100% - 120px); display: inline-block;" ><%= nomineeRelation %></div> </td>
+            </tr>
+            <tr>
+                <td colspan="3">Address : <div type="text" class="underline-input" style="width: calc(100% - 70px); display: inline-block;" ><%= nomineeAddress %></div> </td>
+            </tr>
+            <tr>
+                <td>Remarks, if any</td>
+                <td colspan="3"><p type="text" class="underline-input" > </p> </td>
+            </tr>
+        </table>
 
-      <!-- Applicant Details Table -->
-      <table>
-        <tr>
-          <td width="30%"><strong>Applicant Name :</strong></td>
-          <td><%= name %></td>
-        </tr>
-        <tr>
-          <td><strong>Date of Birth :</strong></td>
-          <td><%= dateofbirth.toDateString() %></td>
-          <td width="15%"><strong>Age :</strong></td>
-          <td width="15%"><%= nomineeAge %></td>
-        </tr>
-        <tr>
-          <td><strong>Father's/Spouse Name :</strong></td>
-          <td colspan="3"><%= fatherName %></td>
-        </tr>
-      </table>
+        <table class="no-border">
+            <tr>
+                <td style="width: 20%;">Phone No. (R)<div type="text" class="underline-input" style="width: calc(100% - 100px); display: inline-block;" > </div> </td>
+                <td style="width: 20%;">Mobile:<div type="text" class="underline-input" style="width: calc(100% - 60px); display: inline-block;">  <%= mobileNumber %></div> </td>
+                <td style="width: 20%;">E-mail:<div type="text" class="underline-input" style="width: calc(100% - 60px); display: inline-block;"> <%= email %></div></td>
+            </tr>
+        </table>
 
-      <!-- Address Table -->
-      <table>
-        <tr>
-          <td width="33%">
-            <div class="address-header">Correspondence Address</div>
-            <div><%= contactAddress %></div>
-          </td>
-          <td width="33%">
-            <div class="address-header">Permanent Address</div>
-            <div><%= permanentAddress %></div>
-          </td>
-          <td width="33%">
-            <div class="address-header">Working Address</div>
-            <div><%= workingAddress %></div>
-          </td>
-        </tr>
-      </table>
-      <!-- Nominee Details -->
-      <table>
-        <tr>
-          <td rowspan="3" width="30%"><strong>Nominee particulars</strong></td>
-          <td width="15%"><strong>Name</strong></td>
-          <td width="10%">:<%= nomineeName %>/td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td><strong>Age</strong></td>
-          <td>:<%= nomineeAge %></td>
-          <td></td>
-          <td width="20%"><strong>Relationship</strong></td>
-          <td width="5%">:<%= nomineeRelation %></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td><strong>Address</strong></td>
-          <td>:<%= nomineeAddress %></td>
-          <td colspan="4"></td>
-        </tr>
-        <tr>
-          <td><strong>Remarks, if any</strong></td>
-          <td colspan="6"></td>
-        </tr>
-        <tr>
-          <td><strong>Phone No.</strong></td>
-          <td colspan="2"><strong>Mobile:</strong><%= mobileNumber %></td>
-          <td colspan="4"><strong>E-mail:</strong><%= email %></td>
-        </tr>
-      </table>
+        <table style="margin-top: 20px;">
+            <tr>
+                <td rowspan="3" class="bold text-center" style="width: 20%;">Membership<br>Payment Details</td>
+                <td class="bold text-center" style="width: 15%;">Membership Amount</td>
+                <td colspan="4" class="bold">Rs. 2500/- (Rupees Two Thousand Five Hundred Only)</td>
+            </tr>
+            <tr>
+                <td class="text-center">Cheque</td>
+                <td class="text-center">DD</td>
+                <td class="text-center">Online</td>
+                <td colspan="2"></td>
+            </tr>
+            <tr>
+                <td class="text-center"></td>
+                <td class="text-center"></td>
+                <td class="text-center"></td>
+                <td style="width: 25%;">Bank <div type="text"  style="width: calc(100% - 40px); display: inline-block;" ><%= bankName %></div></td>
+                <td style="width: 25%;">Branch <div type="text"  style="width: calc(100% - 50px); display: inline-block;" ><%= branchName %></div> </td>
+            </tr>
+        </table>
 
-      <!-- Membership Payment Details -->
-      <table class="payment-table">
-        <tr>
-          <td rowspan="3" width="15%">
-            <strong>Membership Payment Details</strong>
-          </td>
-          <td width="20%"><strong>Membership Amount</strong><%= amount %></td>
-          <td colspan="4">
-            <strong>Rs. 2500/- (Rupees Two Thousand Five Hundred Only)</strong>
-          </td>
-        </tr>
-        <tr>
-          <td>Cheque [ ] DD [ ] Online [ ]</td>
-          <td colspan="4"></td>
-        </tr>
-        <tr>
-          <td>Bank</td>
-          <td width="25%"><%= bankName %></td>
-          <td width="15%">Branch</td>
-          <td><%= branchName %></td>
-        </tr>
-      </table>
-
-      <!-- Site Payment Details -->
-      <table class="payment-table">
-        <tr>
-          <td rowspan="4" width="15%">
-            <strong>Purchase of Site Payment Details</strong>
-          </td>
-          <td width="20%"><strong>Site Advance Amount</strong></td>
-          <td width="20%"><strong>Rs. </strong><%= amount %></td>
-          <td width="15%"><strong>In words</strong></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>Cheque [ ] DD [ ] Online [ ]</td>
-          <td colspan="3"></td>
-        </tr>
-        <tr>
-          <td>Bank</td>
-          <td><%= bankName %></td>
-          <td>Branch</td>
-          <td><%= branchName %></td>
-        </tr>
-      </table>
-
-      <!-- Account Details -->
-      <table>
+        <table style="margin-top: 20px;">
+            <tr>
+                <td rowspan="3" class="bold text-center" style="width: 20%;">Purchase of Site<br>Payment Details</td>
+                <td class="bold text-center" style="width: 15%;">Site Advance Amount</td>
+                <td class="bold" style="width: 10%;">Rs. <div type="text"  style="width: calc(100% - 30px); display: inline-block;" > <%= amount %></div></td>
+                <td colspan="3" class="bold">In words <div type="text"  style="width: calc(100% - 70px); display: inline-block;" > </div> </td>
+            </tr>
+            <tr>
+                <td class="text-center">Cheque</td>
+                <td class="text-center">DD</td>
+                <td class="text-center">Online</td>
+                <td colspan="2"></td>
+            </tr>
+            <tr>
+               
+                <td style="width: 25%;">Bank <div type="text"  style="width: calc(100% - 40px); display: inline-block;" ><%= bankName %> </div></td>
+                <td style="width: 25%;">Branch <div type="text"  style="width: calc(100% - 50px); display: inline-block;" ><%= branchName %> </div> </td>
+            </tr>
+        </table>
+        <table>
         <tr>
           <td colspan="4" style="text-align: center">
             <strong>Account Details For NEFT/RTGS/Online Transaction:</strong>
@@ -572,9 +454,9 @@
           <td colspan="3">: YESB0000513</td>
         </tr>
       </table>
+    </div>
+    <div class="terms">TERMS AND CONDITIONS</div>
 
-      <!-- Terms and Conditions -->
-      <div class="terms">TERMS AND CONDITIONS</div>
       <div class="document">
         <ol class="terms-list">
           <li>
@@ -661,8 +543,8 @@
 
           <div class="signature-section">
             <div class="signature-left">
-              <div>Place: <span class="highlight"></span></div>
-              <div>Date: <span class="highlight"></span></div>
+              <div>Place: <span class="highlight">Bengaluru</span></div>
+              <div>Date: <span class="highlight">  <%= new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) %></span></div>
             </div>
             <div class="signature-right">
               <!-- <img src="<%= MemberSign %>" alt=""> -->
@@ -734,6 +616,5 @@
 
         <div class="page-number"></div>
       </div>
-    </div>
-  </body>
+</body>
 </html>
