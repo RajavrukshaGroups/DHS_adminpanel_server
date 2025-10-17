@@ -267,7 +267,7 @@ const getConfirmation = async (req, res) => {
       }
     }
 
-    console.log(siteDownPaymentAmount, "site down payment amount");
+    console.log(siteDownPaymentAmount, "site down payment amount new");
     res.status(200).json({
       ...member.toObject(),
       projectLocation,
@@ -303,6 +303,7 @@ const addConfirmation = async (req, res) => {
       cloudinaryId, // will be null if not uploaded
       totalPaidAmount: req.body.Amount,
       confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
+      confirmationLetterReceiptNo: req.body.confirmationLetterReceiptNo,
     });
 
     await newAffidavit.save();
@@ -706,6 +707,9 @@ const editConfirmationLetter = async (req, res) => {
       existingAffidavit.confirmationLetterIssueDate;
     existingAffidavit.totalPaidAmount =
       req.body.Amount || existingAffidavit.totalPaidAmount;
+    existingAffidavit.confirmationLetterReceiptNo =
+      req.body.confirmationLetterReceiptNo ||
+      existingAffidavit.confirmationLetterReceiptNo;
     existingAffidavit.pricePerSqft =
       req.body.pricePerSqft || existingAffidavit.pricePerSqft;
     existingAffidavit.PaymentType =
@@ -748,6 +752,7 @@ const getAffidavitById = async (req, res) => {
       confirmationLetterIssueDate: affidavit.confirmationLetterIssueDate || "",
       duration: affidavit.duration || "",
       affidavitUrl: affidavit.affidavitUrl || "",
+      confirmationLetterReceiptNo: affidavit.confirmationLetterReceiptNo || "",
     };
     res.status(200).json(responseData);
   } catch (error) {
@@ -1048,6 +1053,53 @@ const getMemberOnlineApplication = async (req, res) => {
   } catch (error) {}
 };
 
+const ShareResetPasswordCredentials = async ({
+  name,
+  email,
+  SeniorityID,
+  password,
+}) => {
+  const mailOptions = {
+    from: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
+    to: email,
+    subject: "Your Member Login Credentials — Defence Habitat",
+    html: `
+      <div style="border:1px solid #1f4892; font-family: Arial, sans-serif;">
+        <div style="background-color: #1f4892; height: 50px;"></div>
+        <div style="padding: 20px;">
+          <p>Dear <strong>${name}</strong>,</p>
+          <p>Your account password has been changed. Below are your new login details.</p>
+
+          <table cellpadding="10" style="border-collapse: collapse;">
+            <tr>
+              <td style="background-color: #666; color: white;"><strong>Member ID</strong></td>
+              <td><div style="border: 1px solid #ccc; padding: 8px;">${SeniorityID}</div></td>
+            </tr>
+            <tr>
+              <td style="background-color: #666; color: white;"><strong>Email</strong></td>
+              <td><div style="border: 1px solid #ccc; padding: 8px;">${email}</div></td>
+            </tr>
+            <tr>
+              <td style="background-color: #666; color: white;"><strong>Password</strong></td>
+              <td><div style="border: 1px solid #ccc; padding: 8px;">${password}</div></td>
+            </tr>
+           
+          </table>
+
+          <p>Click here to login: <a href="https://defencehousingsociety.com/memberlogin">https://defencehousingsociety.com/memberlogin</a></p>
+
+          <p><strong>THANK YOU</strong></p>
+          <p><strong>For further details, contact</strong><br>
+          Behind Swathi Garden Hotel<br>
+          E Block, Sahakarnagar,<br>
+          Bengaluru - 560 092. Ph: 080 - 29903931</p>
+        </div>
+      </div>
+    `,
+  };
+  return transporter.sendMail(mailOptions);
+};
+
 const ResetPassword = async (req, res) => {
   try {
     console.log("Received request to reset password...", req.body);
@@ -1058,6 +1110,7 @@ const ResetPassword = async (req, res) => {
         .status(400)
         .json({ message: "Seniority ID and password are required." });
     }
+
     // Find the member by seniority ID
     const member = await Member.findOne({ SeniorityID: seniorityId });
 
@@ -1065,11 +1118,42 @@ const ResetPassword = async (req, res) => {
       return res.status(404).json({ message: "Member not found." });
     }
 
-    // Update password directly (no bcrypt)
+    // Update password directly (no bcrypt — matches your current approach)
     member.password = password;
     await member.save();
 
-    res.status(200).json({ message: "Password updated successfully." });
+    // Create a short reference for this change (you can change format)
+    const reference = `REF-${member._id
+      .toString()
+      .slice(-6)
+      .toUpperCase()}-${Date.now().toString().slice(-5)}`;
+
+    // Attempt to send email with new credentials
+    try {
+      await ShareResetPasswordCredentials({
+        name: member.name || "Member",
+        email: member.email,
+        SeniorityID: member.SeniorityID,
+        password,
+        // reference,
+      });
+
+      // Email succeeded
+      return res.status(200).json({
+        message:
+          "Password updated successfully. Login details emailed to member.",
+        // reference,
+      });
+    } catch (emailErr) {
+      console.error("Password updated but failed to send email:", emailErr);
+      // Still return success for password change, but inform about email failure
+      return res.status(200).json({
+        message:
+          "Password updated successfully, but failed to send email to member. Please retry sending the email.",
+        // reference,
+        emailError: true,
+      });
+    }
   } catch (error) {
     console.error("Error resetting password:", error);
     res.status(500).json({ message: "Server error. Please try again." });

@@ -352,6 +352,9 @@ const viewconfirmation = async (req, res) => {
 
     const confirmationLetterIssueDate = affidavit.confirmationLetterIssueDate;
     const duration = affidavit.duration;
+    const totalPaidAmount = affidavit.totalPaidAmount;
+    const amountInWordsTotalPaidAmount = convertNumberToWords(totalPaidAmount);
+    const confirmationLetterReceiptNo = affidavit.confirmationLetterReceiptNo;
     res.render("viewsiteBookingConfirmation", {
       member: affidavit,
       amountInWords: amountInWords,
@@ -360,6 +363,9 @@ const viewconfirmation = async (req, res) => {
       siteDownPayment,
       confirmationLetterIssueDate,
       duration,
+      totalPaidAmount,
+      confirmationLetterReceiptNo,
+      amountInWordsTotalPaidAmount: amountInWordsTotalPaidAmount,
     });
   } catch (error) {
     console.error("Error:", error);
@@ -595,7 +601,7 @@ const renderShareCertificate = async (req, res) => {
     const receipt = await Receipt.findById(receiptId).populate({
       path: "member",
       select:
-        "saluation name permanentAddress nomineeName nomineeRelation date ShareCertificateNumber contactAddress",
+        "saluation name permanentAddress nomineeName nomineeRelation date ShareCertificateNumber contactAddress isTransferred transferDate",
     });
 
     console.log("receipt", receipt);
@@ -630,6 +636,7 @@ const renderShareCertificate = async (req, res) => {
       //   toWords.toWords(sharePayment.shareFee) + " rupees",
       shareValueInWords: convertNumberToWords(sharePayment.shareFee),
       dateOfIssue: formatDate(member.date),
+      dateOfTransfer: formatDate(member.transferDate),
     });
   } catch (err) {
     console.error("Error rendering share certificate:", err);
