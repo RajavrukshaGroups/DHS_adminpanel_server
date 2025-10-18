@@ -89,7 +89,8 @@
               ><span class="dotted-underline">
                 <!-- <%= new Date(member.date).toLocaleDateString("en-IN") %> -->
                 <!-- <%= dateOfIssue %> -->
-                <%= dateOfTransfer?dateOfTransfer:dateOfIssue %>
+                <!-- <%= dateOfTransfer?dateOfTransfer:dateOfIssue %> -->
+                 <%= member.isTransferred ? dateOfTransfer : dateOfIssue %>
                 </span
               ></strong
             >
