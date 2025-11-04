@@ -9,6 +9,11 @@ router.get(
   PlotController.getMemberBySeniorityID
 );
 
+router.get(
+  "/getMember/:id",
+  PlotController.getMember
+);
+
 router.post(
   "/create-transfer",
   upload.fields([

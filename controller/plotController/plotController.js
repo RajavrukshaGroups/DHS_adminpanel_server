@@ -7,12 +7,151 @@ const getMemberBySeniorityID = async (req, res) => {
   try {
     const seniorityId = req.params.id;
     const member = await Member.findOne({ SeniorityID: seniorityId });
+    console.log(member,'finded member');
+    
     if (!member) return res.status(404).json({ message: "Member not found" });
     res.status(200).json(member);
   } catch (error) {
     res.status(500).json({ message: "Error fetching member details" });
   }
 };
+
+// Controller: getMember.js
+// const getMember = async (req, res) => {
+//   console.log('route is called ',req.params)
+//   try {
+//     const { query } = req.params; // could be name or seniorityId
+
+//     let member = null;
+//     let membersList = [];
+
+//     // Try searching by SeniorityID first
+//     member = await Member.findOne({ SeniorityID: query });
+//     console.log(member,'finded memberrrrrrrr');
+    
+
+//     if (member) {
+//       return res.status(200).json({ type: "single", data: member });
+//     }
+
+//     // If not found, search by Name (case-insensitive)
+//     membersList = await Member.find({
+//       name: { $regex: new RegExp("^" + query + "$", "i") },
+//     }).select("name email mobileNumber SeniorityID");
+
+//     if (membersList.length === 0) {
+//       return res.status(404).json({ message: "No member found" });
+//     }
+
+//     // If multiple found, return list to select from
+//     if (membersList.length > 1) {
+//       return res.status(200).json({ type: "multiple", data: membersList });
+//     }
+
+//     // If exactly one found, fetch full details
+//     const singleMember = await Member.findOne({ name: membersList[0].name });
+//     return res.status(200).json({ type: "single", data: singleMember });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error fetching member details" });
+//   }
+// };
+
+// const getMember = async (req, res) => {
+//   console.log("route is called ", req.params);
+
+//   try {
+//     const { id } = req.params; // can be SeniorityID or name/refname
+//     if (!id) return res.status(400).json({ message: "Invalid request" });
+
+//     const searchValue = id.trim();
+
+//     // 1️⃣ Try exact SeniorityID match
+//     const bySeniority = await Member.findOne({ SeniorityID: searchValue });
+//     if (bySeniority) {
+//       console.log("Matched by SeniorityID ✅");
+//       return res.status(200).json({ type: "single", data: bySeniority });
+//     }
+
+//     // 2️⃣ Try refname or name (case-insensitive, partial match)
+//     console.log("Searching by name/refname for:", searchValue);
+
+//     const membersList = await Member.find({
+//       $or: [
+//         { name: { $regex: searchValue, $options: "i" } },
+//         { refname: { $regex: searchValue, $options: "i" } },
+//       ],
+//     }).select("name email mobileNumber SeniorityID refname");
+
+//     console.log("membersList found:", membersList);
+
+//     if (membersList.length === 0) {
+//       return res.status(404).json({ message: "No member found" });
+//     }
+
+//     if (membersList.length > 1) {
+//       return res.status(200).json({ type: "multiple", data: membersList });
+//     }
+
+//     const singleMember = await Member.findOne({ _id: membersList[0]._id });
+//     return res.status(200).json({ type: "single", data: singleMember });
+
+//   } catch (error) {
+//     console.error("Error fetching member:", error);
+//     res.status(500).json({ message: "Error fetching member details" });
+//   }
+// };
+const getMember = async (req, res) => {
+  console.log("route is called ", req.params);
+
+  try {
+    const { id } = req.params; // can be SeniorityID or name/refname
+    if (!id) return res.status(400).json({ message: "Invalid request" });
+
+    const searchValue = id.trim();
+
+    // 1️⃣ Try exact SeniorityID match
+    const bySeniority = await Member.findOne({ SeniorityID: searchValue });
+    if (bySeniority) {
+      console.log("Matched by SeniorityID ✅",bySeniority);
+      return res.status(200).json({ member: bySeniority });
+    }
+
+    // 2️⃣ Try refname or name (case-insensitive, partial match)
+    console.log("Searching by name/refname for:", searchValue);
+
+    const membersList = await Member.find({
+      $or: [
+        { name: { $regex: searchValue, $options: "i" } },
+        { refname: { $regex: searchValue, $options: "i" } },
+      ],
+    }).select("name email mobileNumber SeniorityID refname");
+
+    console.log("membersList found:", membersList);
+
+    if (membersList.length === 0) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    // 3️⃣ If multiple found → let frontend show list
+    if (membersList.length > 1) {
+      return res.status(200).json({
+        multiple: true,
+        members: membersList, // return array under "members"
+      });
+    }
+
+    // 4️⃣ If exactly one found → return as single "member"
+    const singleMember = await Member.findOne({ _id: membersList[0]._id });
+    return res.status(200).json({ member: singleMember });
+
+  } catch (error) {
+    console.error("Error fetching member:", error);
+    res.status(500).json({ message: "Error fetching member details" });
+  }
+};
+
+
 
 const CreateTransfer = async (req, res) => {
   try {
@@ -279,4 +418,5 @@ export default {
   cancelMemberPlot,
   getCancelledMembers,
   DeletePlotCancelation,
+  getMember
 };
