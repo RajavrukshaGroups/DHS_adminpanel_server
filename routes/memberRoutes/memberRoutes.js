@@ -12,6 +12,7 @@ router.post(
   formidable({ multiples: true }),
   MemberController.addMemberDetails
 );
+router.post("/upload-google-sheet", MemberController.uploadFromGoogleSheet);
 router.get("/view-member-details", MemberController.getMemberDetails);
 router.get("/check-duplicates", memberController.checkDuplicates);
 router.put("/update-status/:id", memberController.updateStatus);

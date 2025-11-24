@@ -218,6 +218,7 @@ const getProjectDetails = async (req, res) => {
         _id: 1,
       }
     );
+    console.log("projects",projects)
     res.status(200).json({
       success: true,
       data: projects,
@@ -403,6 +404,7 @@ const getProjectStatus = async (req, res) => {
       success: true,
       data: projectStatus,
     });
+    console.log("project status",projectStatus)
   } catch (error) {
     console.error("error fetching project status details:"),
       res.status(500).json({

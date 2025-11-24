@@ -44,7 +44,7 @@
         <div class="line">
           RTGS / CHEQUES / DD No
           <span>
-            <% if (paymentMode?.toLowerCase() === "netbanking") { %> <%=
+            <% if (paymentMode?.toLowerCase() === "netbanking" || paymentMode?.toLowerCase()==="netbanking/upi") { %> <%=
             transactionId %> <% } else if (paymentMode?.toLowerCase() ===
             "cheque") { %> <%= chequeNumber %> <% } else if
             (paymentMode?.toLowerCase() === "dd") { %> <%= ddNumber %> <% } else
