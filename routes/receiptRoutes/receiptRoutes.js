@@ -1,12 +1,18 @@
 import express from "express";
 const router = express.Router();
 import Receipt from "../../model/receiptModel.js";
-
 import ReceiptController from "../../controller/receiptController/receiptController.js";
+import BulkReceiptsController from "../../controller/bulkReceiptsController/bulkReceiptsController.js";
+
 router.get("/get-receipt-details", ReceiptController.fetchReceipts);
 router.get("/get-receipt-details/:id", ReceiptController.getReceiptDetailsById);
 router.get("/receipts/member/:id", ReceiptController.getViewReceiptHistory);
 router.get("/view-confirmation/:memberId", ReceiptController.viewconfirmation);
+
+router.post(
+  "/bulk-receipts-upload",
+  BulkReceiptsController.uploadSiteAdvanceBulkUploadReceipts
+);
 
 // router.get("/get-affidavit/:id", ReceiptController.getAffidavitById);
 router.get("/checkMembershipFee/:id", ReceiptController.CheckMembershipFee);
