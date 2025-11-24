@@ -17,7 +17,7 @@ dotenv.config();
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL;
 let PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY;
-const RANGE = process.env.GOOGLE_SHEET_RANGE || "Sheet1!A1:BA";
+const RANGE = process.env.GOOGLE_SHEET_RANGE || "Uploadmembers!A1:BA";
 
 if (PRIVATE_KEY && PRIVATE_KEY.startsWith('"') && PRIVATE_KEY.endsWith('"')) {
   PRIVATE_KEY = PRIVATE_KEY.slice(1, -1);

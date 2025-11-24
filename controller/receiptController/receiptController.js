@@ -199,7 +199,7 @@ const getReceiptDetailsById = async (req, res) => {
       { name: "Application Fee", amount: payment.applicationFee || 0 },
       {
         name: "Site Advance",
-        amount: payment.paymentType === "siteAdvance" ? payment.amount : 0,
+        amount: payment.paymentType === "siteadvance" ? payment.amount : 0,
       },
       {
         name: "Site Down Payment",

@@ -3,7 +3,7 @@ dotenv.config();
 import { google } from "googleapis";
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const RANGE = process.env.GOOGLE_SHEET_RANGE || "Sheet1!A1:AR";
+const RANGE = process.env.GOOGLE_SHEET_RANGE || "Uploadmembers!A1:AR";
 let key = process.env.GOOGLE_PRIVATE_KEY || "";
 if (key.startsWith('"') && key.endsWith('"')) key = key.slice(1, -1);
 key = key.replace(/\\n/g, "\n");
