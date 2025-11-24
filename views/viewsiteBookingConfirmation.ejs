@@ -41,7 +41,7 @@
 
         (Rupees <span class="bold"><%= amountInWordsTotalPaidAmount?amountInWordsTotalPaidAmount:amountInWords %></span>) 
         <% const mode = siteDownPayment?.paymentMode?.toLowerCase(); %>
-        <% if (mode === 'netbanking') { %>
+        <% if (mode === 'netbanking/upi') { %>
           by mode of NEFT/RTGS Ref <span class="bold">No.<%= siteDownPayment?.transactionId %></span>
         <% } else if (mode === 'cheque') { %>
           by way of cheque bearing <span class="bold">No.<%= siteDownPayment?.chequeNumber %></span>

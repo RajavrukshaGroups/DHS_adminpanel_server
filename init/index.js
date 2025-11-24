@@ -8,7 +8,8 @@ import MemberAffidavit from "../model/memberAffidavit.js";
 import plotTransfer from "../model/plotTransfer.js";
 
 // const MONGO_URL = "mongodb://127.0.0.1:27017/plumeria";
-const MONGO_URL = "mongodb://127.0.0.1:27017/DHS-Admin";
+// const MONGO_URL = "mongodb://127.0.0.1:27017/DHS-Admin";
+const MONGO_URL="mongodb+srv://enquiry:tI3BuX6maCBZwjfX@cluster0.dmnsvvc.mongodb.net/"
 
 const main = async () => {
   try {
