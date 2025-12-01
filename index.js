@@ -13,6 +13,7 @@ import memberRoutes from "./routes/memberRoutes/memberRoutes.js";
 import plotRoutes from "./routes/plotRoutes/plotRoutes.js";
 import recieptRoutes from "./routes/receiptRoutes/receiptRoutes.js";
 import defenceWebsiteRoutes from "./routes/defenceWebsiteRoutes/memberRoutes.js";
+import deployRoutes from "./routes/deployRoutes/deployRoutes.js";
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use("/member", memberRoutes);
 app.use("/receipt", recieptRoutes);
 app.use("/plot", plotRoutes);
 app.use("/defenceWebsiteRoutes", defenceWebsiteRoutes);
+app.use("/deployment-trial", deployRoutes);
 
 // Start server
 const PORT = 4000;
