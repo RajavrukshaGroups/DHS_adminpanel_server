@@ -10,7 +10,7 @@ dotenv.config();
 // const SHEET_ID = "1id7Gr9MGZEjDjffo62saVbg-JQraV0BCu_VOdsJbwLA";
 const SHEET_ID = "1vLjPNbkbxWIC_GLJzh8KvXprsMKbPC_irQJsYb9n5YU";
 // const SHEET_RANGE = "Sheet2!A1:J"; // header included
-const SHEET_RANGE = "Siteadvance!A1:J"; // header included
+const SHEET_RANGE = "Siteadvance!A1:K"; // header included
 const CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL;
 let PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY;
 
@@ -182,6 +182,32 @@ function getCell(row, idx) {
     : "";
 }
 
+// NEW: normalize installment values like "1", "first", "1st", "First Installment" -> "firstInstallment"
+function mapInstallmentValue(raw) {
+  if (!raw && raw !== 0) return undefined;
+  const s = String(raw).trim().toLowerCase();
+  if (!s) return undefined;
+  // common numeric forms
+  if (/^1(st)?$/.test(s) || /^first/.test(s) || /^1$/.test(s))
+    return "firstInstallment";
+  if (/^2(nd)?$/.test(s) || /^second/.test(s) || /^2$/.test(s))
+    return "secondInstallment";
+  if (/^3(rd)?$/.test(s) || /^third/.test(s) || /^3$/.test(s))
+    return "thirdInstallment";
+  if (/^4(th)?$/.test(s) || /^fourth/.test(s) || /^4$/.test(s))
+    return "fourthInstallment";
+  if (/^5(th)?$/.test(s) || /^fifth/.test(s) || /^5$/.test(s))
+    return "fifthInstallment";
+  // if the cell already contains a normalized token
+  if (s.includes("firstinstall")) return "firstInstallment";
+  if (s.includes("secondinstall")) return "secondInstallment";
+  if (s.includes("thirdinstall")) return "thirdInstallment";
+  if (s.includes("fourthinstall")) return "fourthInstallment";
+  if (s.includes("fifthinstall")) return "fifthInstallment";
+  // fallback to raw sanitized string (no spaces)
+  return s.replace(/\s+/g, "");
+}
+
 // ----- controller -----
 const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
   try {
@@ -254,6 +280,15 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
       "contact address",
     ]);
 
+    // NEW: find installment column (user has this in sheet)
+    const idxInstallment = findIdx([
+      "installment",
+      "installmentno",
+      "installment number",
+      "installmentnumber",
+      "installmenttype",
+    ]);
+
     // Validate required column
     if (idxSeniority === undefined) {
       return res.status(400).json({
@@ -294,6 +329,13 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
         const amountRaw = getCell(row, idxAmount);
         const transactionDetails = getCell(row, idxTransactionDetails);
         const correspondenceAddress = getCell(row, idxCorrespondenceAddress);
+
+        // NEW: read installment column (if present)
+        const installmentRaw =
+          idxInstallment !== undefined
+            ? getCell(row, idxInstallment)
+            : undefined;
+        const installmentNormalized = mapInstallmentValue(installmentRaw); // e.g. 'firstInstallment'
 
         // lookup member by SeniorityID
         const member = await Member.findOne({
@@ -358,6 +400,7 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
           recieptNo: recieptNo,
           date,
           paymentType: paymentTypeRaw || "siteadvance",
+          installment: installmentNormalized || undefined,
           paymentMode: paymentModeNorm || "cash",
           bankName: bankName || "",
           branchName: branchName || "",
@@ -385,8 +428,10 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
         }
 
         // update member.propertyDetails.paidAmount for eligible types
-        const eligible = ["siteadvance", "sitedownpayment", "installments"];
-        if (eligible.includes(paymentTypeNorm)) {
+        // Accept both 'installment'/'installments' and anything that includes 'install'
+        const isInstallmentType = paymentTypeNorm.includes("install");
+        const eligibleTypes = ["siteadvance", "sitedownpayment"];
+        if (isInstallmentType || eligibleTypes.includes(paymentTypeNorm)) {
           member.propertyDetails = member.propertyDetails || {};
           member.propertyDetails.paidAmount =
             Number(member.propertyDetails.paidAmount || 0) +
