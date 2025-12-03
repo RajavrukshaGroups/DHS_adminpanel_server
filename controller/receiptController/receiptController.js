@@ -201,9 +201,13 @@ const getReceiptDetailsById = async (req, res) => {
         name: "Site Advance",
         amount: payment.paymentType === "siteadvance" ? payment.amount : 0,
       },
+      // {
+      //   name: "Site Down Payment",
+      //   amount: payment.paymentType === "siteDownPayment" ? payment.amount : 0,
+      // },
       {
         name: "Site Down Payment",
-        amount: payment.paymentType === "siteDownPayment" ? payment.amount : 0,
+        amount: payment.paymentType === "sitedownpayment" ? payment.amount : 0,
       },
 
       {
@@ -330,8 +334,11 @@ const viewconfirmation = async (req, res) => {
 
     console.log("member affidavit", member);
     // Extract the siteDownPayment entry from the receipt
-    const siteDownPayment = receipt?.payments?.find(
-      (payment) => payment.paymentType === "siteDownPayment"
+    // const siteDownPayment = receipt?.payments?.find(
+    //   (payment) => payment.paymentType === "siteDownPayment"
+    // );
+     const siteDownPayment = receipt?.payments?.find(
+      (payment) => payment.paymentType === "sitedownpayment"
     );
     const project = await Project.findOne({
       projectName: member.propertyDetails.projectName,

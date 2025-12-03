@@ -215,14 +215,19 @@ function parseDate(val) {
 }
 
 function normalizeHeader(h) {
-  return String(h || "").trim().toLowerCase().replace(/\s+/g, "");
+  return String(h || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
 }
 
 // If a header isn't mapped, attempt compact lookup
 function buildIndexToField(headers) {
   const indexToField = {};
   headers.forEach((h, idx) => {
-    const key = String(h || "").trim().toLowerCase();
+    const key = String(h || "")
+      .trim()
+      .toLowerCase();
     if (HEADER_TO_FIELD[key]) {
       indexToField[idx] = HEADER_TO_FIELD[key];
       return;
@@ -253,7 +258,8 @@ function containsAlphaAndNum(s) {
 
 function mapTransactionDetailsByMode(transactionDetails, paymentMode) {
   const out = { chequeNumber: "", ddNumber: "", transactionId: "" };
-  if (!transactionDetails || String(transactionDetails).trim() === "") return out;
+  if (!transactionDetails || String(transactionDetails).trim() === "")
+    return out;
   const td = String(transactionDetails).trim();
   const m = String(paymentMode || "").toLowerCase();
   if (m.includes("cheque") || m.includes("chq")) {
@@ -264,7 +270,15 @@ function mapTransactionDetailsByMode(transactionDetails, paymentMode) {
     out.ddNumber = td;
     return out;
   }
-  if (m.includes("upi") || m.includes("netbank") || m.includes("net") || m.includes("transaction") || m.includes("txn") || m.includes("utr") || m.includes("ref")) {
+  if (
+    m.includes("upi") ||
+    m.includes("netbank") ||
+    m.includes("net") ||
+    m.includes("transaction") ||
+    m.includes("txn") ||
+    m.includes("utr") ||
+    m.includes("ref")
+  ) {
     out.transactionId = td;
     return out;
   }
@@ -274,7 +288,12 @@ function mapTransactionDetailsByMode(transactionDetails, paymentMode) {
     out.chequeNumber = td;
     return out;
   }
-  if (td.toLowerCase().includes("upi") || td.toLowerCase().includes("utr") || td.toLowerCase().includes("txn") || containsAlphaAndNum(td)) {
+  if (
+    td.toLowerCase().includes("upi") ||
+    td.toLowerCase().includes("utr") ||
+    td.toLowerCase().includes("txn") ||
+    containsAlphaAndNum(td)
+  ) {
     out.transactionId = td;
     return out;
   }
@@ -297,7 +316,10 @@ async function tryUploadMemberPhoto(photoValue) {
     if (uploadResult && uploadResult.url) return uploadResult.url;
     return null;
   } catch (err) {
-    console.warn("Cloudinary upload failed for memberPhoto:", err?.message || err);
+    console.warn(
+      "Cloudinary upload failed for memberPhoto:",
+      err?.message || err
+    );
     return null;
   }
 }
@@ -328,7 +350,10 @@ async function resolveMemberPhotoValue(sheetValue) {
       }
       return s; // fallback to original URL
     } catch (err) {
-      console.warn("Cloud upload failed for remote URL; using original URL as fallback.", err?.message || err);
+      console.warn(
+        "Cloud upload failed for remote URL; using original URL as fallback.",
+        err?.message || err
+      );
       return s;
     }
   }
@@ -349,7 +374,11 @@ async function resolveMemberPhotoValue(sheetValue) {
 function getFirstAvailableRaw(rowObj, candidates = []) {
   // 1) check mapped resolved fields on rowObj
   for (const c of candidates) {
-    if (rowObj[c] !== undefined && rowObj[c] !== null && String(rowObj[c]).trim() !== "") {
+    if (
+      rowObj[c] !== undefined &&
+      rowObj[c] !== null &&
+      String(rowObj[c]).trim() !== ""
+    ) {
       return String(rowObj[c]).trim();
     }
   }
@@ -360,7 +389,8 @@ function getFirstAvailableRaw(rowObj, candidates = []) {
     for (const rk of rawKeys) {
       if (rk && rk.toString().trim().toLowerCase() === normCand) {
         const v = rowObj._raw[rk];
-        if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
+        if (v !== undefined && v !== null && String(v).trim() !== "")
+          return String(v).trim();
       }
     }
   }
@@ -370,7 +400,8 @@ function getFirstAvailableRaw(rowObj, candidates = []) {
     for (const rk of rawKeys) {
       if (rk && rk.toString().trim().toLowerCase().includes(token)) {
         const v = rowObj._raw[rk];
-        if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
+        if (v !== undefined && v !== null && String(v).trim() !== "")
+          return String(v).trim();
       }
     }
   }
@@ -378,7 +409,8 @@ function getFirstAvailableRaw(rowObj, candidates = []) {
 }
 
 function idxToColLetter(idx) {
-  let n = idx + 1, s = "";
+  let n = idx + 1,
+    s = "";
   while (n > 0) {
     const rem = (n - 1) % 26;
     s = String.fromCharCode(65 + rem) + s;
@@ -400,7 +432,9 @@ export const uploadFromGoogleSheet = async (req, res) => {
       return res.status(400).json({ message: "No data in sheet" });
     }
 
-    const headers = rows[0].map((h) => (h === undefined || h === null ? "" : String(h).trim()));
+    const headers = rows[0].map((h) =>
+      h === undefined || h === null ? "" : String(h).trim()
+    );
     const dataRows = rows.slice(1);
 
     console.log("=== HEADER ANALYSIS ===");
@@ -412,10 +446,25 @@ export const uploadFromGoogleSheet = async (req, res) => {
     const indexToField = buildIndexToField(headers);
 
     console.log("\n=== PAYMENT & PHOTO COLUMNS CHECK ===");
-    ["amount", "chequeNumber", "ddNumber", "transactionId", "transactionDetails", "memberPhoto", "dateOfBirth", "dob"].forEach((col) => {
-      const found = Object.keys(indexToField).find((idx) => indexToField[idx] === col);
+    [
+      "amount",
+      "chequeNumber",
+      "ddNumber",
+      "transactionId",
+      "transactionDetails",
+      "memberPhoto",
+      "dateOfBirth",
+      "dob",
+    ].forEach((col) => {
+      const found = Object.keys(indexToField).find(
+        (idx) => indexToField[idx] === col
+      );
       if (found !== undefined) {
-        console.log(`✓ ${col} -> column ${found} (${idxToColLetter(Number(found))}) "${headers[found]}"`);
+        console.log(
+          `✓ ${col} -> column ${found} (${idxToColLetter(Number(found))}) "${
+            headers[found]
+          }"`
+        );
       } else {
         console.log(`✗ ${col} -> NOT MAPPED`);
       }
@@ -426,12 +475,18 @@ export const uploadFromGoogleSheet = async (req, res) => {
     function rowToObject(row) {
       const obj = { _raw: {}, _headers: headers };
       headers.forEach((h, idx) => {
-        obj._raw[h] = row[idx] !== undefined && row[idx] !== null ? String(row[idx]).trim() : "";
+        obj._raw[h] =
+          row[idx] !== undefined && row[idx] !== null
+            ? String(row[idx]).trim()
+            : "";
       });
       Object.keys(indexToField).forEach((idxStr) => {
         const idx = Number(idxStr);
         const field = indexToField[idx];
-        obj[field] = row[idx] !== undefined && row[idx] !== null ? String(row[idx]).trim() : "";
+        obj[field] =
+          row[idx] !== undefined && row[idx] !== null
+            ? String(row[idx]).trim()
+            : "";
       });
       return obj;
     }
@@ -454,7 +509,10 @@ export const uploadFromGoogleSheet = async (req, res) => {
           refname: rowObj.refname,
           name: rowObj.name,
           paymentMode: rowObj.paymentMode,
-          transactionDetails: rowObj.transactionDetails || rowObj._raw["transactionDetails"] || ""
+          transactionDetails:
+            rowObj.transactionDetails ||
+            rowObj._raw["transactionDetails"] ||
+            "",
         });
       }
 
@@ -462,7 +520,8 @@ export const uploadFromGoogleSheet = async (req, res) => {
         // duplicate check (seniorityId or membershipNo or serviceId)
         const searchQuery = {};
         if (rowObj.seniorityId) searchQuery.SeniorityID = rowObj.seniorityId;
-        else if (rowObj.membershipNo) searchQuery.MembershipNo = rowObj.membershipNo;
+        else if (rowObj.membershipNo)
+          searchQuery.MembershipNo = rowObj.membershipNo;
         else if (rowObj.serviceId) searchQuery.serviceId = rowObj.serviceId;
 
         if (Object.keys(searchQuery).length > 0) {
@@ -477,7 +536,13 @@ export const uploadFromGoogleSheet = async (req, res) => {
 
         // ===== DATE OF BIRTH: prefer DOB-specific columns over generic 'date' =====
         const dobCandidates = [
-          "dateofbirth", "date of birth", "dob", "birthdate", "birth date", "dateOfBirth", "date"
+          "dateofbirth",
+          "date of birth",
+          "dob",
+          "birthdate",
+          "birth date",
+          "dateOfBirth",
+          "date",
         ];
         const dobRaw = getFirstAvailableRaw(rowObj, dobCandidates);
         const parsedDOB = parseDate(dobRaw);
@@ -494,7 +559,11 @@ export const uploadFromGoogleSheet = async (req, res) => {
           email: rowObj.email || "",
           dateofbirth: parsedDOB, // use parsed DOB
           fatherName: rowObj.fatherName || "",
-          contactAddress: rowObj.contactAddress || rowObj._raw["contactAddress"] || rowObj._raw["Contact Address"] || "",
+          contactAddress:
+            rowObj.contactAddress ||
+            rowObj._raw["contactAddress"] ||
+            rowObj._raw["Contact Address"] ||
+            "",
           permanentAddress: rowObj.permanentAddress || "",
           workingAddress: rowObj.workingAddress || "",
           MemberPhoto: "",
@@ -522,13 +591,23 @@ export const uploadFromGoogleSheet = async (req, res) => {
         };
 
         if (dobRaw) {
-          console.log(`Row ${rowNumber} - DOB raw: "${dobRaw}" parsedDOB:`, parsedDOB);
+          console.log(
+            `Row ${rowNumber} - DOB raw: "${dobRaw}" parsedDOB:`,
+            parsedDOB
+          );
         }
 
         // ===== MEMBER PHOTO =====
         const photoCandidates = [
-          "memberPhoto", "memberphoto", "member photo",
-          "MemberPhoto", "Member Photo", "photo", "photo url", "image", "image url"
+          "memberPhoto",
+          "memberphoto",
+          "member photo",
+          "MemberPhoto",
+          "Member Photo",
+          "photo",
+          "photo url",
+          "image",
+          "image url",
         ];
         const sheetPhotoVal = getFirstAvailableRaw(rowObj, photoCandidates);
 
@@ -536,27 +615,43 @@ export const uploadFromGoogleSheet = async (req, res) => {
           const resolvedUrl = await resolveMemberPhotoValue(sheetPhotoVal);
           if (resolvedUrl) {
             mappedData.MemberPhoto = resolvedUrl;
-            console.log(`Row ${rowNumber} - MemberPhoto resolved => ${resolvedUrl}`);
+            console.log(
+              `Row ${rowNumber} - MemberPhoto resolved => ${resolvedUrl}`
+            );
           } else if (/^https?:\/\//i.test(sheetPhotoVal)) {
             mappedData.MemberPhoto = sheetPhotoVal;
-            console.log(`Row ${rowNumber} - MemberPhoto fallback to original URL => ${sheetPhotoVal}`);
+            console.log(
+              `Row ${rowNumber} - MemberPhoto fallback to original URL => ${sheetPhotoVal}`
+            );
           } else {
-            console.log(`Row ${rowNumber} - MemberPhoto present but could not be resolved/uploaded. Value: ${sheetPhotoVal}`);
+            console.log(
+              `Row ${rowNumber} - MemberPhoto present but could not be resolved/uploaded. Value: ${sheetPhotoVal}`
+            );
           }
         } else {
           if (i < diagLimit) {
-            console.log(`Row ${rowNumber} - no memberPhoto found in sheet raw headers.`);
+            console.log(
+              `Row ${rowNumber} - no memberPhoto found in sheet raw headers.`
+            );
           }
         }
 
         // ===== MEMBER SIGN (optional) =====
-        const signCandidates = ["membersignature", "member signature", "memberSignature", "signature", "signature url"];
+        const signCandidates = [
+          "membersignature",
+          "member signature",
+          "memberSignature",
+          "signature",
+          "signature url",
+        ];
         const sheetSignVal = getFirstAvailableRaw(rowObj, signCandidates);
         if (sheetSignVal) {
           const resolvedSign = await resolveMemberPhotoValue(sheetSignVal);
           if (resolvedSign) {
             mappedData.MemberSign = resolvedSign;
-            console.log(`Row ${rowNumber} - MemberSign resolved => ${resolvedSign}`);
+            console.log(
+              `Row ${rowNumber} - MemberSign resolved => ${resolvedSign}`
+            );
           }
         }
 
@@ -571,53 +666,87 @@ export const uploadFromGoogleSheet = async (req, res) => {
         const parsedApplicationFee = parseNumber(rowObj.applicationFee) || 0;
         const parsedAdmissionFee = parseNumber(rowObj.admissionFee) || 0;
         const parsedMisc = parseNumber(rowObj.miscellaneousExpenses) || 0;
-        const feesSum = parsedShareFee + parsedMembershipFee + parsedApplicationFee + parsedAdmissionFee + parsedMisc;
+        const feesSum =
+          parsedShareFee +
+          parsedMembershipFee +
+          parsedApplicationFee +
+          parsedAdmissionFee +
+          parsedMisc;
 
         // robust amount determination:
         let parsedAmount = parseNumber(rowObj.amount);
         if (!Number.isFinite(parsedAmount)) {
           parsedAmount = feesSum > 0 ? feesSum : 2500;
-          console.log(`Row ${rowNumber} - amount missing/invalid -> using feesSum/default. feesSum=${feesSum}, chosen amount=${parsedAmount}`);
+          console.log(
+            `Row ${rowNumber} - amount missing/invalid -> using feesSum/default. feesSum=${feesSum}, chosen amount=${parsedAmount}`
+          );
         } else {
-          console.log(`Row ${rowNumber} - Using amount from sheet: ${parsedAmount} (feesSum=${feesSum})`);
+          console.log(
+            `Row ${rowNumber} - Using amount from sheet: ${parsedAmount} (feesSum=${feesSum})`
+          );
         }
 
         // transactionDetails handling (single column)
-        const txnDetails = rowObj.transactionDetails && String(rowObj.transactionDetails).trim() !== ""
-          ? String(rowObj.transactionDetails).trim()
-          : (rowObj._raw && (rowObj._raw["transactionDetails"] || rowObj._raw["Transaction Details"] || rowObj._raw["TransactionDetails"])) || "";
+        const txnDetails =
+          rowObj.transactionDetails &&
+          String(rowObj.transactionDetails).trim() !== ""
+            ? String(rowObj.transactionDetails).trim()
+            : (rowObj._raw &&
+                (rowObj._raw["transactionDetails"] ||
+                  rowObj._raw["Transaction Details"] ||
+                  rowObj._raw["TransactionDetails"])) ||
+              "";
 
-        const paymentModeNormalized = (rowObj.paymentMode || "").toString().trim().toLowerCase();
-        const mappedTxn = mapTransactionDetailsByMode(txnDetails, paymentModeNormalized);
+        const paymentModeNormalized = (rowObj.paymentMode || "")
+          .toString()
+          .trim()
+          .toLowerCase();
+        const mappedTxn = mapTransactionDetailsByMode(
+          txnDetails,
+          paymentModeNormalized
+        );
 
-        if ((parsedAmount === 2500 || parsedAmount === undefined || parsedAmount === null) && txnDetails) {
-          const possibleAmount = txnDetails.match(/([₹Rs\.\s]*\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i);
+        if (
+          (parsedAmount === 2500 ||
+            parsedAmount === undefined ||
+            parsedAmount === null) &&
+          txnDetails
+        ) {
+          const possibleAmount = txnDetails.match(
+            /([₹Rs\.\s]*\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i
+          );
           if (possibleAmount && possibleAmount[1]) {
             const amtFromTxn = parseNumber(possibleAmount[1]);
             if (Number.isFinite(amtFromTxn)) {
-              console.log(`Row ${rowNumber} - Amount parsed from transactionDetails: ${amtFromTxn}`);
+              console.log(
+                `Row ${rowNumber} - Amount parsed from transactionDetails: ${amtFromTxn}`
+              );
               parsedAmount = amtFromTxn;
             }
           }
         }
 
-        console.log(`\nRow ${rowNumber} paymentMode="${paymentModeNormalized}", transactionDetails="${txnDetails}"`);
+        console.log(
+          `\nRow ${rowNumber} paymentMode="${paymentModeNormalized}", transactionDetails="${txnDetails}"`
+        );
         console.log("Mapped txn =>", mappedTxn);
         console.log("Determined amount =>", parsedAmount);
 
         const paymentPayload = {
-          recieptNo: rowObj.recieptNo || rowObj.receiptNo || `GSHEET-${Date.now()}-${i}`,
+          recieptNo:
+            rowObj.recieptNo || rowObj.receiptNo || `GSHEET-${Date.now()}-${i}`,
           date: parseDate(rowObj.date) || new Date(),
           paymentType: rowObj.paymentType || "Membership Fee",
           paymentMode: (rowObj.paymentMode || "cash").toString().toLowerCase(),
           bankName: rowObj.bankName || "",
           branchName: rowObj.branchName || "",
           amount: feesSum, // keep fee-sum approach (you can change to parsedAmount if desired)
-          chequeNumber: mappedTxn.chequeNumber || (rowObj.chequeNumber || ""),
-          ddNumber: mappedTxn.ddNumber || (rowObj.ddNumber || ""),
-          transactionId: mappedTxn.transactionId || (rowObj.transactionId || ""),
+          chequeNumber: mappedTxn.chequeNumber || rowObj.chequeNumber || "",
+          ddNumber: mappedTxn.ddNumber || rowObj.ddNumber || "",
+          transactionId: mappedTxn.transactionId || rowObj.transactionId || "",
           otherCharges: undefined,
-          correspondenceAddress: rowObj.contactAddress || mappedData.contactAddress || "",
+          correspondenceAddress:
+            rowObj.contactAddress || mappedData.contactAddress || "",
           numberOfShares: parseNumber(rowObj.numberOfShares) || undefined,
           applicationFee: parsedApplicationFee || undefined,
           adminissionFee: parsedAdmissionFee || undefined,
@@ -629,7 +758,10 @@ export const uploadFromGoogleSheet = async (req, res) => {
         console.log("Final payment payload:", paymentPayload);
 
         try {
-          const receiptResult = await createReceipt(newMember._id, paymentPayload);
+          const receiptResult = await createReceipt(
+            newMember._id,
+            paymentPayload
+          );
           if (receiptResult?.status && receiptResult.status !== 200) {
             results.errors.push({
               row: rowNumber,
@@ -639,18 +771,29 @@ export const uploadFromGoogleSheet = async (req, res) => {
             console.log(`✓ Receipt created for row ${rowNumber}`);
           }
         } catch (recErr) {
-          console.error(`Receipt creation failed for row ${rowNumber}:`, recErr);
-          results.errors.push({ row: rowNumber, error: recErr.message || String(recErr) });
+          console.error(
+            `Receipt creation failed for row ${rowNumber}:`,
+            recErr
+          );
+          results.errors.push({
+            row: rowNumber,
+            error: recErr.message || String(recErr),
+          });
         }
 
         results.created += 1;
       } catch (rowErr) {
         console.error(`Error processing row ${rowNumber}:`, rowErr);
-        results.errors.push({ row: rowNumber, error: rowErr.message || String(rowErr) });
+        results.errors.push({
+          row: rowNumber,
+          error: rowErr.message || String(rowErr),
+        });
       }
     } // end loop
 
-    return res.status(200).json({ message: "Google sheet import finished", summary: results });
+    return res
+      .status(200)
+      .json({ message: "Google sheet import finished", summary: results });
   } catch (err) {
     console.error("Upload from Google Sheet error:", err);
     return res.status(500).json({ error: err.message || String(err) });
@@ -908,7 +1051,10 @@ const getConfirmation = async (req, res) => {
     let siteDownPaymentAmount = 0;
     if (receipt && Array.isArray(receipt.payments)) {
       for (const payment of receipt.payments) {
-        if (payment.paymentType === "siteDownPayment") {
+        // if (payment.paymentType === "siteDownPayment") {
+        //   siteDownPaymentAmount += payment.amount;
+        // }
+        if (payment.paymentType === "sitedownpayment") {
           siteDownPaymentAmount += payment.amount;
         }
       }
@@ -1280,7 +1426,7 @@ const updateMemberDetails = async (req, res) => {
 const addReceiptToMember = async (req, res) => {
   try {
     const { memberId } = req.params;
-    const data = req.body;    
+    const data = req.body;
 
     console.log("paid amount data", data);
 
