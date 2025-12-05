@@ -14,6 +14,7 @@ import plotRoutes from "./routes/plotRoutes/plotRoutes.js";
 import recieptRoutes from "./routes/receiptRoutes/receiptRoutes.js";
 import defenceWebsiteRoutes from "./routes/defenceWebsiteRoutes/memberRoutes.js";
 import deployRoutes from "./routes/deployRoutes/deployRoutes.js";
+import dhsChethanRoutes from "./routes/dhsChethantapasihalliRoutes/dhsChethantapasihalliRoutes.js";
 
 const app = express();
 
@@ -36,6 +37,8 @@ const allowedOrigins = [
   "https://defencehousingsociety.com",
   "https://testingadminpanel.defencehousingsociety.com",
   "https://defencehabitat-tapasihalli.defencehousingsociety.com",
+  "https://tapasihalli-defencehabitat.defencehousingsociety.com",
+  // "http://localhost:3001",
 ];
 
 // const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
@@ -62,6 +65,7 @@ app.use("/receipt", recieptRoutes);
 app.use("/plot", plotRoutes);
 app.use("/defenceWebsiteRoutes", defenceWebsiteRoutes);
 app.use("/deployment-trial", deployRoutes);
+app.use("/dhs-tapasihalli-new-chethan", dhsChethanRoutes);
 
 // Start server
 const PORT = 4000;
