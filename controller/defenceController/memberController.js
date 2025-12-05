@@ -756,6 +756,53 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+ const websiteContactUs = async (req, res) => {
+  try {
+    console.log('incoming data', req.body);
+    
+    const { name, email, phone, message, subject = "Website enquiry" } = req.body;
+
+    if (!name || !email || !phone || !message) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Name, email, phone and message are required" });
+    }
+
+    // Persist lead
+    await MemberContact.create({
+      name,
+      email,
+      phone,
+      message,
+      subject,
+      source: "website-popup",
+    });
+
+    // Notify admin
+    await transporter.sendMail({
+      from: `"Defence Housing Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
+      to: process.env.DHS_NODEMAILER_MAIL,
+      subject: `[Website Contact] ${subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 16px;">
+          <h3 style="color:#1f4892;">New website contact</h3>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ""}
+          ${message ? `<p><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}</p>` : ""}
+        </div>
+      `,
+    });
+
+    res.status(200).json({ success: true, message: "Message sent successfully" });
+  } catch (err) {
+    console.error("Website contact error:", err);
+    res.status(500).json({ success: false, message: "Failed to submit message" });
+  }
+};
+
+
 export default {
   memberLogin,
   dashboardDatas,
@@ -772,4 +819,5 @@ export default {
   memberDashBoardContactAdmin,
   GetTrnasferedhistory,
   forgotPassword,
+  websiteContactUs
 };

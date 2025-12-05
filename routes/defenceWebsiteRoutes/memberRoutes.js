@@ -44,6 +44,7 @@ router.get(
   defenceController.GetTrnasferedhistory
 );
 router.post("/forgot-password", defenceController.forgotPassword);
+router.post("/new-contactus", defenceController.websiteContactUs);
 
 // router.post("/download", async (req, res) => {
 //   const formData = req.body;
