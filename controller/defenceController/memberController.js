@@ -189,8 +189,8 @@ const AddOnlineApplication = async (req, res) => {
         pass: process.env.DHS_NODEMAILER_KEY,
       },
     });
-    
-   // Send to Member
+
+    // Send to Member
     await transporter.sendMail({
       from: `"Defence Habitat Society" <${process.env.DHS_NODEMAILER_MAIL}>`,
       to: mappedData.email,
@@ -204,22 +204,21 @@ const AddOnlineApplication = async (req, res) => {
         },
       ],
     });
-    
-        // Send to Admin
-await transporter.sendMail({
-  from: `"Defence Habitat Society" <${process.env.GOOGLE_ADS_LEADS_EMAIL}>`,
-  to: process.env.DHS_NODEMAILER_MAIL,
-  subject: "New Membership Application Submitted",
-  text: `A new application has been submitted by ${mappedData.name} (${mappedData.email}).`,
-  attachments: [
-    {
-      filename: "Membership_Application.pdf",
-      content: pdfBuffer,
-      contentType: "application/pdf",
-    },
-  ],
-});
 
+    // Send to Admin
+    await transporter.sendMail({
+      from: `"Defence Habitat Society" <${process.env.GOOGLE_ADS_LEADS_EMAIL}>`,
+      to: process.env.DHS_NODEMAILER_MAIL,
+      subject: "New Membership Application Submitted",
+      text: `A new application has been submitted by ${mappedData.name} (${mappedData.email}).`,
+      attachments: [
+        {
+          filename: "Membership_Application.pdf",
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ],
+    });
 
     res
       .status(200)
@@ -374,6 +373,121 @@ const extraChargeReceipts = async (req, res) => {
   }
 };
 
+// const contactUs = async (req, res) => {
+//   try {
+//     const {
+//       name,
+//       phone,
+//       email,
+//       subject,
+//       message,
+//       location,
+//       source,
+//       captchaValue,
+//     } = req.body;
+//     console.log("Contact Us Data:", req.body, "incoming source details");
+
+//     if (!captchaValue) {
+//       return res
+//         .status(400)
+//         .json({ error: "reCaptcha verification failed - no token provided" });
+//     }
+
+//     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+//     if (!secretKey) {
+//       console.error("RECAPTCHA_SECRET_KEY is not set in environment variables");
+//       return res.status(500).json({ error: "Server configuration error" });
+//     }
+//     try {
+//       const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaValue}`;
+//       const recaptchaResponse = await axios.post(verificationUrl);
+//       const { success, score } = recaptchaResponse.data;
+
+//       if (!success) {
+//         console.log("reCAPTCHA verification failed:", recaptchaResponse.data);
+//         return res.status(400).json({ error: "reCAPTCHA verification failed" });
+//       }
+
+//       // Optional: Check score threshold (for v3)
+//       if (score && score < 0.5) {
+//         console.log("reCAPTCHA score too low:", score);
+//         return res.status(400).json({ error: "reCAPTCHA verification failed" });
+//       }
+//     } catch (recaptchaError) {
+//       console.error("reCAPTCHA verification error:", recaptchaError);
+//       return res.status(400).json({ error: "reCAPTCHA verification failed" });
+//     }
+
+//     if (!name || !phone || !email || !message) {
+//       return res.status(400).json({ error: "All fields are required" });
+//     }
+
+//     // Save to database with source
+//     const newContact = new MemberContact({
+//       name,
+//       phone,
+//       email,
+//       subject: source === "google_ads" ? "Google Ads Lead" : subject,
+//       message,
+//       location,
+//       source: source || "website",
+//     });
+//     await newContact.save();
+
+//     // Determine recipient email
+//     // const recipientEmail = source === 'google_ads'
+//     // //   ? process.env.GOOGLE_ADS_LEADS_EMAIL || process.env.DHS_NODEMAILER_MAIL
+//     //   : process.env.DHS_NODEMAILER_MAIL;
+
+//     const recipientEmail =
+//       source === "google_ads"
+//         ? process.env.GOOGLE_ADS_LEADS_EMAIL // Use Google Ads email if specified
+//         : process.env.DHS_NODEMAILER_MAIL; // Default to your main email
+
+//     // Customize email subject
+//     const emailSubject =
+//       source === "google_ads"
+//         ? `[Google Ads Lead] ${subject || "New Lead"}`
+//         : subject || "New Contact Form Submission";
+
+//     // Send email
+//     const mailOptions = {
+//       from: `"${name}" <${email}>`,
+//       to: recipientEmail,
+//       subject: emailSubject,
+//       html: `
+//         <div style="font-family: Arial, sans-serif; padding: 20px;">
+//           <h2 style="color: #1f4892;">New ${
+//             source === "google_ads"
+//               ? "Google Ads Lead"
+//               : "Contact Form Submission"
+//           }</h2>
+//           <p><strong>Source:</strong> ${source || "website"}</p>
+//           <hr style="margin: 20px 0;">
+//           <p><strong>Name:</strong> ${name}</p>
+//           <p><strong>Phone:</strong> ${phone}</p>
+//           <p><strong>Email:</strong> ${email}</p>
+//           ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ""}
+//           ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
+//           ${
+//             message
+//               ? `<p><strong>Message:</strong><br>${message.replace(
+//                   /\n/g,
+//                   "<br>"
+//                 )}</p>`
+//               : ""
+//           }
+//         </div>
+//       `,
+//     };
+//     await transporter.sendMail(mailOptions);
+//     res.status(200).json({ message: "Message sent successfully." });
+//   } catch (err) {
+//     console.error("Error:", err);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// };
+
 const contactUs = async (req, res) => {
   try {
     const {
@@ -386,6 +500,7 @@ const contactUs = async (req, res) => {
       source,
       captchaValue,
     } = req.body;
+    const finalSource = source || "website";
     console.log("Contact Us Data:", req.body, "incoming source details");
 
     if (!captchaValue) {
@@ -428,11 +543,12 @@ const contactUs = async (req, res) => {
       name,
       phone,
       email,
-      subject: source === "google_ads" ? "Google Ads Lead" : subject,
+      subject: finalSource === "google_ads" ? "Google Ads Lead" : subject,
       message,
       location,
-      source: source || "website",
+      source: finalSource,
     });
+
     await newContact.save();
 
     // Determine recipient email
@@ -441,13 +557,13 @@ const contactUs = async (req, res) => {
     //   : process.env.DHS_NODEMAILER_MAIL;
 
     const recipientEmail =
-      source === "google_ads"
-        ? process.env.GOOGLE_ADS_LEADS_EMAIL // Use Google Ads email if specified
-        : process.env.DHS_NODEMAILER_MAIL; // Default to your main email
+      finalSource === "google_ads"
+        ? process.env.GOOGLE_ADS_LEADS_EMAIL
+        : process.env.DHS_NODEMAILER_MAIL;
 
     // Customize email subject
     const emailSubject =
-      source === "google_ads"
+      finalSource === "google_ads"
         ? `[Google Ads Lead] ${subject || "New Lead"}`
         : subject || "New Contact Form Submission";
 
@@ -463,7 +579,7 @@ const contactUs = async (req, res) => {
               ? "Google Ads Lead"
               : "Contact Form Submission"
           }</h2>
-          <p><strong>Source:</strong> ${source || "website"}</p>
+          <p><strong>Source:</strong> ${finalSource}</p>
           <hr style="margin: 20px 0;">
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Phone:</strong> ${phone}</p>
@@ -756,16 +872,23 @@ const forgotPassword = async (req, res) => {
   }
 };
 
- const websiteContactUs = async (req, res) => {
+const websiteContactUs = async (req, res) => {
   try {
-    console.log('incoming data', req.body);
-    
-    const { name, email, phone, message, subject = "Website enquiry" } = req.body;
+    console.log("incoming data", req.body);
+
+    const {
+      name,
+      email,
+      phone,
+      message,
+      subject = "Website enquiry",
+    } = req.body;
 
     if (!name || !email || !phone || !message) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Name, email, phone and message are required" });
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, phone and message are required",
+      });
     }
 
     // Persist lead
@@ -790,18 +913,28 @@ const forgotPassword = async (req, res) => {
           <p><strong>Email:</strong> ${email}</p>
           <p><strong>Phone:</strong> ${phone}</p>
           ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ""}
-          ${message ? `<p><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}</p>` : ""}
+          ${
+            message
+              ? `<p><strong>Message:</strong><br>${message.replace(
+                  /\n/g,
+                  "<br>"
+                )}</p>`
+              : ""
+          }
         </div>
       `,
     });
 
-    res.status(200).json({ success: true, message: "Message sent successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Message sent successfully" });
   } catch (err) {
     console.error("Website contact error:", err);
-    res.status(500).json({ success: false, message: "Failed to submit message" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to submit message" });
   }
 };
-
 
 export default {
   memberLogin,
@@ -819,5 +952,5 @@ export default {
   memberDashBoardContactAdmin,
   GetTrnasferedhistory,
   forgotPassword,
-  websiteContactUs
+  websiteContactUs,
 };

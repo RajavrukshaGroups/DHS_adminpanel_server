@@ -38,7 +38,7 @@ const allowedOrigins = [
   "https://testingadminpanel.defencehousingsociety.com",
   "https://defencehabitat-tapasihalli.defencehousingsociety.com",
   "https://tapasihalli-defencehabitat.defencehousingsociety.com",
-  // "http://localhost:3001",
+  "http://localhost:3000",
 ];
 
 // const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
