@@ -71,7 +71,7 @@ function parseDate(val) {
       const d = new Date(ms);
       // normalize to UTC-midnight for the same calendar date
       return new Date(
-        Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0)
+        Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0),
       );
     }
   }
@@ -225,7 +225,7 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
     }
 
     const headers = rows[0].map((h) =>
-      h === undefined || h === null ? "" : String(h).trim()
+      h === undefined || h === null ? "" : String(h).trim(),
     );
     const dataRows = rows.slice(1);
     const headerMap = colIndexMapFromHeaders(headers);
@@ -296,11 +296,19 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
       });
     }
 
+    // const summary = {
+    //   total: dataRows.length,
+    //   success: 0,
+    //   skipped: 0,
+    //   failed: 0,
+    //   errors: [],
+    // };
     const summary = {
       total: dataRows.length,
       success: 0,
       skipped: 0,
       failed: 0,
+      skippedDetails: [],
       errors: [],
     };
 
@@ -311,7 +319,17 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
       try {
         const seniorityId = getCell(row, idxSeniority);
         if (!seniorityId) {
+          // summary.skipped++;
+          // summary.errors.push({
+          //   row: rowNumber,
+          //   reason: "Missing SeniorityId",
+          // });
+          // continue;
           summary.skipped++;
+          summary.skippedDetails.push({
+            row: rowNumber,
+            reason: "Missing SeniorityId",
+          });
           summary.errors.push({
             row: rowNumber,
             reason: "Missing SeniorityId",
@@ -384,15 +402,25 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
             }
           });
         }
+        // if (alreadyExists) {
+        //   summary.skipped++;
+        //   continue;
+        // }
         if (alreadyExists) {
           summary.skipped++;
+          summary.skippedDetails.push({
+            row: rowNumber,
+            seniorityId,
+            receiptNo: recieptNo,
+            reason: "Duplicate receipt (already exists)",
+          });
           continue;
         }
 
         // map transaction details into correct field
         const mappedTxn = mapTransactionDetailsByMode(
           transactionDetails,
-          paymentModeNorm
+          paymentModeNorm,
         );
 
         // Build payment payload to pass to createReceipt
