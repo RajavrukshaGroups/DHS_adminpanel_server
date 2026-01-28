@@ -39,7 +39,6 @@ const allowedOrigins = [
   "https://defencehabitat-tapasihalli.defencehousingsociety.com",
   "https://tapasihalli-defencehabitat.defencehousingsociety.com",
   "https://marasandra.defencehousingsociety.com",
-  // "http://localhost:3001",
 ];
 
 // const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
