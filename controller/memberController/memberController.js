@@ -318,7 +318,7 @@ async function tryUploadMemberPhoto(photoValue) {
   } catch (err) {
     console.warn(
       "Cloudinary upload failed for memberPhoto:",
-      err?.message || err
+      err?.message || err,
     );
     return null;
   }
@@ -352,7 +352,7 @@ async function resolveMemberPhotoValue(sheetValue) {
     } catch (err) {
       console.warn(
         "Cloud upload failed for remote URL; using original URL as fallback.",
-        err?.message || err
+        err?.message || err,
       );
       return s;
     }
@@ -433,7 +433,7 @@ export const uploadFromGoogleSheet = async (req, res) => {
     }
 
     const headers = rows[0].map((h) =>
-      h === undefined || h === null ? "" : String(h).trim()
+      h === undefined || h === null ? "" : String(h).trim(),
     );
     const dataRows = rows.slice(1);
 
@@ -457,20 +457,27 @@ export const uploadFromGoogleSheet = async (req, res) => {
       "dob",
     ].forEach((col) => {
       const found = Object.keys(indexToField).find(
-        (idx) => indexToField[idx] === col
+        (idx) => indexToField[idx] === col,
       );
       if (found !== undefined) {
         console.log(
           `✓ ${col} -> column ${found} (${idxToColLetter(Number(found))}) "${
             headers[found]
-          }"`
+          }"`,
         );
       } else {
         console.log(`✗ ${col} -> NOT MAPPED`);
       }
     });
 
-    const results = { created: 0, skippedExisting: 0, errors: [] };
+    // const results = { created: 0, skippedExisting: 0, errors: [] };
+
+    const results = {
+      created: 0,
+      skippedExisting: 0,
+      skippedDetails: [],
+      errors: [],
+    };
 
     function rowToObject(row) {
       const obj = { _raw: {}, _headers: headers };
@@ -526,8 +533,21 @@ export const uploadFromGoogleSheet = async (req, res) => {
 
         if (Object.keys(searchQuery).length > 0) {
           const existing = await Member.findOne(searchQuery).lean();
+          // if (existing) {
+          //   results.skippedExisting += 1;
+          //   continue;
+          // }
           if (existing) {
             results.skippedExisting += 1;
+
+            results.skippedDetails.push({
+              row: rowNumber,
+              seniorityId: rowObj.seniorityId || "",
+              membershipNo: rowObj.membershipNo || "",
+              serviceId: rowObj.serviceId || "",
+              reason: "Duplicate member (already exists)",
+            });
+
             continue;
           }
         }
@@ -593,7 +613,7 @@ export const uploadFromGoogleSheet = async (req, res) => {
         if (dobRaw) {
           console.log(
             `Row ${rowNumber} - DOB raw: "${dobRaw}" parsedDOB:`,
-            parsedDOB
+            parsedDOB,
           );
         }
 
@@ -616,22 +636,22 @@ export const uploadFromGoogleSheet = async (req, res) => {
           if (resolvedUrl) {
             mappedData.MemberPhoto = resolvedUrl;
             console.log(
-              `Row ${rowNumber} - MemberPhoto resolved => ${resolvedUrl}`
+              `Row ${rowNumber} - MemberPhoto resolved => ${resolvedUrl}`,
             );
           } else if (/^https?:\/\//i.test(sheetPhotoVal)) {
             mappedData.MemberPhoto = sheetPhotoVal;
             console.log(
-              `Row ${rowNumber} - MemberPhoto fallback to original URL => ${sheetPhotoVal}`
+              `Row ${rowNumber} - MemberPhoto fallback to original URL => ${sheetPhotoVal}`,
             );
           } else {
             console.log(
-              `Row ${rowNumber} - MemberPhoto present but could not be resolved/uploaded. Value: ${sheetPhotoVal}`
+              `Row ${rowNumber} - MemberPhoto present but could not be resolved/uploaded. Value: ${sheetPhotoVal}`,
             );
           }
         } else {
           if (i < diagLimit) {
             console.log(
-              `Row ${rowNumber} - no memberPhoto found in sheet raw headers.`
+              `Row ${rowNumber} - no memberPhoto found in sheet raw headers.`,
             );
           }
         }
@@ -650,7 +670,7 @@ export const uploadFromGoogleSheet = async (req, res) => {
           if (resolvedSign) {
             mappedData.MemberSign = resolvedSign;
             console.log(
-              `Row ${rowNumber} - MemberSign resolved => ${resolvedSign}`
+              `Row ${rowNumber} - MemberSign resolved => ${resolvedSign}`,
             );
           }
         }
@@ -678,11 +698,11 @@ export const uploadFromGoogleSheet = async (req, res) => {
         if (!Number.isFinite(parsedAmount)) {
           parsedAmount = feesSum > 0 ? feesSum : 2500;
           console.log(
-            `Row ${rowNumber} - amount missing/invalid -> using feesSum/default. feesSum=${feesSum}, chosen amount=${parsedAmount}`
+            `Row ${rowNumber} - amount missing/invalid -> using feesSum/default. feesSum=${feesSum}, chosen amount=${parsedAmount}`,
           );
         } else {
           console.log(
-            `Row ${rowNumber} - Using amount from sheet: ${parsedAmount} (feesSum=${feesSum})`
+            `Row ${rowNumber} - Using amount from sheet: ${parsedAmount} (feesSum=${feesSum})`,
           );
         }
 
@@ -703,7 +723,7 @@ export const uploadFromGoogleSheet = async (req, res) => {
           .toLowerCase();
         const mappedTxn = mapTransactionDetailsByMode(
           txnDetails,
-          paymentModeNormalized
+          paymentModeNormalized,
         );
 
         if (
@@ -713,13 +733,13 @@ export const uploadFromGoogleSheet = async (req, res) => {
           txnDetails
         ) {
           const possibleAmount = txnDetails.match(
-            /([₹Rs\.\s]*\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i
+            /([₹Rs\.\s]*\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i,
           );
           if (possibleAmount && possibleAmount[1]) {
             const amtFromTxn = parseNumber(possibleAmount[1]);
             if (Number.isFinite(amtFromTxn)) {
               console.log(
-                `Row ${rowNumber} - Amount parsed from transactionDetails: ${amtFromTxn}`
+                `Row ${rowNumber} - Amount parsed from transactionDetails: ${amtFromTxn}`,
               );
               parsedAmount = amtFromTxn;
             }
@@ -727,7 +747,7 @@ export const uploadFromGoogleSheet = async (req, res) => {
         }
 
         console.log(
-          `\nRow ${rowNumber} paymentMode="${paymentModeNormalized}", transactionDetails="${txnDetails}"`
+          `\nRow ${rowNumber} paymentMode="${paymentModeNormalized}", transactionDetails="${txnDetails}"`,
         );
         console.log("Mapped txn =>", mappedTxn);
         console.log("Determined amount =>", parsedAmount);
@@ -760,7 +780,7 @@ export const uploadFromGoogleSheet = async (req, res) => {
         try {
           const receiptResult = await createReceipt(
             newMember._id,
-            paymentPayload
+            paymentPayload,
           );
           if (receiptResult?.status && receiptResult.status !== 200) {
             results.errors.push({
@@ -773,7 +793,7 @@ export const uploadFromGoogleSheet = async (req, res) => {
         } catch (recErr) {
           console.error(
             `Receipt creation failed for row ${rowNumber}:`,
-            recErr
+            recErr,
           );
           results.errors.push({
             row: rowNumber,
@@ -812,7 +832,7 @@ const addMemberDetails = async (req, res) => {
     if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
       const result = await uploadToCloudinary(
-        photoFile.buffer || photoFile.path
+        photoFile.buffer || photoFile.path,
       );
       memberPhotoUrl = result.secure_url;
     }
@@ -1003,7 +1023,7 @@ const updateStatus = async (req, res) => {
       {
         isActive: req.body.isActive,
       },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json(member);
@@ -1143,7 +1163,7 @@ const getAllAffidavits = async (req, res) => {
     const affidavits = await MemberAffidavit.find(affidavitQuery)
       .populate(
         "userId",
-        "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo"
+        "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo",
       )
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -1157,14 +1177,14 @@ const getAllAffidavits = async (req, res) => {
         const receipt = await Receipt.findOne({ member: memberId }).lean();
         const siteDownPayments = (receipt?.payments || []).filter(
           (payment) =>
-            (payment.paymentType || "").toLowerCase() === "sitedownpayment"
+            (payment.paymentType || "").toLowerCase() === "sitedownpayment",
         );
 
         return {
           ...affidavit.toObject(),
           siteDownPayments,
         };
-      })
+      }),
     );
 
     res.status(200).json({
@@ -1266,7 +1286,7 @@ const getMemberById = async (req, res) => {
     let result = null;
     for (const receipt of receipts) {
       const payment = receipt.payments.find(
-        (p) => p.paymentType === "Membership Fee"
+        (p) => p.paymentType === "Membership Fee",
       );
 
       if (payment) {
@@ -1308,7 +1328,7 @@ const updateMemberDetails = async (req, res) => {
     if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
       const result = await uploadToCloudinary(
-        photoFile.buffer || photoFile.path
+        photoFile.buffer || photoFile.path,
       );
       memberPhotoUrl = result.secure_url;
     }
@@ -1373,7 +1393,7 @@ const updateMemberDetails = async (req, res) => {
 
     // 2. Find the specific payment to update
     const paymentToUpdate = receipt.payments.find(
-      (p) => p.paymentType === "Membership Fee"
+      (p) => p.paymentType === "Membership Fee",
     );
 
     if (!paymentToUpdate) {
@@ -1752,7 +1772,7 @@ const collectSeniorityIds = async (req, res) => {
   try {
     const members = await Member.find(
       { SeniorityID: { $exists: true, $ne: null } },
-      { SeniorityID: 1, _id: 0 }
+      { SeniorityID: 1, _id: 0 },
     );
 
     const SeniorityIds = members.map((member) => member.SeniorityID);
@@ -1811,7 +1831,7 @@ const getMemberReceipt = async (req, res) => {
     let membershipPayment = null;
     for (const receipt of receipts) {
       const payment = receipt.payments.find(
-        (p) => p.paymentType === "Membership Fee"
+        (p) => p.paymentType === "Membership Fee",
       );
       if (payment) {
         membershipPayment = payment;
@@ -1837,7 +1857,7 @@ const getMemberOnlineApplication = async (req, res) => {
   try {
     console.log(
       "Received request to get member online application...",
-      req.params
+      req.params,
     );
     const applicationData = await Online.findById(req.params.id); // NOT .find()
     if (!applicationData) return res.status(404).json({ message: "Not found" });
@@ -1953,6 +1973,43 @@ const ResetPassword = async (req, res) => {
   }
 };
 
+const DeleteAllMembersAndReceipts = async (req, res) => {
+  try {
+    const memberResult = await Member.deleteMany({});
+    const receiptsResult = await Receipt.deleteMany({});
+
+    return res.status(200).json({
+      success: true,
+      message: "All members and receipts deleted successfully",
+      membersDeleted: memberResult.deletedCount,
+      receiptsDeleted: receiptsResult.deletedCount,
+    });
+  } catch (err) {
+    console.error("DeleteAllMembersAndReceipts error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete members and receipts",
+    });
+  }
+};
+
+const DeleteReceiptsData = async (req, res) => {
+  try {
+    const receiptsResult = await Receipt.deleteMany({});
+    return res.status(200).json({
+      success: true,
+      message: "All receipts deleted successfully",
+      receiptsDeleted: receiptsResult.deletedCount,
+    });
+  } catch (err) {
+    console.error("DeleteReceiptsData error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete receipts",
+    });
+  }
+};
+
 export default {
   addMemberDetails,
   uploadFromGoogleSheet,
@@ -1979,4 +2036,6 @@ export default {
   getMemberReceipt,
   getMemberOnlineApplication,
   ResetPassword,
+  DeleteAllMembersAndReceipts,
+  DeleteReceiptsData,
 };

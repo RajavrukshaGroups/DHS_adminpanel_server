@@ -10,7 +10,7 @@ import upload from "../../middleware/multer.js";
 router.post(
   "/add-member",
   formidable({ multiples: true }),
-  MemberController.addMemberDetails
+  MemberController.addMemberDetails,
 );
 router.post("/upload-google-sheet", MemberController.uploadFromGoogleSheet);
 router.get("/view-member-details", MemberController.getMemberDetails);
@@ -21,7 +21,7 @@ router.get("/get-confirmation/:id", memberController.getConfirmation);
 router.post(
   "/add-confirmation/:id",
   upload.single("affidivate"),
-  memberController.addConfirmation
+  memberController.addConfirmation,
 );
 router.get("/all", memberController.getAllAffidavits);
 router.post("/membercredentials", MemberController.sendMemberLoginDetails);
@@ -30,39 +30,44 @@ router.get("/get-member/:id", MemberController.getMemberById);
 router.put(
   "/update-member/:id",
   formidable({ multiples: true }),
-  MemberController.updateMemberDetails
+  MemberController.updateMemberDetails,
 );
 router.post("/add-receipt/:memberId", MemberController.addReceiptToMember);
 router.put(
   "/edit-confirmation/:id",
   upload.single("affidivate"),
-  MemberController.editConfirmationLetter
+  MemberController.editConfirmationLetter,
 );
 router.get("/get-affidavit/:id", memberController.getAffidavitById);
 router.put("/edit-receipt/:memberId", MemberController.editReceiptToMember);
 router.get(
   "/check-payment-type-duplicates/:memberId",
-  MemberController.checkDuplicatesPaymentTypeToAddReceipt
+  MemberController.checkDuplicatesPaymentTypeToAddReceipt,
 );
 
 router.get("/get-all-member-details", MemberController.getMemberData);
 router.delete(
   "/delete-member-receipt-payment/:memberId",
-  MemberController.deleteMemberReceiptPaymentEach
+  MemberController.deleteMemberReceiptPaymentEach,
 );
 router.get("/collect-seniorityIds", MemberController.collectSeniorityIds);
 router.get(
   "/member-info-seniority-id",
-  MemberController.collectMemberInfoOnSeniorityIds
+  MemberController.collectMemberInfoOnSeniorityIds,
 );
 
 router.get("/get-member-receipt/:memberId", MemberController.getMemberReceipt);
 
 router.get(
   "/get-member-onlineApplication/:id",
-  MemberController.getMemberOnlineApplication
+  MemberController.getMemberOnlineApplication,
 );
 router.post("/resetpassword", MemberController.ResetPassword);
+router.delete(
+  "/delete-members-data",
+  MemberController.DeleteAllMembersAndReceipts,
+);
+router.delete("/delete-receipts-data", MemberController.DeleteReceiptsData);
 
 // router.post("/receipt-extra-charge-form/:memberId")
 
