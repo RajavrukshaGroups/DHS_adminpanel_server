@@ -38,7 +38,8 @@ const allowedOrigins = [
   "https://testingadminpanel.defencehousingsociety.com",
   "https://defencehabitat-tapasihalli.defencehousingsociety.com",
   "https://tapasihalli-defencehabitat.defencehousingsociety.com",
-  "http://localhost:3000",
+  "https://marasandra.defencehousingsociety.com",
+  // "http://localhost:3001",
 ];
 
 // const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
@@ -54,7 +55,7 @@ app.use(
       }
     },
     credentials: true,
-  })
+  }),
 );
 
 // Routes

@@ -114,7 +114,7 @@ const AddOnlineApplication = async (req, res) => {
     if (files?.memberPhoto) {
       const photoFile = files.memberPhoto;
       const result = await uploadToCloudinary(
-        photoFile.buffer || photoFile.path
+        photoFile.buffer || photoFile.path,
       );
       memberPhotoUrl = result.secure_url;
     }
@@ -260,7 +260,7 @@ const fetchReceipts = async (req, res) => {
     }
 
     const member = await Member.findOne({ SeniorityID: seniorityId }).populate(
-      "receiptId"
+      "receiptId",
     );
     if (!member) {
       return res
@@ -499,6 +499,7 @@ const contactUs = async (req, res) => {
       location,
       source,
       captchaValue,
+      acceptTerms,
     } = req.body;
     const finalSource = source || "website";
     console.log("Contact Us Data:", req.body, "incoming source details");
@@ -507,6 +508,13 @@ const contactUs = async (req, res) => {
       return res
         .status(400)
         .json({ error: "reCaptcha verification failed - no token provided" });
+    }
+
+    if (!acceptTerms) {
+      return res.status(400).json({
+        success: false,
+        error: "Terms and Privacy Policy must be accepted",
+      });
     }
 
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;
@@ -590,7 +598,7 @@ const contactUs = async (req, res) => {
             message
               ? `<p><strong>Message:</strong><br>${message.replace(
                   /\n/g,
-                  "<br>"
+                  "<br>",
                 )}</p>`
               : ""
           }
@@ -917,7 +925,7 @@ const websiteContactUs = async (req, res) => {
             message
               ? `<p><strong>Message:</strong><br>${message.replace(
                   /\n/g,
-                  "<br>"
+                  "<br>",
                 )}</p>`
               : ""
           }
