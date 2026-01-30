@@ -406,15 +406,26 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
         //   summary.skipped++;
         //   continue;
         // }
+        // if (alreadyExists) {
+        //   summary.skipped++;
+        //   summary.skippedDetails.push({
+        //     row: rowNumber,
+        //     seniorityId,
+        //     receiptNo: recieptNo,
+        //     reason: "Duplicate receipt (already exists)",
+        //   });
+        //   continue;
+        // }
+
         if (alreadyExists) {
+          // Just log it — DO NOT block saving
           summary.skipped++;
           summary.skippedDetails.push({
             row: rowNumber,
             seniorityId,
             receiptNo: recieptNo,
-            reason: "Duplicate receipt (already exists)",
+            reason: "Duplicate receipt number (allowed, saved)",
           });
-          continue;
         }
 
         // map transaction details into correct field
