@@ -45,84 +45,140 @@ function parseNumber(val) {
   return Number.isFinite(n) ? n : undefined;
 }
 
-function parseDate(val) {
-  // empty
-  if (val === undefined || val === null || String(val).trim() === "")
-    return undefined;
+// function parseDate(val) {
+//   // empty
+//   if (val === undefined || val === null || String(val).trim() === "")
+//     return undefined;
 
-  // if already a Date object, return as-is (but normalize to UTC-midnight if possible)
-  if (val instanceof Date && !isNaN(val)) {
-    // return a Date created from UTC components to avoid local-midnight shift
-    const y = val.getFullYear();
-    const m = val.getMonth();
-    const d = val.getDate();
-    return new Date(Date.UTC(y, m, d, 0, 0, 0));
-  }
+//   // if already a Date object, return as-is (but normalize to UTC-midnight if possible)
+//   if (val instanceof Date && !isNaN(val)) {
+//     // return a Date created from UTC components to avoid local-midnight shift
+//     const y = val.getFullYear();
+//     const m = val.getMonth();
+//     const d = val.getDate();
+//     return new Date(Date.UTC(y, m, d, 0, 0, 0));
+//   }
+
+//   const s = String(val).trim();
+
+//   // 1) Numeric Google Sheets serial -> convert to UTC-midnight
+//   if (/^\d+(\.\d+)?$/.test(s)) {
+//     const serial = Number(s);
+//     if (!isNaN(serial) && serial > 0 && serial < 60000) {
+//       // Excel/Sheets epoch: 1899-12-30 (use UTC)
+//       const epochUtcMs = Date.UTC(1899, 11, 30, 0, 0, 0);
+//       const ms = epochUtcMs + Math.round(serial * 86400 * 1000);
+//       const d = new Date(ms);
+//       // normalize to UTC-midnight for the same calendar date
+//       return new Date(
+//         Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0),
+//       );
+//     }
+//   }
+
+//   // 2) Slash-format day/month/year (dd/mm/yyyy) -> treat day-first and create UTC date
+//   const slashMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+//   if (slashMatch) {
+//     let day = Number(slashMatch[1]);
+//     let month = Number(slashMatch[2]);
+//     let year = Number(slashMatch[3]);
+//     if (year < 100) year += 2000;
+//     return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+//   }
+
+//   // 3) ISO date-only like "2025-09-12" (yyyy-mm-dd) -> parse parts and create UTC date
+//   const isoDateOnly = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+//   if (isoDateOnly) {
+//     const year = Number(isoDateOnly[1]);
+//     const month = Number(isoDateOnly[2]);
+//     const day = Number(isoDateOnly[3]);
+//     return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+//   }
+
+//   // 4) Try Date.parse for unambiguous strings (but then normalize to UTC-midnight by extracting components)
+//   let tryParsed = new Date(s);
+//   if (!isNaN(tryParsed)) {
+//     const y = tryParsed.getUTCFullYear();
+//     const m = tryParsed.getUTCMonth();
+//     const d = tryParsed.getUTCDate();
+//     return new Date(Date.UTC(y, m, d, 0, 0, 0));
+//   }
+
+//   // 5) Other delimited forms like dd-mm-yyyy or dd.mm.yyyy -> assume day-first
+//   const parts = s.split(/[-\.]/).map((p) => p.replace(/\D/g, ""));
+//   if (parts.length === 3) {
+//     const [p1, p2, p3] = parts;
+//     // if first part is 4-digit -> year-first
+//     if (p1.length === 4) {
+//       const y = Number(p1),
+//         m = Number(p2),
+//         da = Number(p3);
+//       return new Date(Date.UTC(y, m - 1, da, 0, 0, 0));
+//     }
+//     // otherwise day-month-year
+//     const day = Number(p1),
+//       month = Number(p2),
+//       year = Number(p3.length === 2 ? `20${p3}` : p3);
+//     return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+//   }
+
+//   // fallback
+//   return undefined;
+// }
+
+function parseDate(val) {
+  if (val === undefined || val === null) return undefined;
 
   const s = String(val).trim();
+  if (!s) return undefined;
 
-  // 1) Numeric Google Sheets serial -> convert to UTC-midnight
+  // 1️⃣ Google Sheets serial date (very common)
   if (/^\d+(\.\d+)?$/.test(s)) {
     const serial = Number(s);
-    if (!isNaN(serial) && serial > 0 && serial < 60000) {
-      // Excel/Sheets epoch: 1899-12-30 (use UTC)
-      const epochUtcMs = Date.UTC(1899, 11, 30, 0, 0, 0);
-      const ms = epochUtcMs + Math.round(serial * 86400 * 1000);
-      const d = new Date(ms);
-      // normalize to UTC-midnight for the same calendar date
-      return new Date(
-        Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0),
-      );
-    }
+
+    // Excel / Sheets epoch
+    const epoch = new Date(Date.UTC(1899, 11, 30));
+    const date = new Date(epoch.getTime() + serial * 86400000);
+
+    return new Date(
+      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+    );
   }
 
-  // 2) Slash-format day/month/year (dd/mm/yyyy) -> treat day-first and create UTC date
-  const slashMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if (slashMatch) {
-    let day = Number(slashMatch[1]);
-    let month = Number(slashMatch[2]);
-    let year = Number(slashMatch[3]);
+  // 2️⃣ DD/MM/YYYY
+  const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (slash) {
+    let day = Number(slash[1]);
+    let month = Number(slash[2]);
+    let year = Number(slash[3]);
+
     if (year < 100) year += 2000;
-    return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+
+    return new Date(Date.UTC(year, month - 1, day));
   }
 
-  // 3) ISO date-only like "2025-09-12" (yyyy-mm-dd) -> parse parts and create UTC date
-  const isoDateOnly = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (isoDateOnly) {
-    const year = Number(isoDateOnly[1]);
-    const month = Number(isoDateOnly[2]);
-    const day = Number(isoDateOnly[3]);
-    return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+  // 3️⃣ YYYY-MM-DD
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    const year = Number(iso[1]);
+    const month = Number(iso[2]);
+    const day = Number(iso[3]);
+
+    return new Date(Date.UTC(year, month - 1, day));
   }
 
-  // 4) Try Date.parse for unambiguous strings (but then normalize to UTC-midnight by extracting components)
-  let tryParsed = new Date(s);
-  if (!isNaN(tryParsed)) {
-    const y = tryParsed.getUTCFullYear();
-    const m = tryParsed.getUTCMonth();
-    const d = tryParsed.getUTCDate();
-    return new Date(Date.UTC(y, m, d, 0, 0, 0));
-  }
-
-  // 5) Other delimited forms like dd-mm-yyyy or dd.mm.yyyy -> assume day-first
-  const parts = s.split(/[-\.]/).map((p) => p.replace(/\D/g, ""));
+  // 4️⃣ DD-MM-YYYY or DD.MM.YYYY
+  const parts = s.split(/[-\.]/);
   if (parts.length === 3) {
-    const [p1, p2, p3] = parts;
-    // if first part is 4-digit -> year-first
-    if (p1.length === 4) {
-      const y = Number(p1),
-        m = Number(p2),
-        da = Number(p3);
-      return new Date(Date.UTC(y, m - 1, da, 0, 0, 0));
-    }
-    // otherwise day-month-year
-    const day = Number(p1),
-      month = Number(p2),
-      year = Number(p3.length === 2 ? `20${p3}` : p3);
-    return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    let day = Number(parts[0]);
+    let month = Number(parts[1]);
+    let year = Number(parts[2]);
+
+    if (year < 100) year += 2000;
+
+    return new Date(Date.UTC(year, month - 1, day));
   }
 
-  // fallback
   return undefined;
 }
 

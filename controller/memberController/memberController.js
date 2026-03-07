@@ -176,39 +176,34 @@ function parseNumber(val) {
 }
 
 function parseDate(val) {
-  if (!val && val !== 0) return undefined;
-  if (val instanceof Date && !isNaN(val)) return val;
+  if (!val) return undefined;
+
   const s = String(val).trim();
-  if (s === "") return undefined;
+  if (!s) return undefined;
 
-  // Try JS Date directly (handles ISO)
-  let d = new Date(s);
-  if (!isNaN(d)) return d;
+  const parts = s.split(/[\/\-\.]/);
 
-  // Try to parse common dd/mm/yyyy or mm/dd/yyyy etc
-  const parts = s.split(/[-\/\.]/).map((p) => p.replace(/\D/g, ""));
   if (parts.length === 3) {
-    let [p1, p2, p3] = parts;
-    // year-first
-    if (p1.length === 4) {
-      d = new Date(`${p1}-${p2.padStart(2, "0")}-${p3.padStart(2, "0")}`);
-      if (!isNaN(d)) return d;
+    let day = parts[0];
+    let month = parts[1];
+    let year = parts[2];
+
+    // handle yyyy-mm-dd from sheets
+    if (year.length === 2) {
+      year = `20${year}`;
     }
-    // If first >12 assume day-month-year
-    if (Number(p1) > 12) {
-      const day = p1.padStart(2, "0");
-      const month = p2.padStart(2, "0");
-      const year = p3.length === 2 ? `20${p3}` : p3;
-      d = new Date(`${year}-${month}-${day}`);
-      if (!isNaN(d)) return d;
-    } else {
-      // assume month-day-year
-      const month = p1.padStart(2, "0");
-      const day = p2.padStart(2, "0");
-      const year = p3.length === 2 ? `20${p3}` : p3;
-      d = new Date(`${year}-${month}-${day}`);
-      if (!isNaN(d)) return d;
+
+    if (day.length === 4) {
+      // yyyy-mm-dd case
+      year = day;
+      month = parts[1];
+      day = parts[2];
     }
+
+    day = String(day).padStart(2, "0");
+    month = String(month).padStart(2, "0");
+
+    return new Date(Number(year), Number(month) - 1, Number(day));
   }
 
   return undefined;
@@ -420,6 +415,406 @@ function idxToColLetter(idx) {
 }
 
 // ---------------- controller ----------------
+// export const uploadFromGoogleSheet = async (req, res) => {
+//   try {
+//     const response = await sheets.spreadsheets.values.get({
+//       spreadsheetId: SHEET_ID,
+//       range: RANGE,
+//     });
+
+//     const rows = response.data.values;
+//     if (!rows || rows.length === 0) {
+//       return res.status(400).json({ message: "No data in sheet" });
+//     }
+
+//     const headers = rows[0].map((h) =>
+//       h === undefined || h === null ? "" : String(h).trim(),
+//     );
+//     const dataRows = rows.slice(1);
+
+//     console.log("=== HEADER ANALYSIS ===");
+//     headers.forEach((header, index) => {
+//       console.log(`Column ${index} (${idxToColLetter(index)}): "${header}"`);
+//     });
+//     console.log(`Total header columns: ${headers.length}`);
+
+//     const indexToField = buildIndexToField(headers);
+
+//     console.log("\n=== PAYMENT & PHOTO COLUMNS CHECK ===");
+//     [
+//       "amount",
+//       "chequeNumber",
+//       "ddNumber",
+//       "transactionId",
+//       "transactionDetails",
+//       "memberPhoto",
+//       "dateOfBirth",
+//       "dob",
+//     ].forEach((col) => {
+//       const found = Object.keys(indexToField).find(
+//         (idx) => indexToField[idx] === col,
+//       );
+//       if (found !== undefined) {
+//         console.log(
+//           `✓ ${col} -> column ${found} (${idxToColLetter(Number(found))}) "${
+//             headers[found]
+//           }"`,
+//         );
+//       } else {
+//         console.log(`✗ ${col} -> NOT MAPPED`);
+//       }
+//     });
+
+//     // const results = { created: 0, skippedExisting: 0, errors: [] };
+
+//     const results = {
+//       created: 0,
+//       skippedExisting: 0,
+//       skippedDetails: [],
+//       errors: [],
+//     };
+
+//     function rowToObject(row) {
+//       const obj = { _raw: {}, _headers: headers };
+//       headers.forEach((h, idx) => {
+//         obj._raw[h] =
+//           row[idx] !== undefined && row[idx] !== null
+//             ? String(row[idx]).trim()
+//             : "";
+//       });
+//       Object.keys(indexToField).forEach((idxStr) => {
+//         const idx = Number(idxStr);
+//         const field = indexToField[idx];
+//         obj[field] =
+//           row[idx] !== undefined && row[idx] !== null
+//             ? String(row[idx]).trim()
+//             : "";
+//       });
+//       return obj;
+//     }
+
+//     const diagLimit = 6;
+//     for (let i = 0; i < dataRows.length; i++) {
+//       const rowNumber = i + 2;
+//       const row = dataRows[i];
+//       if (i < diagLimit) {
+//         console.log(`\n=== Raw row ${rowNumber} values ===`);
+//         row.forEach((cell, ci) => {
+//           console.log(`${ci} (${idxToColLetter(ci)}): "${cell}"`);
+//         });
+//       }
+
+//       const rowObj = rowToObject(row);
+
+//       if (i < diagLimit) {
+//         console.log(`\nDEBUG parsed row ${rowNumber}:`, {
+//           refname: rowObj.refname,
+//           name: rowObj.name,
+//           paymentMode: rowObj.paymentMode,
+//           transactionDetails:
+//             rowObj.transactionDetails ||
+//             rowObj._raw["transactionDetails"] ||
+//             "",
+//         });
+//       }
+
+//       try {
+//         // duplicate check (seniorityId or membershipNo or serviceId)
+//         const searchQuery = {};
+//         if (rowObj.seniorityId) searchQuery.SeniorityID = rowObj.seniorityId;
+//         else if (rowObj.membershipNo)
+//           searchQuery.MembershipNo = rowObj.membershipNo;
+//         else if (rowObj.serviceId) searchQuery.serviceId = rowObj.serviceId;
+
+//         if (Object.keys(searchQuery).length > 0) {
+//           const existing = await Member.findOne(searchQuery).lean();
+//           // if (existing) {
+//           //   results.skippedExisting += 1;
+//           //   continue;
+//           // }
+//           if (existing) {
+//             results.skippedExisting += 1;
+
+//             results.skippedDetails.push({
+//               row: rowNumber,
+//               seniorityId: rowObj.seniorityId || "",
+//               membershipNo: rowObj.membershipNo || "",
+//               serviceId: rowObj.serviceId || "",
+//               reason: "Duplicate member (already exists)",
+//             });
+
+//             continue;
+//           }
+//         }
+
+//         const plainPassword = await generateUniquePassword();
+
+//         // ===== DATE OF BIRTH: prefer DOB-specific columns over generic 'date' =====
+//         const dobCandidates = [
+//           "dateofbirth",
+//           "date of birth",
+//           "dob",
+//           "birthdate",
+//           "birth date",
+//           "dateOfBirth",
+//           "date",
+//         ];
+//         const dobRaw = getFirstAvailableRaw(rowObj, dobCandidates);
+//         const parsedDOB = parseDate(dobRaw);
+
+//         const mappedData = {
+//           refname: rowObj.refname || "",
+//           rankDesignation: rowObj.rankDesignation || "",
+//           serviceId: rowObj.serviceId || "",
+//           relationship: rowObj.relationship || "",
+//           saluation: rowObj.saluation || rowObj.salutation || "",
+//           name: rowObj.name || "",
+//           mobileNumber: parseNumber(rowObj.mobileNumber),
+//           AlternativeNumber: parseNumber(rowObj.alternativeNumber),
+//           email: rowObj.email || "",
+//           dateofbirth: parsedDOB, // use parsed DOB
+//           fatherName: rowObj.fatherName || "",
+//           contactAddress:
+//             rowObj.contactAddress ||
+//             rowObj._raw["contactAddress"] ||
+//             rowObj._raw["Contact Address"] ||
+//             "",
+//           permanentAddress: rowObj.permanentAddress || "",
+//           workingAddress: rowObj.workingAddress || "",
+//           MemberPhoto: "",
+//           MemberSign: "",
+//           password: plainPassword,
+//           nomineeName: rowObj.nomineeName || "",
+//           nomineeAge: parseNumber(rowObj.nomineeAge),
+//           nomineeRelation: rowObj.nomineeRelation || "",
+//           nomineeAddress: rowObj.nomineeAddress || "",
+//           SeniorityID: rowObj.seniorityId || "",
+//           MembershipNo: rowObj.membershipNo || "",
+//           ConfirmationLetterNo: rowObj.confirmationLetterNo || "",
+//           ShareCertificateNumber: rowObj.shareCertificateNo || "",
+//           date: parseDate(rowObj.date) || new Date(),
+//           propertyDetails: {
+//             projectName: rowObj.projectName || "",
+//             propertySize: parseNumber(rowObj.propertySize) || 0,
+//             pricePerSqft: parseNumber(rowObj.pricePerSqft) || 0,
+//             propertyCost: parseNumber(rowObj.propertyCost) || 0,
+//             percentage: parseNumber(rowObj.percentage) || 0,
+//             percentageCost: parseNumber(rowObj.percentageCost) || 0,
+//             length: parseNumber(rowObj.plotLength) || 0,
+//             breadth: parseNumber(rowObj.plotBreadth) || 0,
+//           },
+//         };
+
+//         if (dobRaw) {
+//           console.log(
+//             `Row ${rowNumber} - DOB raw: "${dobRaw}" parsedDOB:`,
+//             parsedDOB,
+//           );
+//         }
+
+//         // ===== MEMBER PHOTO =====
+//         const photoCandidates = [
+//           "memberPhoto",
+//           "memberphoto",
+//           "member photo",
+//           "MemberPhoto",
+//           "Member Photo",
+//           "photo",
+//           "photo url",
+//           "image",
+//           "image url",
+//         ];
+//         const sheetPhotoVal = getFirstAvailableRaw(rowObj, photoCandidates);
+
+//         if (sheetPhotoVal) {
+//           const resolvedUrl = await resolveMemberPhotoValue(sheetPhotoVal);
+//           if (resolvedUrl) {
+//             mappedData.MemberPhoto = resolvedUrl;
+//             console.log(
+//               `Row ${rowNumber} - MemberPhoto resolved => ${resolvedUrl}`,
+//             );
+//           } else if (/^https?:\/\//i.test(sheetPhotoVal)) {
+//             mappedData.MemberPhoto = sheetPhotoVal;
+//             console.log(
+//               `Row ${rowNumber} - MemberPhoto fallback to original URL => ${sheetPhotoVal}`,
+//             );
+//           } else {
+//             console.log(
+//               `Row ${rowNumber} - MemberPhoto present but could not be resolved/uploaded. Value: ${sheetPhotoVal}`,
+//             );
+//           }
+//         } else {
+//           if (i < diagLimit) {
+//             console.log(
+//               `Row ${rowNumber} - no memberPhoto found in sheet raw headers.`,
+//             );
+//           }
+//         }
+
+//         // ===== MEMBER SIGN (optional) =====
+//         const signCandidates = [
+//           "membersignature",
+//           "member signature",
+//           "memberSignature",
+//           "signature",
+//           "signature url",
+//         ];
+//         const sheetSignVal = getFirstAvailableRaw(rowObj, signCandidates);
+//         if (sheetSignVal) {
+//           const resolvedSign = await resolveMemberPhotoValue(sheetSignVal);
+//           if (resolvedSign) {
+//             mappedData.MemberSign = resolvedSign;
+//             console.log(
+//               `Row ${rowNumber} - MemberSign resolved => ${resolvedSign}`,
+//             );
+//           }
+//         }
+
+//         // Save member
+//         const newMember = new Member(mappedData);
+//         await newMember.save();
+//         console.log(`Saved member (row ${rowNumber}) id: ${newMember._id}`);
+
+//         // compute fees (ensure numeric)
+//         const parsedShareFee = parseNumber(rowObj.shareFee) || 0;
+//         const parsedMembershipFee = parseNumber(rowObj.membershipFee) || 0;
+//         const parsedApplicationFee = parseNumber(rowObj.applicationFee) || 0;
+//         const parsedAdmissionFee = parseNumber(rowObj.admissionFee) || 0;
+//         const parsedMisc = parseNumber(rowObj.miscellaneousExpenses) || 0;
+//         const feesSum =
+//           parsedShareFee +
+//           parsedMembershipFee +
+//           parsedApplicationFee +
+//           parsedAdmissionFee +
+//           parsedMisc;
+
+//         // robust amount determination:
+//         let parsedAmount = parseNumber(rowObj.amount);
+//         if (!Number.isFinite(parsedAmount)) {
+//           parsedAmount = feesSum > 0 ? feesSum : 2500;
+//           console.log(
+//             `Row ${rowNumber} - amount missing/invalid -> using feesSum/default. feesSum=${feesSum}, chosen amount=${parsedAmount}`,
+//           );
+//         } else {
+//           console.log(
+//             `Row ${rowNumber} - Using amount from sheet: ${parsedAmount} (feesSum=${feesSum})`,
+//           );
+//         }
+
+//         // transactionDetails handling (single column)
+//         const txnDetails =
+//           rowObj.transactionDetails &&
+//           String(rowObj.transactionDetails).trim() !== ""
+//             ? String(rowObj.transactionDetails).trim()
+//             : (rowObj._raw &&
+//                 (rowObj._raw["transactionDetails"] ||
+//                   rowObj._raw["Transaction Details"] ||
+//                   rowObj._raw["TransactionDetails"])) ||
+//               "";
+
+//         const paymentModeNormalized = (rowObj.paymentMode || "")
+//           .toString()
+//           .trim()
+//           .toLowerCase();
+//         const mappedTxn = mapTransactionDetailsByMode(
+//           txnDetails,
+//           paymentModeNormalized,
+//         );
+
+//         if (
+//           (parsedAmount === 2500 ||
+//             parsedAmount === undefined ||
+//             parsedAmount === null) &&
+//           txnDetails
+//         ) {
+//           const possibleAmount = txnDetails.match(
+//             /([₹Rs\.\s]*\d{1,3}(?:,\d{3})*(?:\.\d+)?)/i,
+//           );
+//           if (possibleAmount && possibleAmount[1]) {
+//             const amtFromTxn = parseNumber(possibleAmount[1]);
+//             if (Number.isFinite(amtFromTxn)) {
+//               console.log(
+//                 `Row ${rowNumber} - Amount parsed from transactionDetails: ${amtFromTxn}`,
+//               );
+//               parsedAmount = amtFromTxn;
+//             }
+//           }
+//         }
+
+//         console.log(
+//           `\nRow ${rowNumber} paymentMode="${paymentModeNormalized}", transactionDetails="${txnDetails}"`,
+//         );
+//         console.log("Mapped txn =>", mappedTxn);
+//         console.log("Determined amount =>", parsedAmount);
+
+//         const paymentPayload = {
+//           recieptNo:
+//             rowObj.recieptNo || rowObj.receiptNo || `GSHEET-${Date.now()}-${i}`,
+//           date: parseDate(rowObj.date) || new Date(),
+//           paymentType: rowObj.paymentType || "Membership Fee",
+//           paymentMode: (rowObj.paymentMode || "cash").toString().toLowerCase(),
+//           bankName: rowObj.bankName || "",
+//           branchName: rowObj.branchName || "",
+//           amount: feesSum, // keep fee-sum approach (you can change to parsedAmount if desired)
+//           chequeNumber: mappedTxn.chequeNumber || rowObj.chequeNumber || "",
+//           ddNumber: mappedTxn.ddNumber || rowObj.ddNumber || "",
+//           transactionId: mappedTxn.transactionId || rowObj.transactionId || "",
+//           otherCharges: undefined,
+//           correspondenceAddress:
+//             rowObj.contactAddress || mappedData.contactAddress || "",
+//           numberOfShares: parseNumber(rowObj.numberOfShares) || undefined,
+//           applicationFee: parsedApplicationFee || undefined,
+//           adminissionFee: parsedAdmissionFee || undefined,
+//           miscellaneousExpenses: parsedMisc || undefined,
+//           memberShipFee: parsedMembershipFee || undefined,
+//           shareFee: parsedShareFee || undefined,
+//         };
+
+//         console.log("Final payment payload:", paymentPayload);
+
+//         try {
+//           const receiptResult = await createReceipt(
+//             newMember._id,
+//             paymentPayload,
+//           );
+//           if (receiptResult?.status && receiptResult.status !== 200) {
+//             results.errors.push({
+//               row: rowNumber,
+//               error: `Receipt creation returned status ${receiptResult.status}`,
+//             });
+//           } else {
+//             console.log(`✓ Receipt created for row ${rowNumber}`);
+//           }
+//         } catch (recErr) {
+//           console.error(
+//             `Receipt creation failed for row ${rowNumber}:`,
+//             recErr,
+//           );
+//           results.errors.push({
+//             row: rowNumber,
+//             error: recErr.message || String(recErr),
+//           });
+//         }
+
+//         results.created += 1;
+//       } catch (rowErr) {
+//         console.error(`Error processing row ${rowNumber}:`, rowErr);
+//         results.errors.push({
+//           row: rowNumber,
+//           error: rowErr.message || String(rowErr),
+//         });
+//       }
+//     } // end loop
+
+//     return res
+//       .status(200)
+//       .json({ message: "Google sheet import finished", summary: results });
+//   } catch (err) {
+//     console.error("Upload from Google Sheet error:", err);
+//     return res.status(500).json({ error: err.message || String(err) });
+//   }
+// };
+
 export const uploadFromGoogleSheet = async (req, res) => {
   try {
     const response = await sheets.spreadsheets.values.get({
@@ -499,6 +894,7 @@ export const uploadFromGoogleSheet = async (req, res) => {
     }
 
     const diagLimit = 6;
+    const duplicateSeniority = [];
     for (let i = 0; i < dataRows.length; i++) {
       const rowNumber = i + 2;
       const row = dataRows[i];
@@ -525,19 +921,83 @@ export const uploadFromGoogleSheet = async (req, res) => {
 
       try {
         // duplicate check (seniorityId or membershipNo or serviceId)
-        const searchQuery = {};
-        if (rowObj.seniorityId) searchQuery.SeniorityID = rowObj.seniorityId;
-        else if (rowObj.membershipNo)
-          searchQuery.MembershipNo = rowObj.membershipNo;
-        else if (rowObj.serviceId) searchQuery.serviceId = rowObj.serviceId;
+        // const searchQuery = {};
+        // if (rowObj.seniorityId) searchQuery.SeniorityID = rowObj.seniorityId;
+        // else if (rowObj.membershipNo)
+        //   searchQuery.MembershipNo = rowObj.membershipNo;
+        // else if (rowObj.serviceId) searchQuery.serviceId = rowObj.serviceId;
 
-        if (Object.keys(searchQuery).length > 0) {
-          const existing = await Member.findOne(searchQuery).lean();
-          // if (existing) {
-          //   results.skippedExisting += 1;
-          //   continue;
-          // }
-          if (existing) {
+        // if (Object.keys(searchQuery).length > 0) {
+        //   const existing = await Member.findOne(searchQuery).lean();
+        //   // if (existing) {
+        //   //   results.skippedExisting += 1;
+        //   //   continue;
+        //   // }
+        //   if (existing) {
+        //     results.skippedExisting += 1;
+
+        //     results.skippedDetails.push({
+        //       row: rowNumber,
+        //       seniorityId: rowObj.seniorityId || "",
+        //       membershipNo: rowObj.membershipNo || "",
+        //       serviceId: rowObj.serviceId || "",
+        //       reason: "Duplicate member (already exists)",
+        //     });
+
+        //     continue;
+        //   }
+        // }
+
+        // duplicate only if BOTH seniorityId and membershipNo match
+
+        const searchQuery = {
+          SeniorityID: rowObj.seniorityId || "",
+          MembershipNo: rowObj.membershipNo || "",
+        };
+
+        // const existing = await Member.findOne(searchQuery).lean();
+
+        // if (existing) {
+        //   results.skippedExisting += 1;
+
+        //   results.skippedDetails.push({
+        //     row: rowNumber,
+        //     seniorityId: rowObj.seniorityId || "",
+        //     membershipNo: rowObj.membershipNo || "",
+        //     serviceId: rowObj.serviceId || "",
+        //     reason: "Duplicate member (same SeniorityID + MembershipNo)",
+        //   });
+
+        //   continue;
+        // }
+
+        // // check if same seniority already exists but membership is different
+        // if (rowObj.seniorityId) {
+        //   const existingSeniority = await Member.findOne({
+        //     SeniorityID: rowObj.seniorityId,
+        //   }).lean();
+
+        //   if (existingSeniority) {
+        //     console.log(
+        //       `⚠ SeniorityID already exists: ${rowObj.seniorityId} (Row ${rowNumber})`,
+        //     );
+
+        //     duplicateSeniority.push({
+        //       row: rowNumber,
+        //       seniorityId: rowObj.seniorityId,
+        //       membershipNo: rowObj.membershipNo || "",
+        //       message: "Seniority already exists but membership differs",
+        //     });
+        //   }
+        // }
+
+        const existingSeniority = await Member.findOne({
+          SeniorityID: rowObj.seniorityId,
+        }).lean();
+
+        if (existingSeniority) {
+          // if both seniority + membership match → duplicate
+          if (existingSeniority.MembershipNo === rowObj.membershipNo) {
             results.skippedExisting += 1;
 
             results.skippedDetails.push({
@@ -545,11 +1005,23 @@ export const uploadFromGoogleSheet = async (req, res) => {
               seniorityId: rowObj.seniorityId || "",
               membershipNo: rowObj.membershipNo || "",
               serviceId: rowObj.serviceId || "",
-              reason: "Duplicate member (already exists)",
+              reason: "Duplicate member (same SeniorityID + MembershipNo)",
             });
 
             continue;
           }
+
+          // if seniority same but membership different → log but allow
+          console.log(
+            `⚠ SeniorityID already exists: ${rowObj.seniorityId} (Row ${rowNumber})`,
+          );
+
+          duplicateSeniority.push({
+            row: rowNumber,
+            seniorityId: rowObj.seniorityId,
+            membershipNo: rowObj.membershipNo || "",
+            message: "Seniority already exists but membership differs",
+          });
         }
 
         const plainPassword = await generateUniquePassword();
@@ -811,9 +1283,11 @@ export const uploadFromGoogleSheet = async (req, res) => {
       }
     } // end loop
 
-    return res
-      .status(200)
-      .json({ message: "Google sheet import finished", summary: results });
+    return res.status(200).json({
+      message: "Google sheet import finished",
+      summary: results,
+      duplicateSeniorityIds: duplicateSeniority,
+    });
   } catch (err) {
     console.error("Upload from Google Sheet error:", err);
     return res.status(500).json({ error: err.message || String(err) });

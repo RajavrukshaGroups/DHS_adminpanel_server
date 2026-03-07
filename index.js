@@ -41,7 +41,7 @@ const allowedOrigins = [
   "https://marasandra.defencehousingsociety.com",
 ];
 
-// const allowedOrigins = ["http://localhost:3000", "http://localhost:5175"];
+// const allowedOrigins = ["http://localhost:3000", "http://localhost:5174"];
 
 app.use(
   cors({
