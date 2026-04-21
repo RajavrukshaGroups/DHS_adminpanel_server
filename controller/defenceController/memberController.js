@@ -499,7 +499,8 @@ const contactUs = async (req, res) => {
       location,
       source,
       captchaValue,
-      acceptTerms,
+      // acceptTerms,
+      declaration,
     } = req.body;
     const finalSource = source || "website";
     console.log("Contact Us Data:", req.body, "incoming source details");
@@ -510,7 +511,14 @@ const contactUs = async (req, res) => {
         .json({ error: "reCaptcha verification failed - no token provided" });
     }
 
-    if (!acceptTerms) {
+    // if (!acceptTerms) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: "Terms and Privacy Policy must be accepted",
+    //   });
+    // }
+
+    if (!declaration) {
       return res.status(400).json({
         success: false,
         error: "Terms and Privacy Policy must be accepted",
