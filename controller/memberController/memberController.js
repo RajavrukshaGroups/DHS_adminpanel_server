@@ -1412,6 +1412,7 @@ const getMemberDetails = async (req, res) => {
       totalPages: Math.ceil(totalMembers / limit),
       totalMembers,
     });
+    console.log("members receipt data", members);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ success: false, error: "server error" });

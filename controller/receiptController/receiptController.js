@@ -298,6 +298,7 @@ function convertNumberToWords(amount) {
 const getViewReceiptHistory = async (req, res) => {
   try {
     const memberId = req.params.id;
+    console.log("memberId",memberId)
     const member = await Member.findById(memberId);
 
     if (!member) return res.status(404).json({ message: "Member not found" });
