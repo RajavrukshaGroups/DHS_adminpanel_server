@@ -13,7 +13,8 @@
     </div>
 
     <div class="document-header">
-      <div><%= receipt.member.ConfirmationLetterNo %></div>
+      <!-- <div><%= receipt.member.ConfirmationLetterNo %></div> -->
+      <div><%= confirmationLetterNumber %></div>
       <div>Date: <%= new Date(confirmationLetterIssueDate).toLocaleDateString('en-GB').split('/').join('-') %></div>
     </div>
 
@@ -51,7 +52,7 @@
           by <span class="bold"><%= siteDownPayment?.paymentMode %></span>
         <% } %> drawn at <span class="bold"><%= siteDownPayment?.bankName %> Bank</span>, 
         <span class="bold"><%= siteDownPayment?.branchName %> Branch</span>. 
-        The booked site dimension is <span class="bold"><%= member.userId.propertyDetails.propertySize %></span> SQFT. 
+        The booked site dimension is <span class="bold"><%= member.userId.propertyDetails.length * member.userId.propertyDetails.breadth %></span> SQFT. 
         Receipt number is <span class="bold"><%= confirmationLetterReceiptNo?confirmationLetterReceiptNo:siteDownPayment?.receiptNo %></span>, 
         Membership No: <span class="bold"><%= member.userId.MembershipNo %></span>, 
         Seniority Number <span class="bold"><%= member.userId.SeniorityID %></span>.

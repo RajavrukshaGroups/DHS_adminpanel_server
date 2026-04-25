@@ -39,6 +39,8 @@ router.put(
   MemberController.editConfirmationLetter,
 );
 router.get("/get-affidavit/:id", memberController.getAffidavitById);
+router.delete("/delete-affidavit/:id", memberController.deleteAffidavit);
+router.delete("/delete-all-affidavits", memberController.deleteAllAffidavits);
 router.put("/edit-receipt/:memberId", MemberController.editReceiptToMember);
 router.get(
   "/check-payment-type-duplicates/:memberId",

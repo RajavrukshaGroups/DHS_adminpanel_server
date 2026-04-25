@@ -1110,15 +1110,27 @@ const getConfirmation = async (req, res) => {
     const receipt = await Receipt.findOne({ member: memberId });
 
     // Calculate total amount from all payments
+    // let siteDownPaymentAmount = 0;
+    // if (receipt && Array.isArray(receipt.payments)) {
+    //   for (const payment of receipt.payments) {
+    //     if (payment.paymentType === "sitedownpayment") {
+    //       siteDownPaymentAmount += payment.amount;
+    //     }
+    //   }
+    // }
+
+    //sending 1st sitedownpayment
     let siteDownPaymentAmount = 0;
+    let firstSiteDownPaymentReceiptNo = "";
+
     if (receipt && Array.isArray(receipt.payments)) {
-      for (const payment of receipt.payments) {
-        // if (payment.paymentType === "siteDownPayment") {
-        //   siteDownPaymentAmount += payment.amount;
-        // }
-        if (payment.paymentType === "sitedownpayment") {
-          siteDownPaymentAmount += payment.amount;
-        }
+      const siteDownPayments = receipt.payments
+        .filter((p) => p.paymentType?.toLowerCase() === "sitedownpayment")
+        .sort((a, b) => new Date(a.date) - new Date(b.date)); // earliest first
+
+      if (siteDownPayments.length > 0) {
+        siteDownPaymentAmount = siteDownPayments[0].amount;
+        firstSiteDownPaymentReceiptNo = siteDownPayments[0].receiptNo;
       }
     }
 
@@ -1127,6 +1139,7 @@ const getConfirmation = async (req, res) => {
       ...member.toObject(),
       projectLocation,
       siteDownPaymentAmount,
+      firstSiteDownPaymentReceiptNo,
     });
   } catch (error) {
     console.error("Error in getConfirmation:", error);
@@ -1159,6 +1172,7 @@ const addConfirmation = async (req, res) => {
       totalPaidAmount: req.body.Amount,
       confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
       confirmationLetterReceiptNo: req.body.confirmationLetterReceiptNo,
+      ConfirmationLetterNo: req.body.ConfirmationLetterNo,
     });
 
     await newAffidavit.save();
@@ -1603,7 +1617,7 @@ const getAffidavitById = async (req, res) => {
       propertyDetails: member?.propertyDetails || {},
       Amount: affidavit.totalPaidAmount || "",
       PaymentType: affidavit.paymentMethod || "",
-      ConfirmationLetterNo: affidavit.confirmationNumber || "",
+      ConfirmationLetterNo: affidavit.ConfirmationLetterNo || "",
       confirmationLetterIssueDate: affidavit.confirmationLetterIssueDate || "",
       duration: affidavit.duration || "",
       affidavitUrl: affidavit.affidavitUrl || "",
@@ -1613,6 +1627,60 @@ const getAffidavitById = async (req, res) => {
   } catch (error) {
     console.error("Error fetching affidavit data:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const deleteAffidavit = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const affidavit = await MemberAffidavit.findById(id);
+
+    if (!affidavit) {
+      return res.status(404).json({ message: "Affidavit not found" });
+    }
+
+    // 🔥 OPTIONAL: delete from cloudinary
+    if (affidavit.cloudinaryId) {
+      await deleteFromCloudinary(affidavit.cloudinaryId);
+    }
+
+    await MemberAffidavit.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Affidavit deleted successfully" });
+  } catch (error) {
+    console.error("Delete error:", error);
+    res.status(500).json({ message: "Failed to delete affidavit" });
+  }
+};
+
+const deleteAllAffidavits = async (req, res) => {
+  try {
+    // 🔴 ADD THIS HERE (FIRST LINE INSIDE TRY)
+    if (!req.query.confirm || req.query.confirm !== "YES") {
+      return res.status(400).json({
+        message: "Please confirm deletion by passing ?confirm=YES",
+      });
+    }
+
+    // ✅ AFTER THIS → actual logic
+    const affidavits = await MemberAffidavit.find();
+
+    // optional cloudinary delete
+    for (const item of affidavits) {
+      if (item.cloudinaryId) {
+        await deleteFromCloudinary(item.cloudinaryId);
+      }
+    }
+
+    await MemberAffidavit.deleteMany({});
+
+    res.status(200).json({
+      message: "All affidavits deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete all error:", error);
+    res.status(500).json({ message: "Failed to delete all affidavits" });
   }
 };
 
@@ -2080,4 +2148,6 @@ export default {
   ResetPassword,
   DeleteAllMembersAndReceipts,
   DeleteReceiptsData,
+  deleteAffidavit,
+  deleteAllAffidavits,
 };

@@ -7,9 +7,16 @@ import { google } from "googleapis";
 import dotenv from "dotenv";
 dotenv.config();
 
+// #test
 // const SHEET_ID = "1id7Gr9MGZEjDjffo62saVbg-JQraV0BCu_VOdsJbwLA";
+
+// #live
 const SHEET_ID = "1vLjPNbkbxWIC_GLJzh8KvXprsMKbPC_irQJsYb9n5YU";
-// const SHEET_RANGE = "Sheet2!A1:J"; // header included
+
+// #test
+// const SHEET_RANGE = "Siteadvance!A1:K"; // header included
+
+// #live
 const SHEET_RANGE = "Siteadvance!A1:K"; // header included
 const CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL;
 let PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY;

@@ -1,5 +1,5 @@
 const LoginDetails = {
-  email: "technical@rajavrukshagroup.in",
+  email: "mail@defencehousingsociety.com",
   password: "admin@123",
 };
 

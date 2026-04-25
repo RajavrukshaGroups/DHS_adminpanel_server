@@ -33,10 +33,13 @@ const memberAffidavitSchema = new mongoose.Schema({
   confirmationLetterReceiptNo: {
     type: Number,
   },
+  ConfirmationLetterNo: {
+    type: String,
+  },
 });
 
 const MemberAffidavit = mongoose.model(
   "MemberAffidavit",
-  memberAffidavitSchema
+  memberAffidavitSchema,
 );
 export default MemberAffidavit;

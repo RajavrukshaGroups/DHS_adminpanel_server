@@ -180,7 +180,7 @@ const getReceiptDetailsById = async (req, res) => {
 
     // Find the specific payment by its _id
     const payment = receipt.payments.find(
-      (p) => p._id.toString() === paymentId
+      (p) => p._id.toString() === paymentId,
     );
 
     console.log("receipts payment", payment);
@@ -249,7 +249,7 @@ const getReceiptDetailsById = async (req, res) => {
 
     const totalAmount = filteredItems.reduce(
       (sum, item) => sum + item.amount,
-      0
+      0,
     );
 
     const receiptData = {
@@ -298,7 +298,7 @@ function convertNumberToWords(amount) {
 const getViewReceiptHistory = async (req, res) => {
   try {
     const memberId = req.params.id;
-    console.log("memberId",memberId)
+    console.log("memberId", memberId);
     const member = await Member.findById(memberId);
 
     if (!member) return res.status(404).json({ message: "Member not found" });
@@ -318,7 +318,7 @@ const viewconfirmation = async (req, res) => {
   try {
     const { memberId } = req.params;
     const receipt = await Receipt.findOne({ member: memberId }).populate(
-      "member"
+      "member",
     );
 
     console.log("receipt-affidavit", receipt);
@@ -338,8 +338,8 @@ const viewconfirmation = async (req, res) => {
     // const siteDownPayment = receipt?.payments?.find(
     //   (payment) => payment.paymentType === "siteDownPayment"
     // );
-     const siteDownPayment = receipt?.payments?.find(
-      (payment) => payment.paymentType === "sitedownpayment"
+    const siteDownPayment = receipt?.payments?.find(
+      (payment) => payment.paymentType === "sitedownpayment",
     );
     const project = await Project.findOne({
       projectName: member.propertyDetails.projectName,
@@ -359,6 +359,7 @@ const viewconfirmation = async (req, res) => {
     console.log(siteDownPayment, "project siteDownPayment");
 
     const confirmationLetterIssueDate = affidavit.confirmationLetterIssueDate;
+    const confirmationLetterNumber = affidavit.ConfirmationLetterNo;
     const duration = affidavit.duration;
     const totalPaidAmount = affidavit.totalPaidAmount;
     const amountInWordsTotalPaidAmount = convertNumberToWords(totalPaidAmount);
@@ -370,6 +371,7 @@ const viewconfirmation = async (req, res) => {
       projectLocation,
       siteDownPayment,
       confirmationLetterIssueDate,
+      confirmationLetterNumber,
       duration,
       totalPaidAmount,
       confirmationLetterReceiptNo,
@@ -419,7 +421,7 @@ const CheckMembershipFee = async (req, res) => {
 
     const hasSiteDownPayment = receipt.payments.some(
       (payment) =>
-        (payment.paymentType || "").toLowerCase() === "sitedownpayment"
+        (payment.paymentType || "").toLowerCase() === "sitedownpayment",
     );
 
     if (hasSiteDownPayment) {
@@ -625,7 +627,7 @@ const renderShareCertificate = async (req, res) => {
     console.log("member address", member);
 
     const sharePayment = receipt.payments.find(
-      (p) => p.paymentType.toLowerCase() === "membership fee"
+      (p) => p.paymentType.toLowerCase() === "membership fee",
     );
 
     if (!sharePayment) {
@@ -675,7 +677,7 @@ const collectAllExtraChargeHistory = async (req, res) => {
 
     for (const receipt of receipts) {
       const extraChargePayments = receipt.payments.filter(
-        (p) => p.paymentType === "Extra Charge"
+        (p) => p.paymentType === "Extra Charge",
       );
 
       if (extraChargePayments.length > 0) {
@@ -753,7 +755,7 @@ const fetchExtraChargeOnPaymentID = async (req, res) => {
 
     // Find the payment inside the payments array by _id
     const payment = receipt.payments.find(
-      (p) => p._id.toString() === paymentId
+      (p) => p._id.toString() === paymentId,
     );
 
     if (!payment) {
@@ -804,7 +806,7 @@ const updateExtraChargeReceipt = async (req, res) => {
           "payments.$.amount": updateData.amount,
         },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedReceipt) {
@@ -830,7 +832,7 @@ const getAllReceiptIds = async (req, res) => {
     const receiptIds = receipts.flatMap((receipt) =>
       receipt.payments
         .filter((payment) => payment.receiptNo) // ensure receiptNo exists
-        .map((payment) => payment.receiptNo)
+        .map((payment) => payment.receiptNo),
     );
 
     res.status(200).json({ receiptIds });

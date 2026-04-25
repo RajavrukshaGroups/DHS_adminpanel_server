@@ -8,8 +8,8 @@ import MemberAffidavit from "../model/memberAffidavit.js";
 import plotTransfer from "../model/plotTransfer.js";
 
 // const MONGO_URL = "mongodb://127.0.0.1:27017/plumeria";
-// const MONGO_URL = "mongodb://127.0.0.1:27017/DHS-Admin";
-const MONGO_URL="mongodb+srv://enquiry:tI3BuX6maCBZwjfX@cluster0.dmnsvvc.mongodb.net/"
+const MONGO_URL = "mongodb://127.0.0.1:27017/DHS-Admin";
+// const MONGO_URL="mongodb+srv://enquiry:tI3BuX6maCBZwjfX@cluster0.dmnsvvc.mongodb.net/"
 
 const main = async () => {
   try {
@@ -18,12 +18,12 @@ const main = async () => {
 
     // await Listing.deleteMany({});
     // await Booking.deleteMany({});
-    // await AdminLogin.insertMany(initData);
+    await AdminLogin.insertMany(initData);
     // await MemberModel.insertMany(memberDetails);
-    await MemberModel.deleteMany({});
-    await ReceiptModel.deleteMany({});
-    await plotTransfer.deleteMany({});
-    await MemberAffidavit.deleteMany({});
+    // await MemberModel.deleteMany({});
+    // await ReceiptModel.deleteMany({});
+    // await plotTransfer.deleteMany({});
+    // await MemberAffidavit.deleteMany({});
     // await RoomAvailability.deleteMany({});
     // await RoomAvailability.insertMany(roomAvailabilityData);
     // await Admin.insertMany(adminLogs);
