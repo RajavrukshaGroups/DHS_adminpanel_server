@@ -1147,6 +1147,101 @@ const getConfirmation = async (req, res) => {
   }
 };
 
+// const getConfirmation = async (req, res) => {
+//   try {
+//     const memberId = req.params.id;
+
+//     const member = await Member.findById(memberId);
+//     if (!member) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+
+//     // ✅ Project location
+//     const project = await Project.findOne({
+//       projectName: member.propertyDetails?.projectName,
+//     });
+
+//     const projectLocation = project?.location || "Location not found";
+
+//     // ✅ Get receipts
+//     const receipt = await Receipt.findOne({ member: memberId });
+
+//     // ✅ Collect ALL site down payments (sorted)
+//     let siteDownPayments = [];
+
+//     if (receipt && Array.isArray(receipt.payments)) {
+//       siteDownPayments = receipt.payments
+//         .filter(
+//           (p) => (p.paymentType || "").toLowerCase() === "sitedownpayment",
+//         )
+//         .sort((a, b) => new Date(a.date) - new Date(b.date)) // earliest first
+//         .map((p) => ({
+//           receiptNo: p.receiptNo,
+//           amount: p.amount,
+//           date: p.date,
+//         }));
+//     }
+
+//     return res.status(200).json({
+//       ...member.toObject(),
+//       projectLocation,
+//       siteDownPayments, // 🔥 IMPORTANT (used in frontend checkbox)
+//     });
+//   } catch (error) {
+//     console.error("Error in getConfirmation:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+// const addConfirmation = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     let affidavitUrl = null;
+//     let cloudinaryId = null;
+
+//     // ✅ Upload file (optional)
+//     if (req.file) {
+//       const result = await uploadToCloudinary(req.file.buffer);
+//       affidavitUrl = result.secure_url;
+//       cloudinaryId = result.public_id;
+//     }
+
+//     // 🔥 Parse multiple receipt numbers
+//     let receiptNos = [];
+//     if (req.body.confirmationLetterReceiptNo) {
+//       try {
+//         receiptNos = JSON.parse(req.body.confirmationLetterReceiptNo);
+//       } catch (e) {
+//         receiptNos = [req.body.confirmationLetterReceiptNo];
+//       }
+//     }
+
+//     const newAffidavit = new MemberAffidavit({
+//       userId: id,
+//       projectAddress: req.body.projectAddress,
+//       chequeNo: req.body.ChequeNo,
+//       duration: req.body.duration,
+//       affidavitUrl,
+//       cloudinaryId,
+//       totalPaidAmount: req.body.Amount,
+//       confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
+//       confirmationLetterReceiptNo: receiptNos, // ✅ ARRAY
+//       ConfirmationLetterNo: req.body.ConfirmationLetterNo,
+//     });
+
+//     await newAffidavit.save();
+
+//     res.status(200).json({
+//       message: "Affidavit saved successfully",
+//       data: newAffidavit,
+//     });
+//   } catch (error) {
+//     console.error("Upload error:", error);
+//     res.status(500).json({ error: "Failed to upload affidavit" });
+//   }
+// };
+
 const addConfirmation = async (req, res) => {
   try {
     console.log("Received file:", req.file);
@@ -1215,6 +1310,7 @@ const getAllAffidavits = async (req, res) => {
     const affidavitQuery = userIds.length ? { userId: { $in: userIds } } : {};
 
     const total = await MemberAffidavit.countDocuments(affidavitQuery);
+    // console.log("total", await MemberAffidavit.countDocuments());
 
     const affidavits = await MemberAffidavit.find(affidavitQuery)
       .populate(
@@ -2120,6 +2216,88 @@ const DeleteReceiptsData = async (req, res) => {
   }
 };
 
+const DeleteReceiptsDataOtherThanMembershipFee = async (req, res) => {
+  try {
+    if (req.query.confirm !== "YES") {
+      return res.status(400).json({
+        message: "Please confirm deletion by passing ?confirm=YES",
+      });
+    }
+
+    const receipts = await Receipt.find({}).populate("member");
+
+    let totalModified = 0;
+    let totalPaymentsRemoved = 0;
+    let totalDeletedReceipts = 0;
+
+    for (const receipt of receipts) {
+      const originalPayments = receipt.payments;
+
+      // 🔥 Calculate amount to subtract
+      let amountToSubtract = 0;
+
+      for (const p of originalPayments) {
+        const type = (p.paymentType || "").toLowerCase();
+
+        const isMembership = type === "membership fee";
+
+        if (!isMembership) {
+          const isInstallment = type.includes("install");
+          const eligibleTypes = ["siteadvance", "sitedownpayment"];
+
+          if (isInstallment || eligibleTypes.includes(type)) {
+            amountToSubtract += Number(p.amount || 0);
+          }
+        }
+      }
+
+      // 🔥 Update member paidAmount
+      if (amountToSubtract > 0 && receipt.member) {
+        const member = receipt.member;
+
+        member.propertyDetails = member.propertyDetails || {};
+
+        member.propertyDetails.paidAmount = Math.max(
+          0,
+          Number(member.propertyDetails.paidAmount || 0) - amountToSubtract,
+        );
+
+        await member.save();
+      }
+
+      // ✅ Keep ONLY Membership Fee
+      receipt.payments = receipt.payments.filter(
+        (p) => (p.paymentType || "").toLowerCase() === "membership fee",
+      );
+
+      const newCount = receipt.payments.length;
+
+      if (newCount === 0) {
+        await Receipt.findByIdAndDelete(receipt._id);
+        totalDeletedReceipts++;
+        continue;
+      }
+
+      if (newCount !== originalPayments.length) {
+        totalModified++;
+        totalPaymentsRemoved += originalPayments.length - newCount;
+        await receipt.save();
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Non-membership receipts deleted successfully",
+      receiptsUpdated: totalModified,
+      paymentsRemoved: totalPaymentsRemoved,
+      receiptsDeleted: totalDeletedReceipts,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error deleting receipts" });
+  }
+};
+
 export default {
   addMemberDetails,
   uploadFromGoogleSheet,
@@ -2150,4 +2328,5 @@ export default {
   DeleteReceiptsData,
   deleteAffidavit,
   deleteAllAffidavits,
+  DeleteReceiptsDataOtherThanMembershipFee,
 };

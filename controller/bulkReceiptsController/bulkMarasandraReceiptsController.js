@@ -14,10 +14,10 @@ dotenv.config();
 const SHEET_ID = "1vLjPNbkbxWIC_GLJzh8KvXprsMKbPC_irQJsYb9n5YU";
 
 // #test
-// const SHEET_RANGE = "Siteadvance!A1:K"; // header included
+// const SHEET_RANGE = "Siteadv-Marasandra!A1:L"; // header included
 
 // #live
-const SHEET_RANGE = "Siteadvance!A1:K"; // header included
+const SHEET_RANGE = "Siteadv-Marasandra!A1:L"; // header included
 const CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL;
 let PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY;
 
@@ -191,8 +191,7 @@ function mapInstallmentValue(raw) {
 }
 
 // ----- controller -----
-
-const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
+const uploadMarasandraSiteAdvanceBulkUploadReceipts = async (req, res) => {
   try {
     // read sheet
     const response = await sheets.spreadsheets.values.get({
@@ -527,5 +526,5 @@ const uploadSiteAdvanceBulkUploadReceipts = async (req, res) => {
 };
 
 export default {
-  uploadSiteAdvanceBulkUploadReceipts,
+  uploadMarasandraSiteAdvanceBulkUploadReceipts,
 };

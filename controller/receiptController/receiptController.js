@@ -13,6 +13,7 @@ export const createReceipt = async (memberId, data) => {
   console.log("data new receipt", data);
   try {
     const paymentEntry = {
+      uniqueRowId: data.uniqueRowId,
       receiptNo: data.recieptNo,
       date: new Date(data.date),
       paymentType: data.paymentType, // 'Membership Fee'

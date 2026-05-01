@@ -6,6 +6,7 @@ import memberController from "../../controller/memberController/memberController
 const router = express.Router();
 import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path as needed
 import upload from "../../middleware/multer.js";
+import BulkMarasandraMemberController from "../../controller/bulkMarsandraMemberController/bulkMarasandraMemberController.js";
 
 router.post(
   "/add-member",
@@ -13,6 +14,11 @@ router.post(
   MemberController.addMemberDetails,
 );
 router.post("/upload-google-sheet", MemberController.uploadFromGoogleSheet);
+router.post(
+  "/upload-marasandra-members",
+  BulkMarasandraMemberController.uploadMarasandraMembersFromGoogleSheet,
+);
+
 router.get("/view-member-details", MemberController.getMemberDetails);
 router.get("/check-duplicates", memberController.checkDuplicates);
 router.put("/update-status/:id", memberController.updateStatus);
@@ -70,6 +76,10 @@ router.delete(
   MemberController.DeleteAllMembersAndReceipts,
 );
 router.delete("/delete-receipts-data", MemberController.DeleteReceiptsData);
+router.delete(
+  "/delete-other-receipts",
+  MemberController.DeleteReceiptsDataOtherThanMembershipFee,
+);
 
 // router.post("/receipt-extra-charge-form/:memberId")
 

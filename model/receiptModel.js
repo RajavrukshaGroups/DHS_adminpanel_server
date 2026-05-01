@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const paymentEntrySchema = new mongoose.Schema({
+  uniqueRowId: { type: String, index: true },
   receiptNo: { type: String, required: true },
   date: { type: Date, required: true },
   paymentType: { type: String, required: true }, // 'Membership Fee', 'Site Advance', 'Installment', etc.
