@@ -30,9 +30,27 @@ const memberAffidavitSchema = new mongoose.Schema({
   totalPaidAmount: {
     type: Number,
   },
-  confirmationLetterReceiptNo: {
-    type: Number,
-  },
+  // confirmationLetterReceiptNo: {
+  //   type: Number,
+  // },
+  confirmationLetterReceiptNo: [
+    {
+      type: String,
+    },
+  ],
+  confirmationPayments: [
+    {
+      receiptNo: String,
+      amount: Number,
+      date: Date,
+      paymentMode: String,
+      bankName: String,
+      branchName: String,
+      chequeNumber: String,
+      transactionId: String,
+      ddNumber: String,
+    },
+  ],
   ConfirmationLetterNo: {
     type: String,
   },

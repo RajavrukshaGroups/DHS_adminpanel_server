@@ -353,6 +353,7 @@ const viewconfirmation = async (req, res) => {
     if (!affidavit) {
       return res.status(404).send("Affidavit not found");
     }
+    const confirmationPayments = affidavit.confirmationPayments || [];
     const amount = siteDownPayment.amount || 0;
     const amountInWords = convertNumberToWords(amount);
     const formattedAmountInWords =
@@ -376,6 +377,7 @@ const viewconfirmation = async (req, res) => {
       duration,
       totalPaidAmount,
       confirmationLetterReceiptNo,
+      confirmationPayments,
       amountInWordsTotalPaidAmount: amountInWordsTotalPaidAmount,
     });
   } catch (error) {

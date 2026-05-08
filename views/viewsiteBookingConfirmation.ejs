@@ -23,7 +23,7 @@
     <div class="content">
       <div class="confirmation-text">
         This is to confirm that 
-        <span class="bold"><%= member.userId.saluation %>. <%= member.userId.name %></span>, 
+        <span class="bold"><%= member.userId.saluation %> <%= member.userId.name %></span>, 
         is residing at 
         <span class="bold"><%= siteDownPayment.correspondenceAddress %></span>, 
         booked a site of measuring 
@@ -41,7 +41,7 @@
 </span>
 
         (Rupees <span class="bold"><%= amountInWordsTotalPaidAmount?amountInWordsTotalPaidAmount:amountInWords %></span>) 
-        <% const mode = siteDownPayment?.paymentMode?.toLowerCase(); %>
+        <!-- <% const mode = siteDownPayment?.paymentMode?.toLowerCase(); %>
         <% if (mode === 'netbanking/upi') { %>
           by mode of NEFT/RTGS Ref <span class="bold">No.<%= siteDownPayment?.transactionId %></span>
         <% } else if (mode === 'cheque') { %>
@@ -51,11 +51,146 @@
         <% } else { %>
           by <span class="bold"><%= siteDownPayment?.paymentMode %></span>
         <% } %> drawn at <span class="bold"><%= siteDownPayment?.bankName %> Bank</span>, 
-        <span class="bold"><%= siteDownPayment?.branchName %> Branch</span>. 
+        <span class="bold"><%= siteDownPayment?.branchName %> Branch</span>.  -->
+<%
+  const payments =
+    confirmationPayments?.length > 0
+      ? confirmationPayments
+      : [siteDownPayment];
+
+  const groupedModes = {};
+
+  payments.forEach((payment) => {
+    const mode = payment?.paymentMode?.toLowerCase() || "other";
+
+    if (!groupedModes[mode]) {
+      groupedModes[mode] = [];
+    }
+
+    groupedModes[mode].push(payment);
+  });
+
+  const modeEntries = Object.entries(groupedModes);
+
+  // const allUniqueBanks = [
+  //   ...new Set(
+  //     payments.map(
+  //       (p) => `${p.bankName} Bank, ${p.branchName} Branch`
+  //     )
+  //   ),
+  // ];
+  const uniqueBankNames = [
+  ...new Set(payments.map((p) => p.bankName)),
+];
+
+const uniqueBranchNames = [
+  ...new Set(payments.map((p) => p.branchName)),
+];
+%>
+
+<% modeEntries.forEach(([mode, modePayments], modeIndex) => { %>
+
+  <% if (modeIndex > 0) { %>
+    and
+  <% } %>
+
+  <% if (mode === 'cheque') { %>
+
+    by way of cheque bearing No.
+
+    <% modePayments.forEach((payment, index) => { %>
+
+      <% if (index > 0) { %>
+        /
+      <% } %>
+
+      <span class="bold"><%= payment.chequeNumber %></span>
+
+    <% }) %>
+
+  <% } else if (mode === 'netbanking/upi') { %>
+
+    by mode of NEFT/RTGS Ref No.
+
+    <% modePayments.forEach((payment, index) => { %>
+
+      <% if (index > 0) { %>
+        /
+      <% } %>
+
+      <span class="bold"><%= payment.transactionId %></span>
+
+    <% }) %>
+
+  <% } else if (mode === 'dd') { %>
+
+    via DD No.
+
+    <% modePayments.forEach((payment, index) => { %>
+
+      <% if (index > 0) { %>
+        /
+      <% } %>
+
+      <span class="bold"><%= payment.ddNumber %></span>
+
+    <% }) %>
+
+  <% } else { %>
+
+    by <span class="bold"><%= mode %></span>
+
+  <% } %>
+
+<% }) %>
+
+drawn at
+
+<% uniqueBankNames.forEach((bank, index) => { %>
+
+  <% if (index > 0 && index === uniqueBankNames.length - 1) { %>
+    and
+  <% } else if (index > 0) { %>
+    ,
+  <% } %>
+
+  <span class="bold"><%= bank %></span>
+
+<% }) %>
+
+Bank,
+
+<% uniqueBranchNames.forEach((branch, index) => { %>
+
+  <% if (index > 0 && index === uniqueBranchNames.length - 1) { %>
+    and
+  <% } else if (index > 0) { %>
+    ,
+  <% } %>
+
+  <span class="bold"><%= branch %></span>
+
+<% }) %> Branch.
         The booked site dimension is <span class="bold"><%= member.userId.propertyDetails.length * member.userId.propertyDetails.breadth %></span> SQFT. 
-        Receipt number is <span class="bold"><%= confirmationLetterReceiptNo?confirmationLetterReceiptNo:siteDownPayment?.receiptNo %></span>, 
-        Membership No: <span class="bold"><%= member.userId.MembershipNo %></span>, 
-        Seniority Number <span class="bold"><%= member.userId.SeniorityID %></span>.
+
+<%
+  const receiptNumbers = Array.isArray(confirmationLetterReceiptNo)
+    ? confirmationLetterReceiptNo
+    : confirmationLetterReceiptNo
+      ? [confirmationLetterReceiptNo]
+      : [siteDownPayment?.receiptNo];
+
+  const receiptLabel =
+    receiptNumbers.length > 1
+      ? "Receipt numbers are"
+      : "Receipt number is";
+%>
+
+<%= receiptLabel %>
+<span class="bold"><%= receiptNumbers.join(", ") %></span>, 
+
+Membership No: <span class="bold"><%= member.userId.MembershipNo %></span>, 
+Seniority Number <span class="bold"><%= member.userId.SeniorityID %></span>.
       </div>
 
       <div class="conditions">

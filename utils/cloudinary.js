@@ -10,7 +10,7 @@ cloudinary.config({
 
 export const uploadToCloudinary = (
   fileInput,
-  folder = "dhs-project-status/member-uploads"
+  folder = "dhs-project-status/member-uploads",
 ) => {
   return new Promise((resolve, reject) => {
     // const uploadStream = cloudinary.uploader.upload_stream({ folder }, (error, result) => {
@@ -34,7 +34,7 @@ export const uploadToCloudinary = (
         } else {
           resolve(result);
         }
-      }
+      },
     );
 
     if (Buffer.isBuffer(fileInput)) {
@@ -45,4 +45,17 @@ export const uploadToCloudinary = (
       reject(new Error("Invalid file input: must be Buffer or path string"));
     }
   });
+};
+
+export const deleteFromCloudinary = async (publicId) => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId, {
+      resource_type: "raw", // important for pdf/doc files
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Cloudinary delete error:", error);
+    throw error;
+  }
 };
