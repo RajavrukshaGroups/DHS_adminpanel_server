@@ -2,7 +2,10 @@ import Member from "../../model/memberModel.js"; // adjust path as needed
 import Receipt from "../../model/receiptModel.js";
 import upload from "../../middleware/multer.js";
 import MemberAffidavit from "../../model/memberAffidavit.js"; // adjust path as needed
-import { uploadToCloudinary } from "../../utils/cloudinary.js"; // adjust path as needed
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../../utils/cloudinary.js"; // adjust path as needed
 import { generateUniquePassword } from "../../utils/generatePassword.js";
 import { transporter } from "../../utils/emailTransporter.js";
 import { createReceipt } from "../receiptController/receiptController.js";
@@ -1088,110 +1091,121 @@ const getInactiveMembers = async (req, res) => {
   }
 };
 
-const getConfirmation = async (req, res) => {
-  try {
-    const memberId = req.params.id;
-    console.log(memberId, "member idd");
-
-    const member = await Member.findById(memberId);
-
-    if (!member) {
-      return res.status(404).json({ message: "Member not found" });
-    }
-
-    // Get project details
-
-    const project = await Project.findOne({
-      projectName: member.propertyDetails.projectName,
-    });
-
-    const projectLocation = project?.location || "Location not found";
-    // Get receipts for this member
-    const receipt = await Receipt.findOne({ member: memberId });
-
-    // Calculate total amount from all payments
-    // let siteDownPaymentAmount = 0;
-    // if (receipt && Array.isArray(receipt.payments)) {
-    //   for (const payment of receipt.payments) {
-    //     if (payment.paymentType === "sitedownpayment") {
-    //       siteDownPaymentAmount += payment.amount;
-    //     }
-    //   }
-    // }
-
-    //sending 1st sitedownpayment
-    let siteDownPaymentAmount = 0;
-    let firstSiteDownPaymentReceiptNo = "";
-
-    if (receipt && Array.isArray(receipt.payments)) {
-      const siteDownPayments = receipt.payments
-        .filter((p) => p.paymentType?.toLowerCase() === "sitedownpayment")
-        .sort((a, b) => new Date(a.date) - new Date(b.date)); // earliest first
-
-      if (siteDownPayments.length > 0) {
-        siteDownPaymentAmount = siteDownPayments[0].amount;
-        firstSiteDownPaymentReceiptNo = siteDownPayments[0].receiptNo;
-      }
-    }
-
-    console.log(siteDownPaymentAmount, "site down payment amount new");
-    res.status(200).json({
-      ...member.toObject(),
-      projectLocation,
-      siteDownPaymentAmount,
-      firstSiteDownPaymentReceiptNo,
-    });
-  } catch (error) {
-    console.error("Error in getConfirmation:", error);
-    res.status(500).json({ message: "Server error", error });
-  }
-};
-
 // const getConfirmation = async (req, res) => {
 //   try {
 //     const memberId = req.params.id;
+//     console.log(memberId, "member idd");
 
 //     const member = await Member.findById(memberId);
+
 //     if (!member) {
 //       return res.status(404).json({ message: "Member not found" });
 //     }
 
-//     // ✅ Project location
+//     // Get project details
+
 //     const project = await Project.findOne({
-//       projectName: member.propertyDetails?.projectName,
+//       projectName: member.propertyDetails.projectName,
 //     });
 
 //     const projectLocation = project?.location || "Location not found";
-
-//     // ✅ Get receipts
+//     // Get receipts for this member
 //     const receipt = await Receipt.findOne({ member: memberId });
 
-//     // ✅ Collect ALL site down payments (sorted)
-//     let siteDownPayments = [];
+//     // Calculate total amount from all payments
+//     // let siteDownPaymentAmount = 0;
+//     // if (receipt && Array.isArray(receipt.payments)) {
+//     //   for (const payment of receipt.payments) {
+//     //     if (payment.paymentType === "sitedownpayment") {
+//     //       siteDownPaymentAmount += payment.amount;
+//     //     }
+//     //   }
+//     // }
+
+//     //sending 1st sitedownpayment
+//     let siteDownPaymentAmount = 0;
+//     let firstSiteDownPaymentReceiptNo = "";
 
 //     if (receipt && Array.isArray(receipt.payments)) {
-//       siteDownPayments = receipt.payments
-//         .filter(
-//           (p) => (p.paymentType || "").toLowerCase() === "sitedownpayment",
-//         )
-//         .sort((a, b) => new Date(a.date) - new Date(b.date)) // earliest first
-//         .map((p) => ({
-//           receiptNo: p.receiptNo,
-//           amount: p.amount,
-//           date: p.date,
-//         }));
+//       const siteDownPayments = receipt.payments
+//         .filter((p) => p.paymentType?.toLowerCase() === "sitedownpayment")
+//         .sort((a, b) => new Date(a.date) - new Date(b.date)); // earliest first
+
+//       if (siteDownPayments.length > 0) {
+//         siteDownPaymentAmount = siteDownPayments[0].amount;
+//         firstSiteDownPaymentReceiptNo = siteDownPayments[0].receiptNo;
+//       }
 //     }
 
-//     return res.status(200).json({
+//     console.log(siteDownPaymentAmount, "site down payment amount new");
+//     res.status(200).json({
 //       ...member.toObject(),
 //       projectLocation,
-//       siteDownPayments, // 🔥 IMPORTANT (used in frontend checkbox)
+//       siteDownPaymentAmount,
+//       firstSiteDownPaymentReceiptNo,
 //     });
 //   } catch (error) {
 //     console.error("Error in getConfirmation:", error);
-//     res.status(500).json({ message: "Server error" });
+//     res.status(500).json({ message: "Server error", error });
 //   }
 // };
+
+const getConfirmation = async (req, res) => {
+  try {
+    const memberId = req.params.id;
+
+    const member = await Member.findById(memberId);
+    if (!member) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    const project = await Project.findOne({
+      projectName: member.propertyDetails?.projectName || "",
+    });
+
+    const projectLocation = project?.location || "Location not found";
+
+    const receipt = await Receipt.findOne({ member: memberId });
+    console.log("receipt payment", receipt);
+
+    let siteDownPayments = [];
+
+    if (receipt && Array.isArray(receipt.payments)) {
+      siteDownPayments = receipt.payments
+        .filter(
+          (p) =>
+            (p.paymentType || "").trim().toLowerCase() === "sitedownpayment",
+        )
+        .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
+        .map((p) => ({
+          receiptNo: p.receiptNo,
+          amount: p.amount,
+          date: p.date,
+          paymentMode: p.paymentMode,
+          bankName: p.bankName,
+          branchName: p.branchName,
+          chequeNumber: p.chequeNumber,
+          transactionId: p.transactionId,
+          ddNumber: p.ddNumber,
+        }));
+    }
+
+    const totalSiteDownPayment = siteDownPayments.reduce(
+      (sum, p) => sum + p.amount,
+      0,
+    );
+
+    return res.status(200).json({
+      ...member.toObject(),
+      projectLocation,
+      siteDownPayments,
+      totalSiteDownPayment, // optional but useful
+    });
+  } catch (error) {
+    console.error("Error in getConfirmation:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // const addConfirmation = async (req, res) => {
 //   try {
@@ -1257,6 +1271,10 @@ const addConfirmation = async (req, res) => {
       cloudinaryId = result.public_id;
     }
 
+    const confirmationPayments = req.body.confirmationPayments
+      ? JSON.parse(req.body.confirmationPayments)
+      : [];
+
     const newAffidavit = new MemberAffidavit({
       userId: id,
       projectAddress: req.body.projectAddress,
@@ -1266,7 +1284,13 @@ const addConfirmation = async (req, res) => {
       cloudinaryId, // will be null if not uploaded
       totalPaidAmount: req.body.Amount,
       confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
-      confirmationLetterReceiptNo: req.body.confirmationLetterReceiptNo,
+      // confirmationLetterReceiptNo: req.body.confirmationLetterReceiptNo,
+      confirmationLetterReceiptNo: Array.isArray(
+        req.body.confirmationLetterReceiptNo,
+      )
+        ? req.body.confirmationLetterReceiptNo
+        : [req.body.confirmationLetterReceiptNo],
+      confirmationPayments,
       ConfirmationLetterNo: req.body.ConfirmationLetterNo,
     });
 
@@ -1654,6 +1678,7 @@ const editConfirmationLetter = async (req, res) => {
     if (!existingAffidavit) {
       return res.status(404).json({ message: "Affidavit not found" });
     }
+
     // Optional: Upload new file if provided
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer);
@@ -1672,9 +1697,25 @@ const editConfirmationLetter = async (req, res) => {
       existingAffidavit.confirmationLetterIssueDate;
     existingAffidavit.totalPaidAmount =
       req.body.Amount || existingAffidavit.totalPaidAmount;
-    existingAffidavit.confirmationLetterReceiptNo =
-      req.body.confirmationLetterReceiptNo ||
-      existingAffidavit.confirmationLetterReceiptNo;
+    // existingAffidavit.confirmationLetterReceiptNo =
+    //   req.body.confirmationLetterReceiptNo ||
+    //   existingAffidavit.confirmationLetterReceiptNo;
+    // existingAffidavit.confirmationLetterReceiptNo = Array.isArray(
+    //   req.body.confirmationLetterReceiptNo,
+    // )
+    //   ? req.body.confirmationLetterReceiptNo
+    //   : [req.body.confirmationLetterReceiptNo];
+    const confirmationPayments = req.body.confirmationPayments
+      ? JSON.parse(req.body.confirmationPayments)
+      : [];
+
+    existingAffidavit.confirmationLetterReceiptNo = Array.isArray(
+      req.body.confirmationLetterReceiptNo,
+    )
+      ? req.body.confirmationLetterReceiptNo
+      : [req.body.confirmationLetterReceiptNo];
+
+    existingAffidavit.confirmationPayments = confirmationPayments;
     existingAffidavit.pricePerSqft =
       req.body.pricePerSqft || existingAffidavit.pricePerSqft;
     existingAffidavit.PaymentType =
