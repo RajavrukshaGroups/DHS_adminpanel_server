@@ -1383,7 +1383,7 @@ const getAllAffidavits = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-    const search = req.query.search || "";
+    const search = req.query.search?.trim() || "";
 
     // -----------------------------
     // MEMBER SEARCH QUERY
@@ -1393,29 +1393,33 @@ const getAllAffidavits = async (req, res) => {
           $or: [
             { name: { $regex: search, $options: "i" } },
             { email: { $regex: search, $options: "i" } },
-            { ConfirmationLetterNo: { $regex: search, $options: "i" } },
             { MembershipNo: { $regex: search, $options: "i" } },
-            ...(isNaN(search) ? [] : [{ mobileNumber: Number(search) }]),
+            { ConfirmationLetterNo: { $regex: search, $options: "i" } },
+            ...(isNaN(search)
+              ? []
+              : [{ mobileNumber: Number(search) }]),
           ],
         }
       : {};
 
     // -----------------------------
-    // GET MATCHING MEMBERS
+    // FETCH MATCHING USERS
     // -----------------------------
     const users = await Member.find(userQuery).select("_id");
 
-    const userIds = users.map((u) => u._id);
+    const userIds = users.map((user) => user._id);
 
     // -----------------------------
     // AFFIDAVIT FILTER
     // -----------------------------
-    const affidavitQuery =
-      search && userIds.length === 0
-        ? { _id: null } // no results
-        : search
+    let affidavitQuery = {};
+
+    if (search) {
+      affidavitQuery =
+        userIds.length > 0
           ? { userId: { $in: userIds } }
-          : {};
+          : { _id: null };
+    }
 
     // -----------------------------
     // TOTAL UNIQUE MEMBERS
@@ -1424,11 +1428,22 @@ const getAllAffidavits = async (req, res) => {
       {
         $match: affidavitQuery,
       },
+
+      // sort before grouping
+      {
+        $sort: {
+          createdAt: -1,
+          _id: -1,
+        },
+      },
+
+      // unique member
       {
         $group: {
           _id: "$userId",
         },
       },
+
       {
         $count: "total",
       },
@@ -1444,14 +1459,16 @@ const getAllAffidavits = async (req, res) => {
         $match: affidavitQuery,
       },
 
-      // newest affidavit first
+      // IMPORTANT:
+      // stable sorting before grouping
       {
         $sort: {
           createdAt: -1,
+          _id: -1,
         },
       },
 
-      // keep only latest affidavit per member
+      // keep latest affidavit per member
       {
         $group: {
           _id: "$userId",
@@ -1468,10 +1485,20 @@ const getAllAffidavits = async (req, res) => {
         },
       },
 
+      // IMPORTANT:
+      // stable sorting AFTER grouping
+      {
+        $sort: {
+          createdAt: -1,
+          _id: -1,
+        },
+      },
+
       // pagination
       {
         $skip: skip,
       },
+
       {
         $limit: limit,
       },
@@ -1480,16 +1507,21 @@ const getAllAffidavits = async (req, res) => {
     // -----------------------------
     // POPULATE MEMBER DETAILS
     // -----------------------------
-    const affidavits = await MemberAffidavit.populate(aggregatedAffidavits, {
-      path: "userId",
-      select:
-        "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo",
-    });
+    const affidavits = await MemberAffidavit.populate(
+      aggregatedAffidavits,
+      {
+        path: "userId",
+        select:
+          "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo",
+      },
+    );
 
     // -----------------------------
-    // FETCH ALL RECEIPTS AT ONCE
+    // FETCH ALL RECEIPTS
     // -----------------------------
-    const memberIds = affidavits.map((a) => a.userId?._id).filter(Boolean);
+    const memberIds = affidavits
+      .map((item) => item.userId?._id)
+      .filter(Boolean);
 
     const receipts = await Receipt.find({
       member: { $in: memberIds },
@@ -1505,7 +1537,7 @@ const getAllAffidavits = async (req, res) => {
     });
 
     // -----------------------------
-    // ENRICH DATA
+    // ENRICH AFFIDAVITS
     // -----------------------------
     const enrichedAffidavits = affidavits.map((affidavit) => {
       const memberId = affidavit.userId?._id;
@@ -1521,7 +1553,8 @@ const getAllAffidavits = async (req, res) => {
 
       const siteDownPayments = (receipt?.payments || []).filter(
         (payment) =>
-          (payment.paymentType || "").toLowerCase() === "sitedownpayment",
+          (payment.paymentType || "").toLowerCase() ===
+          "sitedownpayment",
       );
 
       return {
@@ -1533,7 +1566,7 @@ const getAllAffidavits = async (req, res) => {
     // -----------------------------
     // RESPONSE
     // -----------------------------
-    res.status(200).json({
+    return res.status(200).json({
       data: enrichedAffidavits,
       pagination: {
         currentPage: page,
@@ -1545,7 +1578,8 @@ const getAllAffidavits = async (req, res) => {
   } catch (error) {
     console.error("Error fetching affidavits:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
+      success: false,
       message: "Failed to fetch affidavits",
       error: error.message,
     });
