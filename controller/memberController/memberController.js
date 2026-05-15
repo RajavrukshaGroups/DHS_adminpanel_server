@@ -1306,6 +1306,78 @@ const addConfirmation = async (req, res) => {
   }
 };
 
+// const getAllAffidavits = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const skip = (page - 1) * limit;
+//     const search = req.query.search || "";
+
+//     // Build dynamic query for user fields
+//     const userQuery = search
+//       ? {
+//           $or: [
+//             { name: { $regex: search, $options: "i" } },
+//             { email: { $regex: search, $options: "i" } },
+//             isNaN(search) ? null : { mobileNumber: Number(search) },
+//             { ConfirmationLetterNo: { $regex: search, $options: "i" } },
+//             { MembershipNo: { $regex: search, $options: "i" } },
+//           ].filter(Boolean),
+//         }
+//       : {};
+
+//     // Step 1: Find all matching users
+//     const users = await Member.find(userQuery).select("_id");
+//     const userIds = users.map((u) => u._id);
+
+//     // Step 2: Use userIds to filter MemberAffidavit
+//     const affidavitQuery = userIds.length ? { userId: { $in: userIds } } : {};
+
+//     const total = await MemberAffidavit.countDocuments(affidavitQuery);
+//     // console.log("total", await MemberAffidavit.countDocuments());
+
+//     const affidavits = await MemberAffidavit.find(affidavitQuery)
+//       .populate(
+//         "userId",
+//         "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo",
+//       )
+//       .sort({ createdAt: -1 })
+//       .skip(skip)
+//       .limit(limit);
+
+//     const enrichedAffidavits = await Promise.all(
+//       affidavits.map(async (affidavit) => {
+//         const memberId = affidavit.userId?._id;
+//         if (!memberId) return affidavit;
+
+//         const receipt = await Receipt.findOne({ member: memberId }).lean();
+//         const siteDownPayments = (receipt?.payments || []).filter(
+//           (payment) =>
+//             (payment.paymentType || "").toLowerCase() === "sitedownpayment",
+//         );
+
+//         return {
+//           ...affidavit.toObject(),
+//           siteDownPayments,
+//         };
+//       }),
+//     );
+
+//     res.status(200).json({
+//       data: enrichedAffidavits,
+//       pagination: {
+//         currentPage: page,
+//         totalPages: Math.ceil(total / limit),
+//         totalItems: total,
+//         itemsPerPage: limit,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error fetching affidavits:", error);
+//     res.status(500).json({ message: "Failed to fetch affidavits" });
+//   }
+// };
+
 const getAllAffidavits = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -1313,56 +1385,154 @@ const getAllAffidavits = async (req, res) => {
     const skip = (page - 1) * limit;
     const search = req.query.search || "";
 
-    // Build dynamic query for user fields
+    // -----------------------------
+    // MEMBER SEARCH QUERY
+    // -----------------------------
     const userQuery = search
       ? {
           $or: [
             { name: { $regex: search, $options: "i" } },
             { email: { $regex: search, $options: "i" } },
-            isNaN(search) ? null : { mobileNumber: Number(search) },
             { ConfirmationLetterNo: { $regex: search, $options: "i" } },
             { MembershipNo: { $regex: search, $options: "i" } },
-          ].filter(Boolean),
+            ...(isNaN(search) ? [] : [{ mobileNumber: Number(search) }]),
+          ],
         }
       : {};
 
-    // Step 1: Find all matching users
+    // -----------------------------
+    // GET MATCHING MEMBERS
+    // -----------------------------
     const users = await Member.find(userQuery).select("_id");
+
     const userIds = users.map((u) => u._id);
 
-    // Step 2: Use userIds to filter MemberAffidavit
-    const affidavitQuery = userIds.length ? { userId: { $in: userIds } } : {};
+    // -----------------------------
+    // AFFIDAVIT FILTER
+    // -----------------------------
+    const affidavitQuery =
+      search && userIds.length === 0
+        ? { _id: null } // no results
+        : search
+          ? { userId: { $in: userIds } }
+          : {};
 
-    const total = await MemberAffidavit.countDocuments(affidavitQuery);
-    // console.log("total", await MemberAffidavit.countDocuments());
+    // -----------------------------
+    // TOTAL UNIQUE MEMBERS
+    // -----------------------------
+    const totalResult = await MemberAffidavit.aggregate([
+      {
+        $match: affidavitQuery,
+      },
+      {
+        $group: {
+          _id: "$userId",
+        },
+      },
+      {
+        $count: "total",
+      },
+    ]);
 
-    const affidavits = await MemberAffidavit.find(affidavitQuery)
-      .populate(
-        "userId",
+    const total = totalResult[0]?.total || 0;
+
+    // -----------------------------
+    // GET UNIQUE AFFIDAVITS
+    // -----------------------------
+    const aggregatedAffidavits = await MemberAffidavit.aggregate([
+      {
+        $match: affidavitQuery,
+      },
+
+      // newest affidavit first
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+
+      // keep only latest affidavit per member
+      {
+        $group: {
+          _id: "$userId",
+          affidavit: {
+            $first: "$$ROOT",
+          },
+        },
+      },
+
+      // flatten structure
+      {
+        $replaceRoot: {
+          newRoot: "$affidavit",
+        },
+      },
+
+      // pagination
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+    ]);
+
+    // -----------------------------
+    // POPULATE MEMBER DETAILS
+    // -----------------------------
+    const affidavits = await MemberAffidavit.populate(aggregatedAffidavits, {
+      path: "userId",
+      select:
         "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo",
-      )
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    });
 
-    const enrichedAffidavits = await Promise.all(
-      affidavits.map(async (affidavit) => {
-        const memberId = affidavit.userId?._id;
-        if (!memberId) return affidavit;
+    // -----------------------------
+    // FETCH ALL RECEIPTS AT ONCE
+    // -----------------------------
+    const memberIds = affidavits.map((a) => a.userId?._id).filter(Boolean);
 
-        const receipt = await Receipt.findOne({ member: memberId }).lean();
-        const siteDownPayments = (receipt?.payments || []).filter(
-          (payment) =>
-            (payment.paymentType || "").toLowerCase() === "sitedownpayment",
-        );
+    const receipts = await Receipt.find({
+      member: { $in: memberIds },
+    }).lean();
 
+    // -----------------------------
+    // CREATE RECEIPT MAP
+    // -----------------------------
+    const receiptMap = {};
+
+    receipts.forEach((receipt) => {
+      receiptMap[receipt.member.toString()] = receipt;
+    });
+
+    // -----------------------------
+    // ENRICH DATA
+    // -----------------------------
+    const enrichedAffidavits = affidavits.map((affidavit) => {
+      const memberId = affidavit.userId?._id;
+
+      if (!memberId) {
         return {
-          ...affidavit.toObject(),
-          siteDownPayments,
+          ...affidavit,
+          siteDownPayments: [],
         };
-      }),
-    );
+      }
 
+      const receipt = receiptMap[memberId.toString()];
+
+      const siteDownPayments = (receipt?.payments || []).filter(
+        (payment) =>
+          (payment.paymentType || "").toLowerCase() === "sitedownpayment",
+      );
+
+      return {
+        ...affidavit,
+        siteDownPayments,
+      };
+    });
+
+    // -----------------------------
+    // RESPONSE
+    // -----------------------------
     res.status(200).json({
       data: enrichedAffidavits,
       pagination: {
@@ -1374,7 +1544,11 @@ const getAllAffidavits = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching affidavits:", error);
-    res.status(500).json({ message: "Failed to fetch affidavits" });
+
+    res.status(500).json({
+      message: "Failed to fetch affidavits",
+      error: error.message,
+    });
   }
 };
 
