@@ -1275,8 +1275,16 @@ const addConfirmation = async (req, res) => {
       ? JSON.parse(req.body.confirmationPayments)
       : [];
 
+    const member = await Member.findById(id);
+    if (!member) {
+      return res.status(404).json({
+        message: "Member not found",
+      });
+    }
+
     const newAffidavit = new MemberAffidavit({
       userId: id,
+      MembershipNo: member.MembershipNo,
       projectAddress: req.body.projectAddress,
       chequeNo: req.body.ChequeNo,
       duration: req.body.duration,
@@ -1395,9 +1403,7 @@ const getAllAffidavits = async (req, res) => {
             { email: { $regex: search, $options: "i" } },
             { MembershipNo: { $regex: search, $options: "i" } },
             { ConfirmationLetterNo: { $regex: search, $options: "i" } },
-            ...(isNaN(search)
-              ? []
-              : [{ mobileNumber: Number(search) }]),
+            ...(isNaN(search) ? [] : [{ mobileNumber: Number(search) }]),
           ],
         }
       : {};
@@ -1405,9 +1411,15 @@ const getAllAffidavits = async (req, res) => {
     // -----------------------------
     // FETCH MATCHING USERS
     // -----------------------------
-    const users = await Member.find(userQuery).select("_id");
+    // const users = await Member.find(userQuery).select("_id");
 
-    const userIds = users.map((user) => user._id);
+    // const userIds = users.map((user) => user._id);
+
+    const users = await Member.find(userQuery).select("MembershipNo");
+
+    const membershipNos = users
+      .map((user) => user.MembershipNo)
+      .filter(Boolean);
 
     // -----------------------------
     // AFFIDAVIT FILTER
@@ -1415,9 +1427,11 @@ const getAllAffidavits = async (req, res) => {
     let affidavitQuery = {};
 
     if (search) {
+      // affidavitQuery =
+      //   userIds.length > 0 ? { userId: { $in: userIds } } : { _id: null };
       affidavitQuery =
-        userIds.length > 0
-          ? { userId: { $in: userIds } }
+        membershipNos.length > 0
+          ? { MembershipNo: { $in: membershipNos } }
           : { _id: null };
     }
 
@@ -1440,7 +1454,8 @@ const getAllAffidavits = async (req, res) => {
       // unique member
       {
         $group: {
-          _id: "$userId",
+          // _id: "$userId",
+          _id: "$MembershipNo",
         },
       },
 
@@ -1471,7 +1486,8 @@ const getAllAffidavits = async (req, res) => {
       // keep latest affidavit per member
       {
         $group: {
-          _id: "$userId",
+          // _id: "$userId",
+          _id: "$MembershipNo",
           affidavit: {
             $first: "$$ROOT",
           },
@@ -1507,24 +1523,63 @@ const getAllAffidavits = async (req, res) => {
     // -----------------------------
     // POPULATE MEMBER DETAILS
     // -----------------------------
-    const affidavits = await MemberAffidavit.populate(
-      aggregatedAffidavits,
-      {
-        path: "userId",
-        select:
-          "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo",
-      },
+    // const affidavits = await MemberAffidavit.populate(aggregatedAffidavits, {
+    //   path: "userId",
+    //   select:
+    //     "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo",
+    // });
+
+    let affidavits = await MemberAffidavit.populate(aggregatedAffidavits, {
+      path: "userId",
+      select:
+        "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo contactAddress",
+    });
+
+    // ✅ reconnect broken userIds using MembershipNo
+    affidavits = await Promise.all(
+      affidavits.map(async (affidavit) => {
+        if (!affidavit.userId && affidavit.MembershipNo) {
+          const member = await Member.findOne({
+            MembershipNo: affidavit.MembershipNo,
+          }).select(
+            "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo contactAddress",
+          );
+
+          if (member) {
+            affidavit.userId = member;
+
+            // optional auto-healing
+            affidavit.userId = member._id;
+
+            await MemberAffidavit.findByIdAndUpdate(affidavit._id, {
+              userId: member._id,
+            });
+          }
+        }
+
+        return affidavit;
+      }),
     );
 
     // -----------------------------
     // FETCH ALL RECEIPTS
     // -----------------------------
-    const memberIds = affidavits
-      .map((item) => item.userId?._id)
+    // const memberIds = affidavits
+    //   .map((item) => item.userId?._id)
+    //   .filter(Boolean);
+
+    // const receipts = await Receipt.find({
+    //   member: { $in: memberIds },
+    // }).lean();
+
+    const membershipNosForReceipts = affidavits
+      .map((item) => item.MembershipNo)
       .filter(Boolean);
 
     const receipts = await Receipt.find({
-      member: { $in: memberIds },
+      MembershipNo: {
+        $in: membershipNosForReceipts,
+      },
     }).lean();
 
     // -----------------------------
@@ -1533,28 +1588,31 @@ const getAllAffidavits = async (req, res) => {
     const receiptMap = {};
 
     receipts.forEach((receipt) => {
-      receiptMap[receipt.member.toString()] = receipt;
+      // receiptMap[receipt.member.toString()] = receipt;
+      receiptMap[receipt.MembershipNo] = receipt;
     });
 
     // -----------------------------
     // ENRICH AFFIDAVITS
     // -----------------------------
     const enrichedAffidavits = affidavits.map((affidavit) => {
-      const memberId = affidavit.userId?._id;
+      // const memberId = affidavit.userId?._id;
+      const membershipNo = affidavit.MembershipNo;
 
-      if (!memberId) {
+      // if (!memberId) {
+      if (!membershipNo) {
         return {
           ...affidavit,
           siteDownPayments: [],
         };
       }
 
-      const receipt = receiptMap[memberId.toString()];
+      // const receipt = receiptMap[memberId.toString()];
+      const receipt = receiptMap[membershipNo];
 
       const siteDownPayments = (receipt?.payments || []).filter(
         (payment) =>
-          (payment.paymentType || "").toLowerCase() ===
-          "sitedownpayment",
+          (payment.paymentType || "").toLowerCase() === "sitedownpayment",
       );
 
       return {
@@ -1877,45 +1935,146 @@ const addReceiptToMember = async (req, res) => {
   }
 };
 
+// const editConfirmationLetter = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     console.log(id, "idddddddddddddd");
+//     // Find the existing affidavit by userId
+//     const existingAffidavit = await MemberAffidavit.findOne({ userId: id });
+//     if (!existingAffidavit) {
+//       return res.status(404).json({ message: "Affidavit not found" });
+//     }
+
+//     // Optional: Upload new file if provided
+//     if (req.file) {
+//       const result = await uploadToCloudinary(req.file.buffer);
+//       existingAffidavit.affidavitUrl = result.secure_url;
+//       existingAffidavit.cloudinaryId = result.public_id;
+//     }
+//     // Update other fields
+//     existingAffidavit.projectAddress =
+//       req.body.projectAddress || existingAffidavit.projectAddress;
+//     existingAffidavit.chequeNo =
+//       req.body.ChequeNo || existingAffidavit.chequeNo;
+//     existingAffidavit.duration =
+//       req.body.duration || existingAffidavit.duration;
+//     existingAffidavit.confirmationLetterIssueDate =
+//       req.body.confirmationLetterIssueDate ||
+//       existingAffidavit.confirmationLetterIssueDate;
+//     existingAffidavit.totalPaidAmount =
+//       req.body.Amount || existingAffidavit.totalPaidAmount;
+//     // existingAffidavit.confirmationLetterReceiptNo =
+//     //   req.body.confirmationLetterReceiptNo ||
+//     //   existingAffidavit.confirmationLetterReceiptNo;
+//     // existingAffidavit.confirmationLetterReceiptNo = Array.isArray(
+//     //   req.body.confirmationLetterReceiptNo,
+//     // )
+//     //   ? req.body.confirmationLetterReceiptNo
+//     //   : [req.body.confirmationLetterReceiptNo];
+//     const confirmationPayments = req.body.confirmationPayments
+//       ? JSON.parse(req.body.confirmationPayments)
+//       : [];
+
+//     existingAffidavit.confirmationLetterReceiptNo = Array.isArray(
+//       req.body.confirmationLetterReceiptNo,
+//     )
+//       ? req.body.confirmationLetterReceiptNo
+//       : [req.body.confirmationLetterReceiptNo];
+
+//     existingAffidavit.confirmationPayments = confirmationPayments;
+//     existingAffidavit.pricePerSqft =
+//       req.body.pricePerSqft || existingAffidavit.pricePerSqft;
+//     existingAffidavit.PaymentType =
+//       req.body.PaymentType || existingAffidavit.PaymentType;
+//     existingAffidavit.ConfirmationLetterNo =
+//       req.body.ConfirmationLetterNo || existingAffidavit.ConfirmationLetterNo;
+//     existingAffidavit.ConfirmationLetterDate =
+//       req.body.ConfirmationLetterDate ||
+//       existingAffidavit.ConfirmationLetterDate;
+//     await existingAffidavit.save();
+//     res.status(200).json({
+//       message: "Confirmation letter updated successfully",
+//       data: existingAffidavit,
+//     });
+//   } catch (error) {
+//     console.error("Update error:", error);
+//     res.status(500).json({ error: "Failed to update confirmation letter" });
+//   }
+// };
+
 const editConfirmationLetter = async (req, res) => {
   try {
     const { id } = req.params;
+
     console.log(id, "idddddddddddddd");
-    // Find the existing affidavit by userId
-    const existingAffidavit = await MemberAffidavit.findOne({ userId: id });
-    if (!existingAffidavit) {
-      return res.status(404).json({ message: "Affidavit not found" });
+
+    // ✅ Fetch member first
+    const member = await Member.findById(id);
+
+    if (!member) {
+      return res.status(404).json({
+        message: "Member not found",
+      });
     }
 
-    // Optional: Upload new file if provided
+    const membershipNo = member.MembershipNo;
+
+    // ✅ FIRST TRY using MembershipNo
+    let existingAffidavit = await MemberAffidavit.findOne({
+      MembershipNo: membershipNo,
+    });
+
+    // ✅ FALLBACK for old live DB records
+    if (!existingAffidavit) {
+      existingAffidavit = await MemberAffidavit.findOne({
+        userId: id,
+      });
+
+      // ✅ Auto migrate old records
+      if (existingAffidavit) {
+        existingAffidavit.MembershipNo = membershipNo;
+      }
+    }
+
+    if (!existingAffidavit) {
+      return res.status(404).json({
+        message: "Affidavit not found",
+      });
+    }
+
+    // ✅ Always keep latest references updated
+    existingAffidavit.userId = id;
+    existingAffidavit.MembershipNo = membershipNo;
+
+    // ✅ Optional file upload
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer);
+
       existingAffidavit.affidavitUrl = result.secure_url;
       existingAffidavit.cloudinaryId = result.public_id;
     }
-    // Update other fields
-    existingAffidavit.projectAddress =
-      req.body.projectAddress || existingAffidavit.projectAddress;
-    existingAffidavit.chequeNo =
-      req.body.ChequeNo || existingAffidavit.chequeNo;
-    existingAffidavit.duration =
-      req.body.duration || existingAffidavit.duration;
-    existingAffidavit.confirmationLetterIssueDate =
-      req.body.confirmationLetterIssueDate ||
-      existingAffidavit.confirmationLetterIssueDate;
-    existingAffidavit.totalPaidAmount =
-      req.body.Amount || existingAffidavit.totalPaidAmount;
-    // existingAffidavit.confirmationLetterReceiptNo =
-    //   req.body.confirmationLetterReceiptNo ||
-    //   existingAffidavit.confirmationLetterReceiptNo;
-    // existingAffidavit.confirmationLetterReceiptNo = Array.isArray(
-    //   req.body.confirmationLetterReceiptNo,
-    // )
-    //   ? req.body.confirmationLetterReceiptNo
-    //   : [req.body.confirmationLetterReceiptNo];
+
+    // ✅ Parse confirmation payments
     const confirmationPayments = req.body.confirmationPayments
       ? JSON.parse(req.body.confirmationPayments)
       : [];
+
+    // ✅ Update fields
+    existingAffidavit.projectAddress =
+      req.body.projectAddress || existingAffidavit.projectAddress;
+
+    existingAffidavit.chequeNo =
+      req.body.ChequeNo || existingAffidavit.chequeNo;
+
+    existingAffidavit.duration =
+      req.body.duration || existingAffidavit.duration;
+
+    existingAffidavit.confirmationLetterIssueDate =
+      req.body.confirmationLetterIssueDate ||
+      existingAffidavit.confirmationLetterIssueDate;
+
+    existingAffidavit.totalPaidAmount =
+      req.body.Amount || existingAffidavit.totalPaidAmount;
 
     existingAffidavit.confirmationLetterReceiptNo = Array.isArray(
       req.body.confirmationLetterReceiptNo,
@@ -1924,23 +2083,32 @@ const editConfirmationLetter = async (req, res) => {
       : [req.body.confirmationLetterReceiptNo];
 
     existingAffidavit.confirmationPayments = confirmationPayments;
+
     existingAffidavit.pricePerSqft =
       req.body.pricePerSqft || existingAffidavit.pricePerSqft;
+
     existingAffidavit.PaymentType =
       req.body.PaymentType || existingAffidavit.PaymentType;
+
     existingAffidavit.ConfirmationLetterNo =
       req.body.ConfirmationLetterNo || existingAffidavit.ConfirmationLetterNo;
+
     existingAffidavit.ConfirmationLetterDate =
       req.body.ConfirmationLetterDate ||
       existingAffidavit.ConfirmationLetterDate;
+
     await existingAffidavit.save();
+
     res.status(200).json({
       message: "Confirmation letter updated successfully",
       data: existingAffidavit,
     });
   } catch (error) {
     console.error("Update error:", error);
-    res.status(500).json({ error: "Failed to update confirmation letter" });
+
+    res.status(500).json({
+      error: "Failed to update confirmation letter",
+    });
   }
 };
 

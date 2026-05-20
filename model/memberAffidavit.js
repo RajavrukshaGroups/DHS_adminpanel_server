@@ -6,6 +6,11 @@ const memberAffidavitSchema = new mongoose.Schema({
     ref: "Member",
     required: true,
   },
+  MembershipNo: {
+    type: String,
+    // required: true,
+    index: true,
+  },
   projectAddress: {
     type: String,
   },

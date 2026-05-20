@@ -62,6 +62,10 @@ const receiptSchema = new mongoose.Schema({
     ref: "Member",
     required: true,
   },
+  MembershipNo: {
+    type: String,
+    index: true,
+  },
   payments: [paymentEntrySchema],
 });
 

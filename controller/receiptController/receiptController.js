@@ -9,14 +9,87 @@ import numWords from "num-words";
 import toWords from "number-to-words";
 import Project from "../../model/projectModel.js";
 
+// export const createReceipt = async (memberId, data) => {
+//   console.log("data new receipt", data);
+//   try {
+//     const paymentEntry = {
+//       uniqueRowId: data.uniqueRowId,
+//       receiptNo: data.recieptNo,
+//       date: new Date(data.date),
+//       paymentType: data.paymentType, // 'Membership Fee'
+//       installmentNumber: data.installment || undefined,
+//       paymentMode: data.paymentMode.toLowerCase(),
+//       bankName: data.bankName,
+//       branchName: data.branchName,
+//       amount: Number(data.amount),
+//       chequeNumber: data.chequeNumber,
+//       ddNumber: data.ddNumber,
+//       transactionId: data.transactionId,
+//       otherCharges: data.otherCharges,
+//       correspondenceAddress: data.correspondenceAddress,
+
+//       // Membership Fee breakdown
+//       numberOfShares: Number(data.numberOfShares) || undefined,
+//       applicationFee: Number(data.applicationFee) || undefined,
+//       admissionFee: Number(data.adminissionFee) || undefined,
+//       miscellaneousExpenses: Number(data.miscellaneousExpenses) || undefined,
+//       membershipFee: Number(data.memberShipFee) || undefined,
+//       shareFee: Number(data.shareFee) || undefined,
+//     };
+//     console.log("payment entry installment", paymentEntry);
+//     let receipt = await Receipt.findOne({ member: memberId });
+
+//     if (receipt) {
+//       // Add new payment entry to existing receipt
+//       receipt.payments.push(paymentEntry);
+//     } else {
+//       // Create new receipt document
+//       receipt = new Receipt({
+//         member: memberId,
+//         payments: [paymentEntry],
+//       });
+//     }
+
+//     await receipt.save();
+//     // ✅ Add receipt ID to member.receiptIds (use $addToSet to avoid duplicates)
+//     await Member.findByIdAndUpdate(memberId, {
+//       $addToSet: { receiptId: receipt._id },
+//     });
+
+//     return {
+//       status: 200,
+//       data: receipt,
+//     };
+//   } catch (error) {
+//     console.error("Error creating receipt:", error);
+//     return {
+//       status: 500,
+//       error: error.message,
+//     };
+//   }
+// };
+
 export const createReceipt = async (memberId, data) => {
   console.log("data new receipt", data);
+
   try {
+    // ✅ Fetch member first
+    const member = await Member.findById(memberId);
+
+    if (!member) {
+      return {
+        status: 404,
+        error: "Member not found",
+      };
+    }
+
+    const membershipNo = member.MembershipNo;
+
     const paymentEntry = {
       uniqueRowId: data.uniqueRowId,
       receiptNo: data.recieptNo,
       date: new Date(data.date),
-      paymentType: data.paymentType, // 'Membership Fee'
+      paymentType: data.paymentType,
       installmentNumber: data.installment || undefined,
       paymentMode: data.paymentMode.toLowerCase(),
       bankName: data.bankName,
@@ -28,30 +101,36 @@ export const createReceipt = async (memberId, data) => {
       otherCharges: data.otherCharges,
       correspondenceAddress: data.correspondenceAddress,
 
-      // Membership Fee breakdown
       numberOfShares: Number(data.numberOfShares) || undefined,
       applicationFee: Number(data.applicationFee) || undefined,
       admissionFee: Number(data.adminissionFee) || undefined,
-      miscellaneousExpenses: Number(data.miscellaneousExpenses) || undefined,
+      miscellaneousExpenses:
+        Number(data.miscellaneousExpenses) || undefined,
       membershipFee: Number(data.memberShipFee) || undefined,
       shareFee: Number(data.shareFee) || undefined,
     };
-    console.log("payment entry installment", paymentEntry);
-    let receipt = await Receipt.findOne({ member: memberId });
+
+    // ✅ Search using MembershipNo instead of memberId
+    let receipt = await Receipt.findOne({
+      MembershipNo: membershipNo,
+    });
 
     if (receipt) {
-      // Add new payment entry to existing receipt
       receipt.payments.push(paymentEntry);
+
+      // Optional:
+      // update latest memberId if re-uploaded
+      // receipt.member = memberId;
     } else {
-      // Create new receipt document
       receipt = new Receipt({
         member: memberId,
+        MembershipNo: membershipNo,
         payments: [paymentEntry],
       });
     }
 
     await receipt.save();
-    // ✅ Add receipt ID to member.receiptIds (use $addToSet to avoid duplicates)
+
     await Member.findByIdAndUpdate(memberId, {
       $addToSet: { receiptId: receipt._id },
     });
@@ -62,6 +141,7 @@ export const createReceipt = async (memberId, data) => {
     };
   } catch (error) {
     console.error("Error creating receipt:", error);
+
     return {
       status: 500,
       error: error.message,
