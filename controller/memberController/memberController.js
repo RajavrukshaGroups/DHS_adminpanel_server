@@ -14,6 +14,7 @@ import mongoose from "mongoose";
 import Online from "../../model/onlineModel.js";
 // controllers/googleSheetUploadController.js
 import { google } from "googleapis";
+import { createMergedPdf } from "../../utils/createMergedPdf.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -1209,38 +1210,47 @@ const getConfirmation = async (req, res) => {
 
 // const addConfirmation = async (req, res) => {
 //   try {
+//     console.log("Received file:", req.file);
+//     console.log("Received body:", req.body);
 //     const { id } = req.params;
 
 //     let affidavitUrl = null;
 //     let cloudinaryId = null;
 
-//     // ✅ Upload file (optional)
 //     if (req.file) {
 //       const result = await uploadToCloudinary(req.file.buffer);
 //       affidavitUrl = result.secure_url;
 //       cloudinaryId = result.public_id;
 //     }
 
-//     // 🔥 Parse multiple receipt numbers
-//     let receiptNos = [];
-//     if (req.body.confirmationLetterReceiptNo) {
-//       try {
-//         receiptNos = JSON.parse(req.body.confirmationLetterReceiptNo);
-//       } catch (e) {
-//         receiptNos = [req.body.confirmationLetterReceiptNo];
-//       }
+//     const confirmationPayments = req.body.confirmationPayments
+//       ? JSON.parse(req.body.confirmationPayments)
+//       : [];
+
+//     const member = await Member.findById(id);
+//     if (!member) {
+//       return res.status(404).json({
+//         message: "Member not found",
+//       });
 //     }
 
 //     const newAffidavit = new MemberAffidavit({
 //       userId: id,
+//       MembershipNo: member.MembershipNo,
 //       projectAddress: req.body.projectAddress,
 //       chequeNo: req.body.ChequeNo,
 //       duration: req.body.duration,
-//       affidavitUrl,
-//       cloudinaryId,
+//       affidavitUrl, // will be null if not uploaded
+//       cloudinaryId, // will be null if not uploaded
 //       totalPaidAmount: req.body.Amount,
 //       confirmationLetterIssueDate: req.body.confirmationLetterIssueDate,
-//       confirmationLetterReceiptNo: receiptNos, // ✅ ARRAY
+//       // confirmationLetterReceiptNo: req.body.confirmationLetterReceiptNo,
+//       confirmationLetterReceiptNo: Array.isArray(
+//         req.body.confirmationLetterReceiptNo,
+//       )
+//         ? req.body.confirmationLetterReceiptNo
+//         : [req.body.confirmationLetterReceiptNo],
+//       confirmationPayments,
 //       ConfirmationLetterNo: req.body.ConfirmationLetterNo,
 //     });
 
@@ -1258,19 +1268,43 @@ const getConfirmation = async (req, res) => {
 
 const addConfirmation = async (req, res) => {
   try {
-    console.log("Received file:", req.file);
+    console.log("Received files:", req.files);
     console.log("Received body:", req.body);
     const { id } = req.params;
 
     let affidavitUrl = null;
     let cloudinaryId = null;
 
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
+    // if (req.file) {
+    //   const result = await uploadToCloudinary(req.file.buffer);
+    //   affidavitUrl = result.secure_url;
+    //   cloudinaryId = result.public_id;
+    // }
+
+    if (req.files && req.files.length > 0) {
+      let uploadBuffer;
+
+      // ✅ CASE 1:
+      // single PDF upload
+      if (
+        req.files.length === 1 &&
+        req.files[0].mimetype === "application/pdf"
+      ) {
+        uploadBuffer = req.files[0].buffer;
+      }
+
+      // ✅ CASE 2:
+      // images or multiple files
+      else {
+        uploadBuffer = await createMergedPdf(req.files);
+      }
+
+      // upload to cloudinary
+      const result = await uploadToCloudinary(uploadBuffer);
+
       affidavitUrl = result.secure_url;
       cloudinaryId = result.public_id;
     }
-
     const confirmationPayments = req.body.confirmationPayments
       ? JSON.parse(req.body.confirmationPayments)
       : [];
@@ -2002,6 +2036,116 @@ const addReceiptToMember = async (req, res) => {
 //   }
 // };
 
+// const editConfirmationLetter = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     console.log(id, "idddddddddddddd");
+
+//     // ✅ Fetch member first
+//     const member = await Member.findById(id);
+
+//     if (!member) {
+//       return res.status(404).json({
+//         message: "Member not found",
+//       });
+//     }
+
+//     const membershipNo = member.MembershipNo;
+
+//     // ✅ FIRST TRY using MembershipNo
+//     let existingAffidavit = await MemberAffidavit.findOne({
+//       MembershipNo: membershipNo,
+//     });
+
+//     // ✅ FALLBACK for old live DB records
+//     if (!existingAffidavit) {
+//       existingAffidavit = await MemberAffidavit.findOne({
+//         userId: id,
+//       });
+
+//       // ✅ Auto migrate old records
+//       if (existingAffidavit) {
+//         existingAffidavit.MembershipNo = membershipNo;
+//       }
+//     }
+
+//     if (!existingAffidavit) {
+//       return res.status(404).json({
+//         message: "Affidavit not found",
+//       });
+//     }
+
+//     // ✅ Always keep latest references updated
+//     existingAffidavit.userId = id;
+//     existingAffidavit.MembershipNo = membershipNo;
+
+//     // ✅ Optional file upload
+//     if (req.file) {
+//       const result = await uploadToCloudinary(req.file.buffer);
+
+//       existingAffidavit.affidavitUrl = result.secure_url;
+//       existingAffidavit.cloudinaryId = result.public_id;
+//     }
+
+//     // ✅ Parse confirmation payments
+//     const confirmationPayments = req.body.confirmationPayments
+//       ? JSON.parse(req.body.confirmationPayments)
+//       : [];
+
+//     // ✅ Update fields
+//     existingAffidavit.projectAddress =
+//       req.body.projectAddress || existingAffidavit.projectAddress;
+
+//     existingAffidavit.chequeNo =
+//       req.body.ChequeNo || existingAffidavit.chequeNo;
+
+//     existingAffidavit.duration =
+//       req.body.duration || existingAffidavit.duration;
+
+//     existingAffidavit.confirmationLetterIssueDate =
+//       req.body.confirmationLetterIssueDate ||
+//       existingAffidavit.confirmationLetterIssueDate;
+
+//     existingAffidavit.totalPaidAmount =
+//       req.body.Amount || existingAffidavit.totalPaidAmount;
+
+//     existingAffidavit.confirmationLetterReceiptNo = Array.isArray(
+//       req.body.confirmationLetterReceiptNo,
+//     )
+//       ? req.body.confirmationLetterReceiptNo
+//       : [req.body.confirmationLetterReceiptNo];
+
+//     existingAffidavit.confirmationPayments = confirmationPayments;
+
+//     existingAffidavit.pricePerSqft =
+//       req.body.pricePerSqft || existingAffidavit.pricePerSqft;
+
+//     existingAffidavit.PaymentType =
+//       req.body.PaymentType || existingAffidavit.PaymentType;
+
+//     existingAffidavit.ConfirmationLetterNo =
+//       req.body.ConfirmationLetterNo || existingAffidavit.ConfirmationLetterNo;
+
+//     existingAffidavit.ConfirmationLetterDate =
+//       req.body.ConfirmationLetterDate ||
+//       existingAffidavit.ConfirmationLetterDate;
+
+//     await existingAffidavit.save();
+
+//     res.status(200).json({
+//       message: "Confirmation letter updated successfully",
+//       data: existingAffidavit,
+//     });
+//   } catch (error) {
+//     console.error("Update error:", error);
+
+//     res.status(500).json({
+//       error: "Failed to update confirmation letter",
+//     });
+//   }
+// };
+
 const editConfirmationLetter = async (req, res) => {
   try {
     const { id } = req.params;
@@ -2046,9 +2190,24 @@ const editConfirmationLetter = async (req, res) => {
     existingAffidavit.userId = id;
     existingAffidavit.MembershipNo = membershipNo;
 
-    // ✅ Optional file upload
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
+    // ✅ Optional multiple file upload
+    if (req.files && req.files.length > 0) {
+      let uploadBuffer;
+
+      // single pdf
+      if (
+        req.files.length === 1 &&
+        req.files[0].mimetype === "application/pdf"
+      ) {
+        uploadBuffer = req.files[0].buffer;
+      }
+
+      // images / multiple files
+      else {
+        uploadBuffer = await createMergedPdf(req.files);
+      }
+
+      const result = await uploadToCloudinary(uploadBuffer);
 
       existingAffidavit.affidavitUrl = result.secure_url;
       existingAffidavit.cloudinaryId = result.public_id;
