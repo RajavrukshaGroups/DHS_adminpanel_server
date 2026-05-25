@@ -1579,15 +1579,28 @@ const getAllAffidavits = async (req, res) => {
             "refname name email mobileNumber saluation SeniorityID ReceiptNo Amount ConfirmationLetterNo MembershipNo contactAddress",
           );
 
+          // if (member) {
+          //   affidavit.userId = member;
+
+          //   // optional auto-healing
+          //   affidavit.userId = member._id;
+
+          //   await MemberAffidavit.findByIdAndUpdate(affidavit._id, {
+          //     userId: member._id,
+          //   });
+          // }
           if (member) {
+            // keep populated object for frontend
             affidavit.userId = member;
 
-            // optional auto-healing
-            affidavit.userId = member._id;
-
-            await MemberAffidavit.findByIdAndUpdate(affidavit._id, {
-              userId: member._id,
-            });
+            // optional DB auto-healing
+            await MemberAffidavit.findByIdAndUpdate(
+              affidavit._id,
+              {
+                userId: member._id,
+              },
+              { new: true },
+            );
           }
         }
 

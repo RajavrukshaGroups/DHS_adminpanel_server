@@ -29,136 +29,139 @@ const cancellationSchema = new mongoose.Schema({
   },
 });
 
-const memberSchema = new mongoose.Schema({
-  refname: {
-    type: String,
-  },
-  rankDesignation: {
-    type: String,
-  },
-  serviceId: {
-    type: String,
-  },
-  relationship: {
-    type: String,
-  },
-  saluation: {
-    type: String,
-  },
-  propertyDetails: {
-    type: propertyDetailsSchema,
-    // required: true,
-  },
-  name: {
-    type: String,
-  },
-  mobileNumber: {
-    type: Number,
-  },
-  AlternativeNumber: {
-    type: Number,
-  },
-  email: {
-    type: String,
-  },
-  dateofbirth: {
-    type: Date,
-  },
-  fatherName: {
-    type: String,
-  },
-  contactAddress: {
-    type: String,
-  },
-  permanentAddress: {
-    type: String,
-  },
-  workingAddress: {
-    type: String,
-  },
-  MemberPhoto: {
-    type: String,
-  },
-  MemberSign: {
-    type: String,
-  },
-  nomineeName: {
-    type: String,
-  },
-  nomineeAge: {
-    type: Number,
-  },
-  nomineeRelation: {
-    type: String,
-  },
-  nomineeAddress: {
-    type: String,
-  },
-  SeniorityID: {
-    type: String,
-  },
-  MembershipNo: {
-    type: String,
-  },
+const memberSchema = new mongoose.Schema(
+  {
+    refname: {
+      type: String,
+    },
+    rankDesignation: {
+      type: String,
+    },
+    serviceId: {
+      type: String,
+    },
+    relationship: {
+      type: String,
+    },
+    saluation: {
+      type: String,
+    },
+    propertyDetails: {
+      type: propertyDetailsSchema,
+      // required: true,
+    },
+    name: {
+      type: String,
+    },
+    mobileNumber: {
+      type: Number,
+    },
+    AlternativeNumber: {
+      type: Number,
+    },
+    email: {
+      type: String,
+    },
+    dateofbirth: {
+      type: Date,
+    },
+    fatherName: {
+      type: String,
+    },
+    contactAddress: {
+      type: String,
+    },
+    permanentAddress: {
+      type: String,
+    },
+    workingAddress: {
+      type: String,
+    },
+    MemberPhoto: {
+      type: String,
+    },
+    MemberSign: {
+      type: String,
+    },
+    nomineeName: {
+      type: String,
+    },
+    nomineeAge: {
+      type: Number,
+    },
+    nomineeRelation: {
+      type: String,
+    },
+    nomineeAddress: {
+      type: String,
+    },
+    SeniorityID: {
+      type: String,
+    },
+    MembershipNo: {
+      type: String,
+    },
 
-  ConfirmationLetterNo: {
-    type: String,
-  },
+    ConfirmationLetterNo: {
+      type: String,
+    },
 
-  ShareCertificateNumber: {
-    type: String,
-  },
+    ShareCertificateNumber: {
+      type: String,
+    },
 
-  isTransferred: {
-    type: Boolean,
-    default: false,
-  },
+    isTransferred: {
+      type: Boolean,
+      default: false,
+    },
 
-  cancellationDetails: {
-    type: cancellationSchema,
-    default: null, // If not cancelled, this remains null
-  },
+    cancellationDetails: {
+      type: cancellationSchema,
+      default: null, // If not cancelled, this remains null
+    },
 
-  transferReason: {
-    type: String,
-  },
-  transferDate: {
-    type: Date,
-  },
-  previousMemberDetails: {
-    saluation: String,
-    name: String,
-    email: String,
-    mobileNumber: Number,
-    dateofbirth: Date,
-    fatherName: String,
-    contactAddress: String,
-    permanentAddress: String,
-    workingAddress: String,
-    nomineeName: String,
-    nomineeAge: String,
-    nomineeRelation: String,
-    nomineeAddress: String,
-    MemberPhoto: String,
-    MemberSign: String,
-  },
+    transferReason: {
+      type: String,
+    },
+    transferDate: {
+      type: Date,
+    },
+    previousMemberDetails: {
+      saluation: String,
+      name: String,
+      email: String,
+      mobileNumber: Number,
+      dateofbirth: Date,
+      fatherName: String,
+      contactAddress: String,
+      permanentAddress: String,
+      workingAddress: String,
+      nomineeName: String,
+      nomineeAge: String,
+      nomineeRelation: String,
+      nomineeAddress: String,
+      MemberPhoto: String,
+      MemberSign: String,
+    },
 
-  receiptId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Receipt",
+    receiptId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Receipt",
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    password: {
+      type: String,
+    },
+    date: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  isActive: {
-    type: Boolean,
-    default: true,
-  },
-  password: {
-    type: String,
-  },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true },
+);
 
 const Member = mongoose.model("Member", memberSchema);
 export default Member;

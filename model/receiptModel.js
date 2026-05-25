@@ -56,18 +56,21 @@ const paymentEntrySchema = new mongoose.Schema({
   },
 });
 
-const receiptSchema = new mongoose.Schema({
-  member: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Member",
-    required: true,
+const receiptSchema = new mongoose.Schema(
+  {
+    member: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Member",
+      required: true,
+    },
+    MembershipNo: {
+      type: String,
+      index: true,
+    },
+    payments: [paymentEntrySchema],
   },
-  MembershipNo: {
-    type: String,
-    index: true,
-  },
-  payments: [paymentEntrySchema],
-});
+  { timestamps: true },
+);
 
 const Receipt = mongoose.model("Receipt", receiptSchema);
 export default Receipt;
