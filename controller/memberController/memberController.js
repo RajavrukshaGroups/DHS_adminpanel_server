@@ -958,6 +958,7 @@ const getMemberDetails = async (req, res) => {
             { name: { $regex: search, $options: "i" } },
             { email: { $regex: search, $options: "i" } },
             { SeniorityID: { $regex: search, $options: "i" } },
+            { MembershipNo: { $regex: search, $options: "i" } },
           ],
         }
       : {};
@@ -1691,45 +1692,152 @@ const getAllAffidavits = async (req, res) => {
   }
 };
 
+// const sendMemberLoginDetails = async (req, res) => {
+//   try {
+//     const { name, email, SeniorityID, password } = req.body;
+
+//     // Validate input
+//     if (!name || !email || !SeniorityID || !password) {
+//       return res.status(400).json({ error: "All fields are required" });
+//     }
+
+//     const mailOptions = {
+//       from: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
+//       to: email,
+//       subject: "Member Login Credentials",
+//       html: `
+//         <div style="border:1px solid #1f4892; font-family: Arial, sans-serif;">
+//           <div style="background-color: #1f4892; height: 50px;"></div>
+//           <div style="padding: 20px;">
+//             <p>Dear <strong>${name}</strong>,</p>
+//             <p>From,<br>Defence Habitat Housing Co-operative Society Ltd.</p>
+//             <table cellpadding="10">
+//               <tr>
+//                 <td style="background-color: #666; color: white;"><strong>Member ID</strong></td>
+//                 <td><div style="border: 1px solid #ccc; padding: 8px;">${SeniorityID}</div></td>
+//               </tr>
+//               <tr>
+//                 <td style="background-color: #666; color: white;"><strong>Email</strong></td>
+//                 <td><div style="border: 1px solid #ccc; padding: 8px;">${email}</div></td>
+//               </tr>
+//               <tr>
+//                 <td style="background-color: #666; color: white;"><strong>Password</strong></td>
+//                 <td><div style="border: 1px solid #ccc; padding: 8px;">${password}</div></td>
+//               </tr>
+//             </table>
+//             <p>Click here to login: <a href="https://defencehousingsociety.com/memberlogin">https://defencehousingsociety.com/memberlogin</a></p>
+//             <p><strong>THANK YOU</strong></p>
+//             <p><strong>For further details, contact</strong><br>
+//             Behind Swathi Garden Hotel<br>
+//             E Block, Sahakarnagar,<br>
+//             Bengaluru - 560 092. Ph: 080 - 29903931</p>
+//           </div>
+//         </div>
+//       `,
+//     };
+
+//     await transporter.sendMail(mailOptions);
+
+//     res.status(200).json({
+//       message: `Login credentials shared to ${email} successfully`,
+//     });
+//   } catch (err) {
+//     console.error("Error sending email:", err);
+//     res.status(500).json({ error: "Failed to send email" });
+//   }
+// };
+
 const sendMemberLoginDetails = async (req, res) => {
   try {
-    const { name, email, SeniorityID, password } = req.body;
+    const { name, email, MembershipNo, password } = req.body;
 
     // Validate input
-    if (!name || !email || !SeniorityID || !password) {
-      return res.status(400).json({ error: "All fields are required" });
+    if (!name || !email || !MembershipNo || !password) {
+      return res.status(400).json({
+        error: "All fields are required",
+      });
     }
 
     const mailOptions = {
       from: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
       to: email,
       subject: "Member Login Credentials",
+
       html: `
         <div style="border:1px solid #1f4892; font-family: Arial, sans-serif;">
+          
           <div style="background-color: #1f4892; height: 50px;"></div>
+
           <div style="padding: 20px;">
-            <p>Dear <strong>${name}</strong>,</p>
-            <p>From,<br>Defence Habitat Housing Co-operative Society Ltd.</p>
-            <table cellpadding="10">
+            
+            <p>
+              Dear <strong>${name}</strong>,
+            </p>
+
+            <p>
+              From,<br>
+              Defence Habitat Housing Co-operative Society Ltd.
+            </p>
+
+            <table cellpadding="10" style="border-collapse: collapse;">
+              
               <tr>
-                <td style="background-color: #666; color: white;"><strong>Member ID</strong></td>
-                <td><div style="border: 1px solid #ccc; padding: 8px;">${SeniorityID}</div></td>
+                <td style="background-color: #666; color: white;">
+                  <strong>Membership No</strong>
+                </td>
+
+                <td>
+                  <div style="border: 1px solid #ccc; padding: 8px;">
+                    ${MembershipNo}
+                  </div>
+                </td>
               </tr>
+
               <tr>
-                <td style="background-color: #666; color: white;"><strong>Email</strong></td>
-                <td><div style="border: 1px solid #ccc; padding: 8px;">${email}</div></td>
+                <td style="background-color: #666; color: white;">
+                  <strong>Email</strong>
+                </td>
+
+                <td>
+                  <div style="border: 1px solid #ccc; padding: 8px;">
+                    ${email}
+                  </div>
+                </td>
               </tr>
+
               <tr>
-                <td style="background-color: #666; color: white;"><strong>Password</strong></td>
-                <td><div style="border: 1px solid #ccc; padding: 8px;">${password}</div></td>
+                <td style="background-color: #666; color: white;">
+                  <strong>Password</strong>
+                </td>
+
+                <td>
+                  <div style="border: 1px solid #ccc; padding: 8px;">
+                    ${password}
+                  </div>
+                </td>
               </tr>
+
             </table>
-            <p>Click here to login: <a href="https://defencehousingsociety.com/memberlogin">https://defencehousingsociety.com/memberlogin</a></p>
-            <p><strong>THANK YOU</strong></p>
-            <p><strong>For further details, contact</strong><br>
-            Behind Swathi Garden Hotel<br>
-            E Block, Sahakarnagar,<br>
-            Bengaluru - 560 092. Ph: 080 - 29903931</p>
+
+            <p style="margin-top: 20px;">
+              Click here to login:
+              <a href="https://defencehousingsociety.com/memberlogin">
+                https://defencehousingsociety.com/memberlogin
+              </a>
+            </p>
+
+            <p>
+              <strong>THANK YOU</strong>
+            </p>
+
+            <p>
+              <strong>For further details, contact</strong><br>
+              Behind Swathi Garden Hotel<br>
+              E Block, Sahakarnagar,<br>
+              Bengaluru - 560 092.<br>
+              Ph: 080 - 29903931
+            </p>
+
           </div>
         </div>
       `,
@@ -1737,12 +1845,17 @@ const sendMemberLoginDetails = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({
+    return res.status(200).json({
+      success: true,
       message: `Login credentials shared to ${email} successfully`,
     });
   } catch (err) {
     console.error("Error sending email:", err);
-    res.status(500).json({ error: "Failed to send email" });
+
+    return res.status(500).json({
+      success: false,
+      error: "Failed to send email",
+    });
   }
 };
 
@@ -2711,16 +2824,20 @@ const ShareResetPasswordCredentials = async ({
 const ResetPassword = async (req, res) => {
   try {
     console.log("Received request to reset password...", req.body);
-    const { seniorityId, password } = req.body;
+    // const { seniorityId, password } = req.body;
+    const { membershipNo, password } = req.body;
 
-    if (!seniorityId || !password) {
-      return res
-        .status(400)
-        .json({ message: "Seniority ID and password are required." });
+    if (!membershipNo || !password) {
+      return res.status(400).json({
+        message: "Membership Number and password are required.",
+      });
     }
 
     // Find the member by seniority ID
-    const member = await Member.findOne({ SeniorityID: seniorityId });
+    // const member = await Member.findOne({ SeniorityID: seniorityId });
+    const member = await Member.findOne({
+      MembershipNo: membershipNo,
+    });
 
     if (!member) {
       return res.status(404).json({ message: "Member not found." });
@@ -2741,7 +2858,8 @@ const ResetPassword = async (req, res) => {
       await ShareResetPasswordCredentials({
         name: member.name || "Member",
         email: member.email,
-        SeniorityID: member.SeniorityID,
+        // SeniorityID: member.SeniorityID,
+        MembershipNo: member.MembershipNo,
         password,
         // reference,
       });

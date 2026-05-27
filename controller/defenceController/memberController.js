@@ -23,63 +23,149 @@ import axios from "axios";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// const memberLogin = async (req, res) => {
+//   console.log("Login function called");
+//   try {
+//     const { seniority_id, password } = req.body;
+//     console.log("Incoming Data:", req.body);
+
+//     const memberData = await Member.findOne({ SeniorityID: seniority_id });
+
+//     if (!memberData) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Seniority ID not found" });
+//     }
+
+//     if (password !== memberData.password) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Incorrect password" });
+//     }
+//     // Login successful
+//     console.log("Login successful for", seniority_id);
+//     return res.status(200).json({
+//       success: true,
+//       seniority_id: memberData.SeniorityID,
+//       message: "Login successful",
+//     });
+//   } catch (error) {
+//     console.error("Error during login:", error.message);
+//     return res
+//       .status(500)
+//       .json({ success: false, message: "Internal server error" });
+//   }
+// };
+
 const memberLogin = async (req, res) => {
   console.log("Login function called");
+
   try {
-    const { seniority_id, password } = req.body;
+    const { membership_no, password } = req.body;
+
     console.log("Incoming Data:", req.body);
 
-    const memberData = await Member.findOne({ SeniorityID: seniority_id });
+    const memberData = await Member.findOne({
+      MembershipNo: membership_no,
+    });
 
     if (!memberData) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Seniority ID not found" });
+      return res.status(400).json({
+        success: false,
+        message: "Membership Number not found",
+      });
     }
 
     if (password !== memberData.password) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Incorrect password" });
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect password",
+      });
     }
-    // Login successful
-    console.log("Login successful for", seniority_id);
+
+    console.log("Login successful for", membership_no);
+
     return res.status(200).json({
       success: true,
-      seniority_id: memberData.SeniorityID,
+      membership_no: memberData.MembershipNo,
+      memberId: memberData._id,
       message: "Login successful",
     });
   } catch (error) {
     console.error("Error during login:", error.message);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal server error" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
+// const dashboardDatas = async (req, res) => {
+//   const seniorityId = req.params.id;
+//   console.log("seniority id", seniorityId);
+//   try {
+//     const memberData = await Member.findOne({ SeniorityID: seniorityId });
+//     console.log(memberData, "incoming member datas");
+//     if (!memberData) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Member not found" });
+//     }
+
+//     const affidavit = await MemberAffidavit.findOne({ userId: memberData._id });
+
+//     const responseData = {
+//       ...memberData._doc, // convert Mongoose document to plain object
+//       affidavitUrl: affidavit?.affidavitUrl || null,
+//     };
+
+//     res.status(200).json({ success: true, data: responseData });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 const dashboardDatas = async (req, res) => {
-  const seniorityId = req.params.id;
-  console.log("seniority id", seniorityId);
+  const membershipNo = req.params.id;
+
+  console.log("membership no", membershipNo);
+
   try {
-    const memberData = await Member.findOne({ SeniorityID: seniorityId });
+    const memberData = await Member.findOne({
+      MembershipNo: membershipNo,
+    });
+
     console.log(memberData, "incoming member datas");
+
     if (!memberData) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Member not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Member not found",
+      });
     }
 
-    const affidavit = await MemberAffidavit.findOne({ userId: memberData._id });
+    const affidavit = await MemberAffidavit.findOne({
+      userId: memberData._id,
+    });
 
     const responseData = {
-      ...memberData._doc, // convert Mongoose document to plain object
+      ...memberData._doc,
       affidavitUrl: affidavit?.affidavitUrl || null,
     };
 
-    res.status(200).json({ success: true, data: responseData });
+    return res.status(200).json({
+      success: true,
+      data: responseData,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
 // Outside the function (global in-memory store)
@@ -232,10 +318,11 @@ const AddOnlineApplication = async (req, res) => {
 
 const fetchUserData = async (req, res) => {
   // const seniorityId = req.params.seniorityId;
-  const seniorityId = req.query.seniority_id; // not req.params
+  const membershipNo = req.query.membership_no;
   try {
-    const member = await Member.findOne({ SeniorityID: seniorityId });
-
+    const member = await Member.findOne({
+      MembershipNo: membershipNo,
+    });
     if (!member) {
       return res
         .status(404)
@@ -250,18 +337,23 @@ const fetchUserData = async (req, res) => {
 };
 
 const fetchReceipts = async (req, res) => {
-  const seniorityId = req.query.seniority_id;
+  // const seniorityId = req.query.seniority_id;
+  const membershipNo = req.query.membership_no;
 
   try {
-    if (!seniorityId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "seniority id is required" });
+    if (!membershipNo) {
+      return res.status(400).json({
+        success: false,
+        message: "Membership number is required",
+      });
     }
 
-    const member = await Member.findOne({ SeniorityID: seniorityId }).populate(
-      "receiptId",
-    );
+    // const member = await Member.findOne({ SeniorityID: seniorityId }).populate(
+    //   "receiptId",
+    // );
+    const member = await Member.findOne({
+      MembershipNo: membershipNo,
+    }).populate("receiptId");
     if (!member) {
       return res
         .status(404)
@@ -280,17 +372,20 @@ const fetchReceipts = async (req, res) => {
 };
 
 const fetchProjectStatus = async (req, res) => {
-  const seniorityId = req.query.seniority_id;
-
+  const membershipNo = req.query.membership_no;
   try {
-    if (!seniorityId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Seniority ID is required" });
+    if (!membershipNo) {
+      return res.status(400).json({
+        success: false,
+        message: "Membership Number is required",
+      });
     }
 
     // Step 1: Find the member using the seniorityId
-    const member = await Member.findOne({ SeniorityID: seniorityId });
+    // const member = await Member.findOne({ SeniorityID: seniorityId });
+    const member = await Member.findOne({
+      MembershipNo: membershipNo,
+    });
 
     if (!member) {
       return res
@@ -324,16 +419,17 @@ const fetchProjectStatus = async (req, res) => {
 };
 
 const extraChargeReceipts = async (req, res) => {
-  const seniorityId = req.query.seniority_id;
+  // const seniorityId = req.query.seniority_id;
+  const membershipNo = req.query.membership_no;
 
   try {
-    if (!seniorityId) {
+    if (!membershipNo) {
       return res
         .status(400)
-        .json({ success: false, message: "Seniority id is required" });
+        .json({ success: false, message: "Membership number is required" });
     }
 
-    const member = await Member.findOne({ SeniorityID: seniorityId });
+    const member = await Member.findOne({ MembershipNo: membershipNo });
 
     if (!member || !member.receiptId || member.receiptId.length === 0) {
       return res.status(404).json([]);
@@ -652,13 +748,14 @@ const getOnlineApplications = async (req, res) => {
 };
 
 const verifyOtp = async (req, res) => {
-  const { email, seniority_id, otp } = req.body;
+  // const { email, seniority_id, otp } = req.body;
+  const { email, membership_no, otp } = req.body;
   console.log(req.body, "incoming verify otp details");
 
   let user = null;
 
-  if (seniority_id) {
-    user = await Member.findOne({ SeniorityID: seniority_id });
+  if (membership_no) {
+    user = await Member.findOne({ MembershipNo: membership_no });
   } else if (email) {
     user = await Member.findOne({ email });
   }
@@ -784,30 +881,61 @@ const memberDashBoardContactAdmin = async (req, res) => {
   }
 };
 
+// const GetTrnasferedhistory = async (req, res) => {
+//   try {
+//     const seniorityId = req.params.id;
+
+//     console.log("Received seniorityId:", seniorityId);
+
+//     // Find all records with the same SeniorityID and isTransferred set to true
+//     const transferredMembers = await Member.find({
+//       SeniorityID: seniorityId,
+//       isTransferred: true,
+//     });
+
+//     console.log("Transferred Members:", transferredMembers);
+
+//     if (!transferredMembers || transferredMembers.length === 0) {
+//       return res
+//         .status(404)
+//         .json({ message: "No transfer history found for this member." });
+//     }
+
+//     res.status(200).json(transferredMembers);
+//   } catch (error) {
+//     console.error("Get Transfer History Error:", error);
+//     res.status(500).json({ success: false, message: "Server Error" });
+//   }
+// };
+
 const GetTrnasferedhistory = async (req, res) => {
   try {
-    const seniorityId = req.params.id;
+    const membershipNo = req.params.id;
 
-    console.log("Received seniorityId:", seniorityId);
+    console.log("Received membershipNo:", membershipNo);
 
-    // Find all records with the same SeniorityID and isTransferred set to true
+    // Find all records with same MembershipNo
     const transferredMembers = await Member.find({
-      SeniorityID: seniorityId,
+      MembershipNo: membershipNo,
       isTransferred: true,
     });
 
     console.log("Transferred Members:", transferredMembers);
 
     if (!transferredMembers || transferredMembers.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No transfer history found for this member." });
+      return res.status(404).json({
+        message: "No transfer history found for this member.",
+      });
     }
 
-    res.status(200).json(transferredMembers);
+    return res.status(200).json(transferredMembers);
   } catch (error) {
     console.error("Get Transfer History Error:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 
@@ -847,14 +975,16 @@ export const sendDownloadNotificationEmail = async ({
 };
 
 const forgotPassword = async (req, res) => {
-  const { seniority_id } = req.body;
-  console.log(seniority_id, "🔍 Incoming Seniority ID");
+  // const { seniority_id } = req.body;
+  const { membership_no } = req.body;
+
+  console.log(membership_no, "🔍 Incoming membership no");
   try {
-    const user = await Member.findOne({ SeniorityID: seniority_id });
+    const user = await Member.findOne({ MembershipNo: membership_no });
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Seniority ID not found",
+        message: "Membership number not found",
       });
     }
     if (!user.isActive) {
