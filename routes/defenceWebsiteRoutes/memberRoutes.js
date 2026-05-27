@@ -19,7 +19,7 @@ router.get("/dashboard/:id", defenceController.dashboardDatas);
 router.post(
   "/add-onlinemember",
   formidable({ multiples: true }),
-  defenceController.AddOnlineApplication
+  defenceController.AddOnlineApplication,
 );
 router.get("/fetchUserData", defenceController.fetchUserData);
 router.get("/fetchReceipts", defenceController.fetchReceipts);
@@ -29,7 +29,7 @@ router.post("/contactus", defenceController.contactUs);
 router.post("/send-otp", defenceController.sendOtpToEmail);
 router.post(
   "/get-online-applications",
-  defenceController.getOnlineApplications
+  defenceController.getOnlineApplications,
 );
 
 router.post("/verify-otp", defenceController.verifyOtp);
@@ -37,11 +37,11 @@ router.get("/get-application/:id", defenceController.getOnlineApplicationById);
 router.post("/resend-otp", defenceController.sendOtpToEmail);
 router.post(
   "/dashboard-contact-admin",
-  defenceController.memberDashBoardContactAdmin
+  defenceController.memberDashBoardContactAdmin,
 );
 router.get(
   "/get-transferred-history/:id",
-  defenceController.GetTrnasferedhistory
+  defenceController.GetTrnasferedhistory,
 );
 router.post("/forgot-password", defenceController.forgotPassword);
 router.post("/new-contactus", defenceController.websiteContactUs);
