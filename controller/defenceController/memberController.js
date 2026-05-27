@@ -839,42 +839,74 @@ const getOnlineApplicationById = async (req, res) => {
 
 const memberDashBoardContactAdmin = async (req, res) => {
   try {
-    const { seniorityId, subject, message } = req.body;
-    if (!seniorityId) {
-      return res.status(400).json({ error: "Seniority ID is required" });
+    const { membershipNo, subject, message } = req.body;
+
+    if (!membershipNo) {
+      return res.status(400).json({
+        error: "Membership Number is required",
+      });
     }
-    // Find member details based on seniorityId
-    const member = await Member.findOne({ SeniorityID: seniorityId })
+
+    // Find member
+    const member = await Member.findOne({
+      MembershipNo: membershipNo,
+    })
       .select("name email mobileNumber")
       .lean();
+
     if (!member) {
-      return res.status(404).json({ error: "Member not found" });
+      return res.status(404).json({
+        error: "Member not found",
+      });
     }
-    // Create email content
+
+    // Mail content
     const mailOptions = {
       from: `"Member Panel Contact Form" <${member.name}>`,
+
       to: `"Defence Habitat Housing Co-operative Society Ltd." <${process.env.DHS_NODEMAILER_MAIL}>`,
+
       subject: `Contact Admin: ${subject}`,
+
       html: `
-        <h2>New Contact Form Submission From Member Panel</h2>
-        <p><strong>From:</strong> ${member.name} (Seniority ID: ${seniorityId})</p>
-        <p><strong>Member Email:</strong> ${member.email}</p>
-        <p><strong>Member Mobile:</strong> ${member.mobileNumber}</p>
+        <h2>
+          New Contact Form Submission From Member Panel
+        </h2>
+
+        <p>
+          <strong>From:</strong>
+          ${member.name}
+          (Membership No: ${membershipNo})
+        </p>
+
+        <p>
+          <strong>Member Email:</strong>
+          ${member.email}
+        </p>
+
+        <p>
+          <strong>Member Mobile:</strong>
+          ${member.mobileNumber}
+        </p>
+
         <hr>
+
         <h3>Message:</h3>
+
         <p>${message}</p>
       `,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Your message has been sent successfully",
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
+
+    return res.status(500).json({
       success: false,
       message: "Server error occurred while processing your request",
     });
