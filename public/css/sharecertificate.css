@@ -185,6 +185,33 @@ p .uni-col {
   color: #24447c;
 }
 
+.watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%) rotate(-30deg);
+
+  font-size: 110px;
+  font-weight: bold;
+
+  color: rgba(255, 0, 0, 0.12);
+
+  z-index: 9999;
+
+  pointer-events: none;
+
+  white-space: nowrap;
+
+  user-select: none;
+}
+
+.view-only {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 @media print {
   body {
     margin: 0;

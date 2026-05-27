@@ -57,4 +57,6 @@ router.get(
   ReceiptController.collectShareCertificate,
 );
 
+router.get("/view-affidavit", ReceiptController.viewAffidavit);
+
 export default router;

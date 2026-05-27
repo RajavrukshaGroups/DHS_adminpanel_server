@@ -104,8 +104,7 @@ export const createReceipt = async (memberId, data) => {
       numberOfShares: Number(data.numberOfShares) || undefined,
       applicationFee: Number(data.applicationFee) || undefined,
       admissionFee: Number(data.adminissionFee) || undefined,
-      miscellaneousExpenses:
-        Number(data.miscellaneousExpenses) || undefined,
+      miscellaneousExpenses: Number(data.miscellaneousExpenses) || undefined,
       membershipFee: Number(data.memberShipFee) || undefined,
       shareFee: Number(data.shareFee) || undefined,
     };
@@ -242,7 +241,7 @@ const fetchReceipts = async (req, res) => {
 const getReceiptDetailsById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { paymentId } = req.query; // Now we'll use paymentId instead of paymentType/installmentNumber
+    const { paymentId, viewOnly } = req.query; // Now we'll use paymentId instead of paymentType/installmentNumber
 
     const receipt = await Receipt.findById(id).populate({
       path: "member",
@@ -362,7 +361,8 @@ const getReceiptDetailsById = async (req, res) => {
     };
     console.log("receipts data", receiptData);
 
-    res.render("receipt", { ...receiptData });
+    // res.render("receipt", { ...receiptData });
+    res.render("receipt", { ...receiptData, viewOnly: viewOnly === "true" });
   } catch (err) {
     console.error("Error fetching single receipt:", err);
     res.status(500).send("Failed to fetch receipt details.");
@@ -398,6 +398,7 @@ const getViewReceiptHistory = async (req, res) => {
 const viewconfirmation = async (req, res) => {
   try {
     const { memberId } = req.params;
+    const { viewOnly } = req.query;
     const receipt = await Receipt.findOne({ member: memberId }).populate(
       "member",
     );
@@ -459,6 +460,7 @@ const viewconfirmation = async (req, res) => {
       confirmationLetterReceiptNo,
       confirmationPayments,
       amountInWordsTotalPaidAmount: amountInWordsTotalPaidAmount,
+      viewOnly: viewOnly === "true",
     });
   } catch (error) {
     console.error("Error:", error);
@@ -689,6 +691,7 @@ function formatDate(inputDate) {
 const renderShareCertificate = async (req, res) => {
   try {
     const { receiptId } = req.params;
+    const { viewOnly } = req.query;
     console.log("receiptId", receiptId);
 
     const receipt = await Receipt.findById(receiptId).populate({
@@ -730,6 +733,7 @@ const renderShareCertificate = async (req, res) => {
       shareValueInWords: convertNumberToWords(sharePayment.shareFee),
       dateOfIssue: formatDate(member.date),
       dateOfTransfer: formatDate(member.transferDate),
+      viewOnly: viewOnly === "true",
     });
   } catch (err) {
     console.error("Error rendering share certificate:", err);
@@ -925,6 +929,25 @@ const getAllReceiptIds = async (req, res) => {
   }
 };
 
+const viewAffidavit = async (req, res) => {
+  try {
+    const { url, viewOnly } = req.query;
+
+    if (!url) {
+      return res.status(400).send("Affidavit URL missing");
+    }
+
+    return res.render("viewAffidavit", {
+      affidavitUrl: decodeURIComponent(url),
+      viewOnly: viewOnly === "true",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).send("Failed to load affidavit");
+  }
+};
+
 export default {
   fetchReceipts,
   getReceiptDetailsById,
@@ -941,4 +964,5 @@ export default {
   updateExtraChargeReceipt,
   getAllReceiptIds,
   collectShareCertificate,
+  viewAffidavit,
 };

@@ -5,8 +5,11 @@
     <title>Share Certificate</title>
     <link rel="stylesheet" href="/css/sharecertificate.css" />
   </head>
-  <body>
-    <div class="certificate-border">
+<body class="<%= viewOnly ? 'view-only' : '' %>">
+  <% if (viewOnly) { %>
+<div class="watermark">VIEW ONLY</div>
+<% } %>
+      <div class="certificate-border">
       <div class="certificate-container">
         <header class="certificate-header">
           <img
@@ -122,5 +125,34 @@
         </footer>
       </div>
     </div>
+    <% if (viewOnly) { %>
+<script>
+  // Disable right click
+  document.addEventListener("contextmenu", (e) =>
+    e.preventDefault(),
+  );
+
+  // Disable Ctrl+P / Ctrl+S
+  document.addEventListener("keydown", (e) => {
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      (e.key.toLowerCase() === "p" ||
+        e.key.toLowerCase() === "s")
+    ) {
+      e.preventDefault();
+
+      alert(
+        "Download and print are disabled for this document",
+      );
+    }
+  });
+
+  // Block print
+  window.onbeforeprint = function () {
+    alert("Printing is disabled");
+    return false;
+  };
+</script>
+<% } %>
   </body>
 </html>

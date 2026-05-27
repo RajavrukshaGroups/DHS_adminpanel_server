@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <title>View Affidavit</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+
+    iframe {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+    }
+
+    .watermark {
+      position: fixed;
+
+      top: 50%;
+      left: 50%;
+
+      transform:
+        translate(-50%, -50%)
+        rotate(-30deg);
+
+      font-size: 120px;
+
+      font-weight: bold;
+
+      color: rgba(255, 0, 0, 0.12);
+
+      z-index: 9999;
+
+      pointer-events: none;
+
+      white-space: nowrap;
+
+      user-select: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <% if (viewOnly) { %>
+    <div class="watermark">
+      VIEW ONLY
+    </div>
+  <% } %>
+
+  <iframe
+    src="<%= affidavitUrl %>#toolbar=0"
+  ></iframe>
+
+  <% if (viewOnly) { %>
+  <script>
+
+    // Disable right click
+    document.addEventListener(
+      "contextmenu",
+      (e) => e.preventDefault(),
+    );
+
+    // Disable Ctrl+P / Ctrl+S
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (
+          (e.ctrlKey || e.metaKey) &&
+          (
+            e.key.toLowerCase() === "p" ||
+            e.key.toLowerCase() === "s"
+          )
+        ) {
+          e.preventDefault();
+
+          alert(
+            "Download and print are disabled",
+          );
+        }
+      },
+    );
+
+    // Block print
+    window.onbeforeprint = function () {
+      alert("Printing is disabled");
+      return false;
+    };
+
+  </script>
+  <% } %>
+
+</body>
+</html>

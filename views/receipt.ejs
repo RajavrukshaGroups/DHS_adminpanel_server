@@ -5,7 +5,11 @@
     <title>Receipt</title>
     <link rel="stylesheet" href="/css/receipt.css" />
   </head>
-  <body>
+  <!-- <body> -->
+    <body class="<%= viewOnly ? 'view-only' : '' %>"></body>
+    <% if (viewOnly) { %>
+<div class="watermark">VIEW ONLY</div>
+<% } %>
     <div class="receipt-box">
       <header>
         <img
@@ -108,5 +112,40 @@
         <div class="footer-role">President / Secretary</div>
       </div>
     </div>
+    <% if (viewOnly) { %>
+<script>
+  // Disable right click
+  document.addEventListener("contextmenu", (e) =>
+    e.preventDefault(),
+  );
+
+  // Disable Ctrl+P / Cmd+P
+  document.addEventListener("keydown", (e) => {
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      e.key.toLowerCase() === "p"
+    ) {
+      e.preventDefault();
+      alert("Printing is disabled");
+    }
+
+    // Optional:
+    // Disable Ctrl+S
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      e.key.toLowerCase() === "s"
+    ) {
+      e.preventDefault();
+      alert("Downloading is disabled");
+    }
+  });
+
+  // Block print event
+  window.onbeforeprint = function () {
+    alert("Printing is disabled");
+    return false;
+  };
+</script>
+<% } %>
   </body>
 </html>

@@ -6,8 +6,13 @@
   <title>Site Booking Confirmation</title>
   <link rel="stylesheet" href="/css/viewSiteConfirmation.css" />
 </head>
-<body>
-  <div class="container">
+<body class="<%= viewOnly ? 'view-only' : '' %>">
+  <% if (viewOnly) { %>
+<div class="watermark">
+  VIEW ONLY
+</div>
+<% } %>
+    <div class="container">
     <div class="logo-section">
       <img src="/images/letterheader.jpg" alt="Header Image" class="header-img" />
     </div>
@@ -222,5 +227,40 @@ refundable in case of project failure.</li>
       <img src="/images/footerSign.jpg" alt="Footer Signature" class="footer-img"/>
     </div>
   </div>
+  <% if (viewOnly) { %>
+<script>
+  // Disable right click
+  document.addEventListener(
+    "contextmenu",
+    (e) => e.preventDefault(),
+  );
+
+  // Disable Ctrl+P / Ctrl+S
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (
+          e.key.toLowerCase() === "p" ||
+          e.key.toLowerCase() === "s"
+        )
+      ) {
+        e.preventDefault();
+
+        alert(
+          "Download and print are disabled",
+        );
+      }
+    },
+  );
+
+  // Block browser print
+  window.onbeforeprint = function () {
+    alert("Printing is disabled");
+    return false;
+  };
+</script>
+<% } %>
 </body>
 </html>
