@@ -17,7 +17,8 @@ dotenv.config();
 const SHEET_ID = process.env.MARASANDRA_GOOGLE_SHEET_ID;
 const CLIENT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL;
 let PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY;
-const RANGE = process.env.MARASANDRA_GOOGLE_SHEET_RANGE || "UM-Marasandra!A1:BA";
+const RANGE =
+  process.env.MARASANDRA_GOOGLE_SHEET_RANGE || "UM-Marasandra!A1:BA";
 
 if (PRIVATE_KEY && PRIVATE_KEY.startsWith('"') && PRIVATE_KEY.endsWith('"')) {
   PRIVATE_KEY = PRIVATE_KEY.slice(1, -1);
@@ -203,7 +204,8 @@ function parseDate(val) {
     day = String(day).padStart(2, "0");
     month = String(month).padStart(2, "0");
 
-    return new Date(Number(year), Number(month) - 1, Number(day));
+    // return new Date(Number(year), Number(month) - 1, Number(day));
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   }
 
   return undefined;

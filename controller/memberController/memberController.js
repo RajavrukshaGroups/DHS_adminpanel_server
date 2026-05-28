@@ -207,7 +207,8 @@ function parseDate(val) {
     day = String(day).padStart(2, "0");
     month = String(month).padStart(2, "0");
 
-    return new Date(Number(year), Number(month) - 1, Number(day));
+    // return new Date(Number(year), Number(month) - 1, Number(day));
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   }
 
   return undefined;
