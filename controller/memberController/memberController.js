@@ -59,7 +59,8 @@ const HEADER_TO_FIELD = {
   "date of birth": "dateOfBirth",
   dob: "dateOfBirth",
   fathername: "fatherName",
-  "father name": "fatherName",
+  "father/spousename": "fatherName",
+  "father/spouse name": "fatherName",
   contactaddress: "contactAddress",
   "contact address": "contactAddress",
   "correspondence address": "contactAddress",
@@ -992,75 +993,113 @@ const getMemberDetails = async (req, res) => {
   }
 };
 
+// const checkDuplicates = async (req, res) => {
+//   console.log("Checking for duplicates (Case-Insensitive)...");
+//   const {
+//     SeniorityID,
+//     ConfirmationLetterNo,
+//     ShareCertificateNumber,
+//     MembershipNo
+//   } = req.query;
+
+//   try {
+//     const conditions = [];
+
+//     if (SeniorityID) {
+//       conditions.push({
+//         SeniorityID: { $regex: `^${SeniorityID}$`, $options: "i" },
+//       });
+//     }
+//     if (MembershipNo) {
+//       conditions.push({
+//         MembershipNo: { $regex: `^${MembershipNo}$`, $options: "i" },
+//       });
+//     }
+//     if (ConfirmationLetterNo) {
+//       conditions.push({
+//         ConfirmationLetterNo: {
+//           $regex: `^${ConfirmationLetterNo}$`,
+//           $options: "i",
+//         },
+//       });
+//     }
+//     if (ShareCertificateNumber) {
+//       conditions.push({
+//         ShareCertificateNumber: {
+//           $regex: `^${ShareCertificateNumber}$`,
+//           $options: "i",
+//         },
+//       });
+//     }
+
+//     if (conditions.length === 0) {
+//       return res.status(400).json({ error: "No valid fields provided" });
+//     }
+
+//     const existing = await Member.findOne({ $or: conditions });
+
+//     if (existing) {
+//       const duplicateFields = {
+//         SeniorityID:
+//           existing.SeniorityID?.toLowerCase() === SeniorityID?.toLowerCase(),
+//         MembershipNo:
+//           existing.MembershipNo?.toLowerCase() === MembershipNo?.toLowerCase(),
+//         ConfirmationLetterNo:
+//           existing.ConfirmationLetterNo?.toLowerCase() ===
+//           ConfirmationLetterNo?.toLowerCase(),
+//         ShareCertificateNumber:
+//           existing.ShareCertificateNumber?.toLowerCase() ===
+//           ShareCertificateNumber?.toLowerCase(),
+//       };
+
+//       return res.status(200).json({
+//         exists: true,
+//         fields: duplicateFields,
+//       });
+//     }
+
+//     return res.status(200).json({ exists: false, fields: {} });
+//   } catch (err) {
+//     console.error("❌ Error checking duplicates:", err);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// };
+
 const checkDuplicates = async (req, res) => {
-  console.log("Checking for duplicates (Case-Insensitive)...");
-  const {
-    SeniorityID,
-    MembershipNo,
-    ConfirmationLetterNo,
-    ShareCertificateNumber,
-  } = req.query;
+  const { MembershipNo } = req.query;
 
   try {
-    const conditions = [];
-
-    if (SeniorityID) {
-      conditions.push({
-        SeniorityID: { $regex: `^${SeniorityID}$`, $options: "i" },
-      });
-    }
-    if (MembershipNo) {
-      conditions.push({
-        MembershipNo: { $regex: `^${MembershipNo}$`, $options: "i" },
-      });
-    }
-    if (ConfirmationLetterNo) {
-      conditions.push({
-        ConfirmationLetterNo: {
-          $regex: `^${ConfirmationLetterNo}$`,
-          $options: "i",
-        },
-      });
-    }
-    if (ShareCertificateNumber) {
-      conditions.push({
-        ShareCertificateNumber: {
-          $regex: `^${ShareCertificateNumber}$`,
-          $options: "i",
-        },
+    if (!MembershipNo) {
+      return res.status(400).json({
+        error: "MembershipNo is required",
       });
     }
 
-    if (conditions.length === 0) {
-      return res.status(400).json({ error: "No valid fields provided" });
-    }
-
-    const existing = await Member.findOne({ $or: conditions });
+    const existing = await Member.findOne({
+      MembershipNo: {
+        $regex: `^${MembershipNo}$`,
+        $options: "i",
+      },
+    });
 
     if (existing) {
-      const duplicateFields = {
-        SeniorityID:
-          existing.SeniorityID?.toLowerCase() === SeniorityID?.toLowerCase(),
-        MembershipNo:
-          existing.MembershipNo?.toLowerCase() === MembershipNo?.toLowerCase(),
-        ConfirmationLetterNo:
-          existing.ConfirmationLetterNo?.toLowerCase() ===
-          ConfirmationLetterNo?.toLowerCase(),
-        ShareCertificateNumber:
-          existing.ShareCertificateNumber?.toLowerCase() ===
-          ShareCertificateNumber?.toLowerCase(),
-      };
-
       return res.status(200).json({
         exists: true,
-        fields: duplicateFields,
+        fields: {
+          MembershipNo: true,
+        },
       });
     }
 
-    return res.status(200).json({ exists: false, fields: {} });
+    return res.status(200).json({
+      exists: false,
+      fields: {},
+    });
   } catch (err) {
-    console.error("❌ Error checking duplicates:", err);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error checking duplicates:", err);
+    return res.status(500).json({
+      error: "Internal Server Error",
+    });
   }
 };
 

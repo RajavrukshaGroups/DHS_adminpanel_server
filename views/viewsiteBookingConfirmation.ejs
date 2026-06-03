@@ -32,8 +32,8 @@
         is residing at 
         <span class="bold"><%= siteDownPayment.correspondenceAddress %></span>, 
         booked a site of measuring 
-        <span class="bold"><%= member.userId.propertyDetails.length %> X <%= member.userId.propertyDetails.breadth %></span> 
-        (Rate per SQFT Rs. <%= receipt.member.propertyDetails.pricePerSqft %>/–) on this day of
+        <span class="bold"><%= member.userId.propertyDetails.length %>X<%= member.userId.propertyDetails.breadth %></span> 
+        (Rate per SQFT Rs.<%= receipt.member.propertyDetails.pricePerSqft %>/–) on this day of
         <span class="bold"><%= new Date(siteDownPayment?.date).toLocaleDateString('en-GB').split('/').join('-') %></span> in the proposed 
         <% if (member.userId.propertyDetails.projectName.toLowerCase() === "defence habitat - marasandra") { %>
           <span class="bold project-name">"Defence Habitat"</span>
@@ -42,21 +42,10 @@
         <% } %>, 
         located at <span><%= projectLocation %></span>. 
         You have boooked your site by paying an initial amount of 
-        <span class="bold">Rs. <%= new Number(totalPaidAmount?totalPaidAmount:siteDownPayment?.amount).toLocaleString('en-IN') %>/–</span> 
+        <span class="bold">Rs.<%= new Number(totalPaidAmount?totalPaidAmount:siteDownPayment?.amount).toLocaleString('en-IN') %>/–</span> 
 </span>
 
         (Rupees <span class="bold"><%= amountInWordsTotalPaidAmount?amountInWordsTotalPaidAmount:amountInWords %></span>) 
-        <!-- <% const mode = siteDownPayment?.paymentMode?.toLowerCase(); %>
-        <% if (mode === 'netbanking/upi') { %>
-          by mode of NEFT/RTGS Ref <span class="bold">No.<%= siteDownPayment?.transactionId %></span>
-        <% } else if (mode === 'cheque') { %>
-          by way of cheque bearing <span class="bold">No.<%= siteDownPayment?.chequeNumber %></span>
-        <% } else if (mode === 'dd') { %>
-          via DD No. <span class="bold"><%= siteDownPayment?.ddNumber %></span>
-        <% } else { %>
-          by <span class="bold"><%= siteDownPayment?.paymentMode %></span>
-        <% } %> drawn at <span class="bold"><%= siteDownPayment?.bankName %> Bank</span>, 
-        <span class="bold"><%= siteDownPayment?.branchName %> Branch</span>.  -->
 <%
   const payments =
     confirmationPayments?.length > 0
@@ -101,7 +90,7 @@ const uniqueBranchNames = [
 
   <% if (mode === 'cheque') { %>
 
-    by way of cheque bearing No.
+    <!-- by way of cheque bearing No.
 
     <% modePayments.forEach((payment, index) => { %>
 
@@ -111,11 +100,12 @@ const uniqueBranchNames = [
 
       <span class="bold"><%= payment.chequeNumber %></span>
 
-    <% }) %>
+    <% }) %> -->
+    by way of cheque bearing No.<% modePayments.forEach((payment, index) => { %><% if (index > 0) { %>/<% } %><span class="bold"><%= payment.chequeNumber %></span><% }) %>
 
   <% } else if (mode === 'netbanking/upi') { %>
 
-    by mode of NEFT/RTGS Ref No.
+    <!-- by mode of NEFT/RTGS Ref No.
 
     <% modePayments.forEach((payment, index) => { %>
 
@@ -125,11 +115,12 @@ const uniqueBranchNames = [
 
       <span class="bold"><%= payment.transactionId %></span>
 
-    <% }) %>
+    <% }) %> -->
+    by mode of NEFT/RTGS Ref No.<% modePayments.forEach((payment, index) => { %><% if (index > 0) { %>/<% } %><span class="bold"><%= payment.transactionId %></span><% }) %>
 
   <% } else if (mode === 'dd') { %>
 
-    via DD No.
+    <!-- via DD No.
 
     <% modePayments.forEach((payment, index) => { %>
 
@@ -139,7 +130,8 @@ const uniqueBranchNames = [
 
       <span class="bold"><%= payment.ddNumber %></span>
 
-    <% }) %>
+    <% }) %> -->
+    via DD No.<% modePayments.forEach((payment, index) => { %><% if (index > 0) { %>/<% } %><span class="bold"><%= payment.ddNumber %></span><% }) %>
 
   <% } else { %>
 
@@ -194,7 +186,7 @@ Bank,
 <%= receiptLabel %>
 <span class="bold"><%= receiptNumbers.join(", ") %></span>, 
 
-Membership No: <span class="bold"><%= member.userId.MembershipNo %></span>, 
+Membership No:<span class="bold"><%= member.userId.MembershipNo %></span>, 
 Seniority Number <span class="bold"><%= member.userId.SeniorityID %></span>.
       </div>
 
