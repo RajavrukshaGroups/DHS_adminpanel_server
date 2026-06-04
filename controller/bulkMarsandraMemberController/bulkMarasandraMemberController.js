@@ -642,7 +642,10 @@ const uploadMarasandraMembersFromGoogleSheet = async (req, res) => {
           date: parseDate(rowObj.date) || new Date(),
           propertyDetails: {
             projectName: rowObj.projectName || "",
-            propertySize: parseNumber(rowObj.propertySize) || 0,
+            // propertySize: parseNumber(rowObj.propertySize) || 0,
+            propertySize:
+              (parseNumber(rowObj.plotLength) || 0) *
+              (parseNumber(rowObj.plotBreadth) || 0),
             pricePerSqft: parseNumber(rowObj.pricePerSqft) || 0,
             propertyCost: parseNumber(rowObj.propertyCost) || 0,
             percentage: parseNumber(rowObj.percentage) || 0,

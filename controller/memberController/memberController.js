@@ -645,7 +645,10 @@ export const uploadFromGoogleSheet = async (req, res) => {
           date: parseDate(rowObj.date) || new Date(),
           propertyDetails: {
             projectName: rowObj.projectName || "",
-            propertySize: parseNumber(rowObj.propertySize) || 0,
+            // propertySize: parseNumber(rowObj.propertySize) || 0,
+            propertySize:
+              (parseNumber(rowObj.plotLength) || 0) *
+              (parseNumber(rowObj.plotBreadth) || 0),
             pricePerSqft: parseNumber(rowObj.pricePerSqft) || 0,
             propertyCost: parseNumber(rowObj.propertyCost) || 0,
             percentage: parseNumber(rowObj.percentage) || 0,
@@ -1981,6 +1984,14 @@ const updateMemberDetails = async (req, res) => {
       memberSignUrl = result.secure_url;
     }
 
+    const existingMember = await Member.findById(memberId);
+
+    if (!existingMember) {
+      return res.status(404).json({
+        error: "Member not found",
+      });
+    }
+
     const updateData = {
       refname: data.refencName,
       rankDesignation: data.rankDesignation,
@@ -2006,6 +2017,7 @@ const updateMemberDetails = async (req, res) => {
       ShareCertificateNumber: data.shareCertificateNo,
       date: new Date(data.date),
       propertyDetails: {
+        ...(existingMember.propertyDetails?.toObject?.() || {}),
         projectName: data.projectName || "",
         propertySize: Number(data.PropertySize) || 0,
         pricePerSqft: Number(data.perSqftPropertyPrice) || 0,

@@ -15,6 +15,7 @@ import recieptRoutes from "./routes/receiptRoutes/receiptRoutes.js";
 import defenceWebsiteRoutes from "./routes/defenceWebsiteRoutes/memberRoutes.js";
 import deployRoutes from "./routes/deployRoutes/deployRoutes.js";
 import dhsChethanRoutes from "./routes/dhsChethantapasihalliRoutes/dhsChethantapasihalliRoutes.js";
+import googleSheetSyncRoutes from "./routes/googleSheetSyncRoutes/googleSheetSyncRoutes.js";
 
 const app = express();
 
@@ -41,7 +42,7 @@ const allowedOrigins = [
   "https://marasandra.defencehousingsociety.com",
 ];
 
-// const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
+// const allowedOrigins = ["http://localhost:3000", "http://localhost:5174"];
 
 app.use(
   cors({
@@ -66,6 +67,7 @@ app.use("/plot", plotRoutes);
 app.use("/defenceWebsiteRoutes", defenceWebsiteRoutes);
 app.use("/deployment-trial", deployRoutes);
 app.use("/dhs-tapasihalli-new-chethan", dhsChethanRoutes);
+app.use("/sync-sheet", googleSheetSyncRoutes);
 
 // Start server
 const PORT = 4000;
