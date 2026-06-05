@@ -312,7 +312,7 @@ const UpdateSiteAdvanceFromTapasihalliSheet = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "Payment not found. MembershipNo or UniqueRowId may have been modified.",
+          "MembershipNo or ReceiptNo has been modified. Please update these details from the Admin Panel.",
       });
     }
 
