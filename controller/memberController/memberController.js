@@ -950,49 +950,115 @@ const addMemberDetails = async (req, res) => {
   }
 };
 
+// const getMemberDetails = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = 10;
+//     const skip = (page - 1) * limit;
+//     const search = req.query.search || "";
+//     const status = req.query.status;
+
+//     const query = search
+//       ? {
+//           $or: [
+//             { name: { $regex: search, $options: "i" } },
+//             { email: { $regex: search, $options: "i" } },
+//             { SeniorityID: { $regex: search, $options: "i" } },
+//             { MembershipNo: { $regex: search, $options: "i" } },
+//           ],
+//         }
+//       : {};
+
+//     // const query = {
+//     //   isActive: true,
+
+//     //   ...(search && {
+//     //     $or: [
+//     //       { name: { $regex: search, $options: "i" } },
+//     //       { email: { $regex: search, $options: "i" } },
+//     //       { SeniorityID: { $regex: search, $options: "i" } },
+//     //       { MembershipNo: { $regex: search, $options: "i" } },
+//     //     ],
+//     //   }),
+//     // };
+
+//     const totalMembers = await Member.countDocuments(query);
+//     const members = await Member.find(query)
+//       .sort({ date: -1 })
+//       .skip(skip)
+//       .limit(limit);
+//     if (search && members.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: `No members found matching ${search}`,
+//         data: [],
+//         currentPage: page,
+//         totalPages: 0,
+//         totalMembers: 0,
+//       });
+//     }
+//     res.status(200).json({
+//       success: true,
+//       data: members,
+//       currentPage: page,
+//       totalPages: Math.ceil(totalMembers / limit),
+//       totalMembers,
+//     });
+//     console.log("members receipt data", members);
+//   } catch (error) {
+//     console.log(error.message);
+//     res.status(500).json({ success: false, error: "server error" });
+//   }
+// };
+
 const getMemberDetails = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
     const search = req.query.search || "";
+    const status = req.query.status; // active, inactive, all
 
-    const query = search
-      ? {
-          $or: [
-            { name: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-            { SeniorityID: { $regex: search, $options: "i" } },
-            { MembershipNo: { $regex: search, $options: "i" } },
-          ],
-        }
-      : {};
+    const query = {};
+
+    if (status === "active") {
+      query.isActive = true;
+    }
+
+    if (status === "inactive") {
+      query.isActive = false;
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { SeniorityID: { $regex: search, $options: "i" } },
+        { MembershipNo: { $regex: search, $options: "i" } },
+      ];
+    }
+
     const totalMembers = await Member.countDocuments(query);
+
     const members = await Member.find(query)
       .sort({ date: -1 })
       .skip(skip)
       .limit(limit);
-    if (search && members.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: `No members found matching ${search}`,
-        data: [],
-        currentPage: page,
-        totalPages: 0,
-        totalMembers: 0,
-      });
-    }
-    res.status(200).json({
+
+    return res.status(200).json({
       success: true,
       data: members,
       currentPage: page,
       totalPages: Math.ceil(totalMembers / limit),
       totalMembers,
     });
-    console.log("members receipt data", members);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ success: false, error: "server error" });
+
+    return res.status(500).json({
+      success: false,
+      error: "server error",
+    });
   }
 };
 
@@ -1122,17 +1188,74 @@ const updateStatus = async (req, res) => {
   }
 };
 
+// const getInactiveMembers = async (req, res) => {
+//   try {
+//     console.log("Fetching inactive members...");
+
+//     const inactiveMembers = await Member.find({
+//       isActive: false,
+//     }).sort({ createdAt: -1 });
+//     console.log(inactiveMembers, "inactive members");
+
+//     res.status(200).json(inactiveMembers);
+//   } catch (err) {
+//     console.error("Error fetching inactive members:", err);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// };
+
 const getInactiveMembers = async (req, res) => {
   try {
-    console.log("Fetching inactive members...");
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
 
-    const inactiveMembers = await Member.find({ isActive: false });
-    console.log(inactiveMembers, "inactive members");
+    const query = {
+      isActive: false,
 
-    res.status(200).json(inactiveMembers);
+      ...(search && {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+          { SeniorityID: { $regex: search, $options: "i" } },
+          { MembershipNo: { $regex: search, $options: "i" } },
+        ],
+      }),
+    };
+
+    const totalMembers = await Member.countDocuments(query);
+
+    const inactiveMembers = await Member.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    if (search && inactiveMembers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No inactive members found matching "${search}"`,
+        data: [],
+        currentPage: page,
+        totalPages: 0,
+        totalMembers: 0,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: inactiveMembers,
+      currentPage: page,
+      totalPages: Math.ceil(totalMembers / limit),
+      totalMembers,
+    });
   } catch (err) {
     console.error("Error fetching inactive members:", err);
-    res.status(500).json({ error: "Server error" });
+
+    return res.status(500).json({
+      success: false,
+      error: "Server error",
+    });
   }
 };
 
