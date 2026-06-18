@@ -6,10 +6,13 @@
     <link rel="stylesheet" href="/css/sharecertificate.css" />
   </head>
 <body class="<%= viewOnly ? 'view-only' : '' %>">
-  <% if (viewOnly) { %>
+  <!-- <% if (viewOnly) { %>
 <div class="watermark">VIEW ONLY</div>
-<% } %>
+<% } %> -->
       <div class="certificate-border">
+        <% if (viewOnly) { %>
+<div class="certificate-watermark">VIEW ONLY</div>
+<% } %>
       <div class="certificate-container">
         <header class="certificate-header">
           <img

@@ -3,16 +3,179 @@ import Transfer from "../../model/plotTransfer.js";
 import Receipt from "../../model/receiptModel.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 
-const getMemberBySeniorityID = async (req, res) => {
+// const getMemberBySeniorityID = async (req, res) => {
+//   try {
+//     const seniorityId = req.params.id;
+//     const member = await Member.findOne({ SeniorityID: seniorityId });
+//     if (!member) return res.status(404).json({ message: "Member not found" });
+//     res.status(200).json(member);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error fetching member details" });
+//   }
+// };
+
+const getMemberByMembershipNo = async (req, res) => {
   try {
-    const seniorityId = req.params.id;
-    const member = await Member.findOne({ SeniorityID: seniorityId });
-    if (!member) return res.status(404).json({ message: "Member not found" });
-    res.status(200).json(member);
+    const membershipNo = req.params.membershipNo;
+
+    const member = await Member.findOne({
+      MembershipNo: membershipNo,
+    });
+
+    if (!member) {
+      return res.status(404).json({
+        message: "Member not found",
+      });
+    }
+
+    return res.status(200).json(member);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching member details" });
+    return res.status(500).json({
+      message: "Error fetching member details",
+    });
   }
 };
+
+// const CreateTransfer = async (req, res) => {
+//   try {
+//     // Parse JSON strings
+//     const fromMember = JSON.parse(req.body.fromMember);
+//     const toMember = JSON.parse(req.body.toMember);
+//     const { reason, transferDate } = req.body;
+
+//     console.log("req transfer date", transferDate);
+
+//     let newTransferDate;
+//     if (transferDate) {
+//       newTransferDate = new Date(transferDate);
+//       if (isNaN(newTransferDate.getTime())) {
+//         newTransferDate = new Date(); // Fallback to current date if invalid
+//       }
+//     } else {
+//       newTransferDate = new Date();
+//     }
+
+//     console.log("new transfer date", newTransferDate);
+
+//     // Find the existing member by SeniorityID
+//     const fromMemberRecord = await Member.findOne({
+//       SeniorityID: fromMember.seniorityId,
+//     });
+//     if (!fromMemberRecord) {
+//       return res
+//         .status(404)
+//         .json({ message: "From member not found with given SeniorityID." });
+//     }
+
+//     // Save previous member details
+//     const previousDetails = {
+//       saluation: fromMemberRecord.saluation,
+//       name: fromMemberRecord.name,
+//       email: fromMemberRecord.email,
+//       mobileNumber: fromMemberRecord.mobileNumber,
+//       AlternativeNumber: fromMemberRecord.AlternativeNumber,
+//       dateofbirth: fromMemberRecord.dateofbirth,
+//       fatherName: fromMemberRecord.fatherName,
+//       contactAddress: fromMemberRecord.contactAddress,
+//       permanentAddress: fromMemberRecord.permanentAddress,
+//       workingAddress: fromMemberRecord.workingAddress,
+//       nomineeName: fromMemberRecord.nomineeName,
+//       nomineeAge: fromMemberRecord.nomineeAge,
+//       nomineeRelation: fromMemberRecord.nomineeRelation,
+//       nomineeAddress: fromMemberRecord.nomineeAddress,
+//       MemberPhoto: fromMemberRecord.MemberPhoto,
+//       MemberSign: fromMemberRecord.MemberSign,
+//     };
+
+//     // Upload new images if available
+//     let memberPhotoUrl = fromMemberRecord.MemberPhoto;
+//     let memberSignUrl = fromMemberRecord.MemberSign;
+
+//     if (req.files?.memberPhoto?.[0]) {
+//       const uploadedPhoto = await uploadToCloudinary(
+//         req.files.memberPhoto[0].buffer,
+//       );
+//       memberPhotoUrl = uploadedPhoto.secure_url;
+//     }
+
+//     if (req.files?.memberSign?.[0]) {
+//       const uploadedSign = await uploadToCloudinary(
+//         req.files.memberSign[0].buffer,
+//       );
+//       memberSignUrl = uploadedSign.secure_url;
+//     }
+
+//     // let newTransferDate = transferDate ? new Date(transferDate) : new Date();
+
+//     // ✅ Update the existing member with new details (no new creation)
+//     const updatedMember = await Member.findByIdAndUpdate(
+//       fromMemberRecord._id,
+//       {
+//         //basic info
+//         saluation: toMember.saluation,
+//         name: toMember.name,
+//         email: toMember.email,
+//         mobileNumber: toMember.mobile,
+//         AlternativeNumber:
+//           toMember.AlternativeNumber || fromMemberRecord.AlternativeNumber,
+//         dateofbirth: toMember.dateofbirth,
+//         fatherName: toMember.fatherName,
+
+//         //addresses
+//         contactAddress: toMember.contactAddress,
+//         permanentAddress: toMember.permanentAddress,
+//         workingAddress: toMember.workingAddress,
+
+//         //nominee info
+//         nomineeName: toMember.nomineeName,
+//         nomineeAge: toMember.nomineeAge,
+//         nomineeRelation: toMember.nomineeRelation,
+//         nomineeAddress: toMember.nomineeAddress,
+
+//         //transfer meta data
+//         isTransferred: true,
+//         transferReason: reason, // <-- include transfer reason
+//         refname: toMember.name,
+
+//         //images
+//         MemberPhoto: memberPhotoUrl,
+//         MemberSign: memberSignUrl,
+
+//         //previous details
+//         previousMemberDetails: previousDetails,
+//         transferDate: newTransferDate,
+//       },
+//       { new: true },
+//     );
+
+//     if (toMember.contactAddress || transferDate) {
+//       const updateObj = {};
+//       if (toMember.contactAddress) {
+//         updateObj["payments.$[].correspondenceAddress"] =
+//           toMember.contactAddress;
+//       }
+
+//       if (transferDate) {
+//         updateObj["payments.$[].date"] = newTransferDate;
+//       }
+//       await Receipt.updateMany(
+//         { member: fromMemberRecord._id },
+//         { $set: updateObj },
+//       );
+//     }
+//     res.status(200).json({
+//       message: "Member updated with transfer details successfully.",
+//       member: updatedMember,
+//       updatedFields: {
+//         contactAddress: toMember.contactAddress,
+//         transferDate: newTransferDate,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Transfer creation error:", error);
+//     res.status(500).json({ message: "Error updating transfer", error });
+//   }
+// };
 
 const CreateTransfer = async (req, res) => {
   try {
@@ -36,13 +199,16 @@ const CreateTransfer = async (req, res) => {
     console.log("new transfer date", newTransferDate);
 
     // Find the existing member by SeniorityID
+    // const fromMemberRecord = await Member.findOne({
+    //   SeniorityID: fromMember.seniorityId,
+    // });
     const fromMemberRecord = await Member.findOne({
-      SeniorityID: fromMember.seniorityId,
+      MembershipNo: fromMember.membershipNo,
     });
     if (!fromMemberRecord) {
       return res
         .status(404)
-        .json({ message: "From member not found with given SeniorityID." });
+        .json({ message: "member not found with given MembershipNo." });
     }
 
     // Save previous member details
@@ -71,14 +237,14 @@ const CreateTransfer = async (req, res) => {
 
     if (req.files?.memberPhoto?.[0]) {
       const uploadedPhoto = await uploadToCloudinary(
-        req.files.memberPhoto[0].buffer
+        req.files.memberPhoto[0].buffer,
       );
       memberPhotoUrl = uploadedPhoto.secure_url;
     }
 
     if (req.files?.memberSign?.[0]) {
       const uploadedSign = await uploadToCloudinary(
-        req.files.memberSign[0].buffer
+        req.files.memberSign[0].buffer,
       );
       memberSignUrl = uploadedSign.secure_url;
     }
@@ -123,7 +289,7 @@ const CreateTransfer = async (req, res) => {
         previousMemberDetails: previousDetails,
         transferDate: newTransferDate,
       },
-      { new: true }
+      { new: true },
     );
 
     if (toMember.contactAddress || transferDate) {
@@ -138,7 +304,7 @@ const CreateTransfer = async (req, res) => {
       }
       await Receipt.updateMany(
         { member: fromMemberRecord._id },
-        { $set: updateObj }
+        { $set: updateObj },
       );
     }
     res.status(200).json({
@@ -160,7 +326,7 @@ const plotTransferhistory = async (req, res) => {
     // Fetch only transferred members, select only the required fields.
     const transferredMembers = await Member.find({ isTransferred: true })
       .select(
-        "name mobileNumber email previousMemberDetails propertyDetails transferDate SeniorityID transferReason"
+        "name mobileNumber email previousMemberDetails propertyDetails transferDate SeniorityID transferReason",
       )
       .sort({ transferDate: -1 });
 
@@ -185,20 +351,71 @@ const plotTransferhistory = async (req, res) => {
   }
 };
 
+// const cancelMemberPlot = async (req, res) => {
+//   try {
+//     const { reason, remarks, cancellationDate, member } = req.body;
+
+//     // Parse the member JSON string
+//     const parsedMember = JSON.parse(member);
+//     const seniorityId = parsedMember.seniorityId;
+
+//     if (!seniorityId) {
+//       return res.status(400).json({ message: "Seniority ID is required" });
+//     }
+
+//     // Find the member by SeniorityID
+//     const memberDoc = await Member.findOne({ SeniorityID: seniorityId });
+
+//     if (!memberDoc) {
+//       return res.status(404).json({ message: "Member not found" });
+//     }
+
+//     // Upload cancellation letter to Cloudinary if file exists
+//     let cancellationLetterUrl = null;
+//     if (req.file && req.file.buffer) {
+//       const result = await uploadToCloudinary(
+//         req.file.buffer,
+//         "dhs-project-status/member-uploads",
+//       );
+//       cancellationLetterUrl = result.secure_url;
+//     }
+
+//     // Update the cancellation details
+//     memberDoc.cancellationDetails = {
+//       reason,
+//       remarks,
+//       cancellationDate: cancellationDate
+//         ? new Date(cancellationDate)
+//         : new Date(),
+//       cancellationLetter: cancellationLetterUrl,
+//     };
+
+//     await memberDoc.save();
+
+//     res
+//       .status(200)
+//       .json({ message: "Plot cancellation updated", data: memberDoc });
+//   } catch (error) {
+//     console.error("Cancel plot error:", error);
+//     res.status(500).json({ message: "Failed to cancel plot", error });
+//   }
+// };
+
 const cancelMemberPlot = async (req, res) => {
   try {
     const { reason, remarks, cancellationDate, member } = req.body;
 
     // Parse the member JSON string
     const parsedMember = JSON.parse(member);
-    const seniorityId = parsedMember.seniorityId;
+    // const membershipNo = parsedMember.membershipNo;
+    const membershipNo = String(parsedMember.membershipNo || "").trim();
 
-    if (!seniorityId) {
-      return res.status(400).json({ message: "Seniority ID is required" });
+    if (!membershipNo) {
+      return res.status(400).json({ message: "Membership Number is required" });
     }
 
     // Find the member by SeniorityID
-    const memberDoc = await Member.findOne({ SeniorityID: seniorityId });
+    const memberDoc = await Member.findOne({ MembershipNo: membershipNo });
 
     if (!memberDoc) {
       return res.status(404).json({ message: "Member not found" });
@@ -209,7 +426,7 @@ const cancelMemberPlot = async (req, res) => {
     if (req.file && req.file.buffer) {
       const result = await uploadToCloudinary(
         req.file.buffer,
-        "dhs-project-status/member-uploads"
+        "dhs-project-status/member-uploads",
       );
       cancellationLetterUrl = result.secure_url;
     }
@@ -273,7 +490,8 @@ const DeletePlotCancelation = async (req, res) => {
 };
 
 export default {
-  getMemberBySeniorityID,
+  // getMemberBySeniorityID,
+  getMemberByMembershipNo,
   CreateTransfer,
   plotTransferhistory,
   cancelMemberPlot,

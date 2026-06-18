@@ -16,6 +16,7 @@ body {
   padding: 20px; /* Reduced from 40px */
   margin: 10px auto; /* Reduce top-bottom margin for printing */
   max-width: 800px; /* Optional: limit width for print clarity */
+  position: relative;
 }
 
 .certificate-container {
@@ -185,7 +186,7 @@ p .uni-col {
   color: #24447c;
 }
 
-.watermark {
+/* .watermark {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -204,12 +205,33 @@ p .uni-col {
   white-space: nowrap;
 
   user-select: none;
-}
+} */
 
 .view-only {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+.certificate-watermark {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%) rotate(-30deg);
+
+  font-size: 120px;
+  font-weight: bold;
+
+  color: rgba(255, 0, 0, 0.12);
+
+  pointer-events: none;
+  user-select: none;
+
+  white-space: nowrap;
+
+  z-index: 0;
 }
 
 @media print {
@@ -231,5 +253,11 @@ p .uni-col {
 
   .signature-img {
     width: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  .certificate-watermark {
+    font-size: 60px;
   }
 }

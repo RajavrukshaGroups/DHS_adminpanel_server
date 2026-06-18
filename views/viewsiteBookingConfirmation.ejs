@@ -7,12 +7,15 @@
   <link rel="stylesheet" href="/css/viewSiteConfirmation.css" />
 </head>
 <body class="<%= viewOnly ? 'view-only' : '' %>">
-  <% if (viewOnly) { %>
+  <!-- <% if (viewOnly) { %>
 <div class="watermark">
   VIEW ONLY
 </div>
-<% } %>
+<% } %> -->
     <div class="container">
+      <% if (viewOnly) { %>
+<div class="receipt-watermark">VIEW ONLY</div>
+<% } %>
     <div class="logo-section">
       <img src="/images/letterheader.jpg" alt="Header Image" class="header-img" />
     </div>

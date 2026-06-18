@@ -4,9 +4,13 @@ import PlotTransfer from "../../model/plotTransfer.js";
 import upload from "../../middleware/multer.js";
 const router = express.Router();
 
+// router.get(
+//   "/getMemberBySeniorityID/:id",
+//   PlotController.getMemberBySeniorityID
+// );
 router.get(
-  "/getMemberBySeniorityID/:id",
-  PlotController.getMemberBySeniorityID
+  "/getMemberByMembershipNo/:membershipNo",
+  PlotController.getMemberByMembershipNo
 );
 
 router.post(

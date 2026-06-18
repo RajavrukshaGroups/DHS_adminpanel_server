@@ -2,7 +2,9 @@
   size: A4;
   margin: 10mm;
 }
-
+html {
+  position: relative;
+}
 body {
   font-family: "Times New Roman", Times, serif;
   margin: 2rem;
@@ -10,6 +12,7 @@ body {
   color: #333;
   font-size: 13px;
   line-height: 1.5;
+  position: relative;
 }
 
 .container {
@@ -19,6 +22,7 @@ body {
   box-sizing: border-box;
   border: 1px solid #000;
   page-break-inside: avoid;
+  position: relative;
 }
 
 .logo-section,
@@ -87,7 +91,7 @@ li {
   text-align: justify;
 }
 
-.watermark {
+/* .watermark {
   position: fixed;
 
   top: 50%;
@@ -110,10 +114,61 @@ li {
   white-space: nowrap;
 
   user-select: none;
+} */
+
+.receipt-watermark {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%) rotate(-30deg);
+
+  font-size: 120px;
+  font-weight: bold;
+
+  color: rgba(255, 0, 0, 0.12);
+
+  pointer-events: none;
+  user-select: none;
+
+  z-index: 0;
+
+  white-space: nowrap;
 }
 
 .view-only {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+/* .view-only::before {
+  content: "VIEW ONLY";
+  position: fixed !important;
+
+  top: 50vh !important;
+  left: 50vw !important;
+
+  transform: translate(-50%, -50%) rotate(-30deg) !important;
+
+  font-size: 110px;
+  font-weight: bold;
+
+  color: rgba(255, 0, 0, 0.12);
+
+  z-index: 2147483647;
+
+  pointer-events: none;
+  user-select: none;
+
+  white-space: nowrap;
+
+  width: max-content;
+} */
+
+@media (max-width: 768px) {
+  .view-only::before {
+    font-size: 55px;
+  }
 }

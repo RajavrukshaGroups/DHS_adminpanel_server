@@ -6,11 +6,14 @@
     <link rel="stylesheet" href="/css/receipt.css" />
   </head>
   <!-- <body> -->
-    <body class="<%= viewOnly ? 'view-only' : '' %>"></body>
-    <% if (viewOnly) { %>
+<body class="<%= viewOnly ? 'view-only' : '' %>">
+<!-- <% if (viewOnly) { %>
 <div class="watermark">VIEW ONLY</div>
-<% } %>
+<% } %> -->
     <div class="receipt-box">
+      <% if (viewOnly) { %>
+<div class="receipt-watermark">VIEW ONLY</div>
+<% } %>
       <header>
         <img
           src="https://res.cloudinary.com/dwmeclnky/image/upload/v1747305009/dhs-new-logo_kmxqfk.png"
