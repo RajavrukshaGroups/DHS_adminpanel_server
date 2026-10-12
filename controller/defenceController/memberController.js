@@ -1116,6 +1116,178 @@ const websiteContactUs = async (req, res) => {
 
 
 
+
+// plots for sale in doddaballapur controllers 
+const doddaballapurContactUs = async (req, res) => {
+  try {
+    const {
+      name,
+      phone,
+      email,
+      subject,
+      message,
+      location,
+      source,
+      captchaValue,
+      // acceptTerms,
+      declaration,
+    } = req.body;
+    const finalSource = source || "website";
+    console.log("Contact Us Data:", req.body, "incoming source details");
+
+    if (!captchaValue) {
+      return res
+        .status(400)
+        .json({ error: "reCaptcha verification failed - no token provided" });
+    }
+
+    // if (!acceptTerms) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     error: "Terms and Privacy Policy must be accepted",
+    //   });
+    // }
+
+    if (!declaration) {
+      return res.status(400).json({
+        success: false,
+        error: "Terms and Privacy Policy must be accepted",
+      });
+    }
+
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    if (!secretKey) {
+      console.error("RECAPTCHA_SECRET_KEY is not set in environment variables");
+      return res.status(500).json({ error: "Server configuration error" });
+    }
+    try {
+      const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaValue}`;
+      const recaptchaResponse = await axios.post(verificationUrl);
+      const { success, score } = recaptchaResponse.data;
+
+      if (!success) {
+        console.log("reCAPTCHA verification failed:", recaptchaResponse.data);
+        return res.status(400).json({ error: "reCAPTCHA verification failed" });
+      }
+
+      // Optional: Check score threshold (for v3)
+      if (score && score < 0.5) {
+        console.log("reCAPTCHA score too low:", score);
+        return res.status(400).json({ error: "reCAPTCHA verification failed" });
+      }
+    } catch (recaptchaError) {
+      console.error("reCAPTCHA verification error:", recaptchaError);
+      return res.status(400).json({ error: "reCAPTCHA verification failed" });
+    }
+
+    if (!name || !phone || !email || !message) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Save to database with source
+    const newContact = new MemberContact({
+      name,
+      phone,
+      email,
+      subject: finalSource === "google_ads" ? "Google Ads Lead" : subject,
+      message,
+      location,
+      source: finalSource,
+    });
+
+    await newContact.save();
+
+    // Determine recipient email
+    // const recipientEmail = source === 'google_ads'
+    // //   ? process.env.GOOGLE_ADS_LEADS_EMAIL || process.env.DHS_NODEMAILER_MAIL
+    //   : process.env.DHS_NODEMAILER_MAIL;
+
+    const recipientEmail =
+      finalSource === "google_ads"
+        ? process.env.GOOGLE_ADS_LEADS_EMAIL
+        : process.env.DHS_NODEMAILER_MAIL;
+
+    // Customize email subject
+    const emailSubject =
+      finalSource === "google_ads"
+        ? `[Google Ads Lead] ${subject || "New Lead"}`
+        : subject || "New plots for sale in doddaballapur Contact Form Submission";
+
+    // Send email
+    const mailOptions = {
+      from: `"${name}" <${email}>`,
+      to: recipientEmail,
+      subject: emailSubject,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2 style="color: #1f4892;">New ${
+            source === "google_ads"
+              ? "Google Ads Lead"
+              : "Contact Form Submission"
+          }</h2>
+          <p><strong>Source:</strong> ${finalSource}</p>
+          <hr style="margin: 20px 0;">
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ""}
+          ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
+          ${
+            message
+              ? `<p><strong>Message:</strong><br>${message.replace(
+                  /\n/g,
+                  "<br>",
+                )}</p>`
+              : ""
+          }
+        </div>
+      `,
+    };
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: "Message sent successfully." });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const doddaballapurSendDownloadNotificationEmail = async ({
+  name,
+  email,
+  mobile,
+  address,
+  type = "Application", // default to Application
+}) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.DHS_NODEMAILER_MAIL,
+        pass: process.env.DHS_NODEMAILER_KEY,
+      },
+    });
+
+    const mailOptions = {
+      from: '"DHS Admin" <yourcompanyemail@gmail.com>',
+      to: "mail@defencehousingsociety.com",
+      subject: `New Doddaballapur ${type} Downloaded`,
+      html: `
+        <h3>New Doddaballapur ${type} Downloaded</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Mobile:</strong> ${mobile}</p>
+        <p><strong>Address:</strong> ${address}</p>
+      `,
+    };
+    await transporter.sendMail(mailOptions);
+    console.log(`📨 Email notification sent for ${type} download.`);
+  } catch (error) {
+    console.error(`❌ Failed to send ${type} email:`, error);
+  }
+};
+
+
+
 export default {
   memberLogin,
   dashboardDatas,
@@ -1133,4 +1305,7 @@ export default {
   GetTrnasferedhistory,
   forgotPassword,
   websiteContactUs,
+
+  doddaballapurContactUs,
+  doddaballapurSendDownloadNotificationEmail,
 };

@@ -40,9 +40,10 @@ const allowedOrigins = [
   "https://defencehabitat-tapasihalli.defencehousingsociety.com",
   "https://tapasihalli-defencehabitat.defencehousingsociety.com",
   "https://marasandra.defencehousingsociety.com",
+  "https://defencehousingsociety.co.in/"
 ];
 
-// const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
+ //const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
 
 app.use(
   cors({

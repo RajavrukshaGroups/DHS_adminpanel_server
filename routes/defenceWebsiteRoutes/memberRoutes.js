@@ -8,7 +8,7 @@ import nodemailer from "nodemailer";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { sendDownloadNotificationEmail } from "../../controller/defenceController/memberController.js";
+import { sendDownloadNotificationEmail,doddaballapurSendDownloadNotificationEmail } from "../../controller/defenceController/memberController.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -45,6 +45,41 @@ router.get(
 );
 router.post("/forgot-password", defenceController.forgotPassword);
 router.post("/new-contactus", defenceController.websiteContactUs);
+
+
+//Plots for sale in doddaballapur Routes
+router.post("/doddaballapur-contactus", defenceController.doddaballapurContactUs);
+router.post("/doddaballapur-brochure", async (req, res) => {
+  const formData = req.body;
+  console.log("Brochure download request received:", formData);
+
+  try {
+    // Send email with type 'Brochure'
+    await doddaballapurSendDownloadNotificationEmail({ ...formData, type: "Brochure" });
+
+    // Send static brochure PDF file
+    const filePath = path.join(__dirname, "../../public/brochure/brochure.pdf");
+    res.download(filePath, "DHS_Brochure.pdf");
+  } catch (err) {
+    console.error("❌ Brochure download error:", err);
+    res.status(500).send("Brochure download failed");
+  }
+});
+router.post("/doddaballapur-download", async (req, res) => {
+  const formData = req.body;
+
+  try {
+    // Send Email Notification
+    await doddaballapurSendDownloadNotificationEmail({ ...formData, type: "Application" });
+
+    res.status(200).json({ message: "Form submitted successfully" });
+  } catch (error) {
+    console.error("Error handling form submission:", error);
+    res.status(500).send("Failed to process request");
+  }
+});
+
+
 
 // router.post("/download", async (req, res) => {
 //   const formData = req.body;
